@@ -18,7 +18,6 @@ const ibdawg = require("resource://grammalecte/ibdawg.js");
 const helpers = require("resource://grammalecte/helpers.js");
 const gc_options = require("resource://grammalecte/${lang}/gc_options.js");
 const cr = require("resource://grammalecte/${lang}/cregex.js");
-const text = require("resource://grammalecte/text.js");
 const echo = require("resource://grammalecte/helpers.js").echo;
 
 const lang = "${lang}";
