@@ -15,9 +15,6 @@ catch (e) {
     console.error(e);
 }*/
 
-echo("VA TE FAIRE FOUTRE");
-
-
 
 let gce = null; // module: grammar checker engine
 let text = null;
