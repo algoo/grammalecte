@@ -3,18 +3,19 @@
 
 "use strict";
 
+let funcOutput = null;
+
 const helpers = {
     // In Firefox, there is no console.log in PromiseWorker, but there is worker.log.
     // In Thunderbird, you can’t access to console directly. So it’s required to pass a log function.
-    _funcOutput: null,
 
     setLogOutput: function (func) {
-        this._funcOutput = func;
+        funcOutput = func;
     },
 
     echo: function (obj) {
-        if (this._funcOutput !== null) {
-            this._funcOutput(obj);
+        if (funcOutput !== null) {
+            funcOutput(obj);
         } else {
             console.log(obj);
         }
@@ -26,8 +27,8 @@ const helpers = {
         if (bStack) {
             sMsg += "\n--- Stack ---\n" + e.stack;
         }
-        if (this._funcOutput !== null) {
-            this._funcOutput(sMsg);
+        if (funcOutput !== null) {
+            funcOutput(sMsg);
         } else {
             console.error(sMsg);
         }
