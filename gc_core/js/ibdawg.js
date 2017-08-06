@@ -2,8 +2,11 @@
 
 "use strict";
 
-const st = require("resource://grammalecte/str_transform.js");
-const helpers = require("resource://grammalecte/helpers.js");
+
+if (typeof(require) !== 'undefined') {
+    var str_transform = require("resource://grammalecte/str_transform.js");
+    var helpers = require("resource://grammalecte/helpers.js");
+}
 
 
 // String
@@ -15,12 +18,11 @@ ${string}
 class IBDAWG {
     // INDEXABLE BINARY DIRECT ACYCLIC WORD GRAPH
 
-    constructor (sDicName) {
+    constructor (sDicName, sPath="") {
         try {
-            const dict = JSON.parse(helpers.loadFile("resource://grammalecte/_dictionaries/"+sDicName));
+            let sURL = (sPath !== "") ? sPath + "/" + sDicName : "resource://grammalecte/_dictionaries/"+sDicName;
+            const dict = JSON.parse(helpers.loadFile(sURL));
             Object.assign(this, dict);
-            //const dict = require("resource://grammalecte/"+sLang+"/dictionary.js");
-            //Object.assign(this, dict.dictionary);
         }
         catch (e) {
             throw Error("# Error. File not found or not loadable.\n" + e.message + "\n");
@@ -41,11 +43,11 @@ class IBDAWG {
         //this.byDic = new Uint8Array(this.byDic);  // not quicker, even slower
 
         if (this.cStemming == "S") {
-            this.funcStemming = st.getStemFromSuffixCode;
+            this.funcStemming = str_transform.getStemFromSuffixCode;
         } else if (this.cStemming == "A") {
-            this.funcStemming = st.getStemFromAffixCode;
+            this.funcStemming = str_transform.getStemFromAffixCode;
         } else {
-            this.funcStemming = st.noStemming;
+            this.funcStemming = str_transform.noStemming;
         }
 
         // Configuring DAWG functions according to nVersion
@@ -74,14 +76,14 @@ class IBDAWG {
         //console.log(this.getInfo());
         this.bOptNumSigle = true;
         this.bOptNumAtLast = false;
-    };
+    }
 
     getInfo () {
         return  `  Language: ${this.sLang}      Version: ${this.nVersion}      Stemming: ${this.cStemming}FX\n` +
                 `  Arcs values:  ${this.nArcVal} = ${this.nChar} characters,  ${this.nAff} affixes,  ${this.nTag} tags\n` +
                 `  Dictionary: ${this.nEntries} entries,    ${this.nNode} nodes,   ${this.nArc} arcs\n` +
                 `  Address size: ${this.nBytesNodeAddress} bytes,  Arc size: ${this.nBytesArc} bytes\n`;
-    };
+    }
 
     isValidToken (sToken) {
         // checks if sToken is valid (if there is hyphens in sToken, sToken is split, each part is checked)
@@ -95,7 +97,7 @@ class IBDAWG {
             return sToken.split("-").every(sWord  =>  this.isValid(sWord)); 
         }
         return false;
-    };
+    }
 
     isValid (sWord) {
         // checks if sWord is valid (different casing tested if the first letter is a capital)
@@ -125,7 +127,7 @@ class IBDAWG {
             }
         }
         return false;
-    };
+    }
 
     _convBytesToInteger (aBytes) {
         // Byte order = Big Endian (bigger first)
@@ -136,7 +138,7 @@ class IBDAWG {
             nWeight = nWeight - 8;
         }
         return nVal;
-    };
+    }
 
     lookup (sWord) {
         // returns true if sWord in dictionary (strict verification)
@@ -151,7 +153,7 @@ class IBDAWG {
             }
         }
         return Boolean(this._convBytesToInteger(this.byDic.slice(iAddr, iAddr+this.nBytesArc)) & this._finalNodeMask);
-    };
+    }
 
     getMorph (sWord) {
         // retrieves morphologies list, different casing allowed
@@ -163,11 +165,11 @@ class IBDAWG {
             }
         }
         return l;
-    };
+    }
 
     // morph (sWord) {
     //     is defined in constructor
-    // };
+    // }
     
     // VERSION 1
     _morph1 (sWord) {
@@ -207,7 +209,7 @@ class IBDAWG {
             return l;
         }
         return [];
-    };
+    }
 
     _stem1 (sWord) {
         // returns stems list of sWord
@@ -237,7 +239,7 @@ class IBDAWG {
             return l;
         }
         return [];
-    };
+    }
 
     _lookupArcNode1 (nVal, iAddr) {
         // looks if nVal is an arc at the node at iAddr, if yes, returns address of next node else None
@@ -257,34 +259,34 @@ class IBDAWG {
                 iAddr = iEndArcAddr + this.nBytesNodeAddress;
             }
         }
-    };
+    }
 
     // VERSION 2
     _morph2 (sWord) {
         // to do
-    };
+    }
 
     _stem2 (sWord) {
         // to do
-    };
+    }
 
     _lookupArcNode2 (nVal, iAddr) {
         // to do
-    };
+    }
 
 
     // VERSION 3
     _morph3 (sWord) {
         // to do
-    };
+    }
 
     _stem3 (sWord) {
         // to do
-    };
+    }
 
     _lookupArcNode3 (nVal, iAddr) {
         // to do
-    };
+    }
 }
 
 

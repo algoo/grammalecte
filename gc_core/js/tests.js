@@ -3,22 +3,25 @@
 "use strict";
 
 
-const helpers = require("resource://grammalecte/helpers.js");
+if (typeof(require) !== 'undefined') {
+    var helpers = require("resource://grammalecte/helpers.js");
+}
 
 
 class TestGrammarChecking {
 
-    constructor (gce) {
+    constructor (gce, spfTests="") {
         this.gce = gce;
+        this.spfTests = spfTests;
         this._aRuleTested = new Set();
-    };
+    }
 
     * testParse (bDebug=false) {
         const t0 = Date.now();
-        const aData = JSON.parse(helpers.loadFile("resource://grammalecte/"+this.gce.lang+"/tests_data.json")).aData;
-        //const aData = require("resource://grammalecte/"+this.gce.lang+"/tests_data.js").aData;
-        let nInvalid = 0
-        let nTotal = 0
+        let sURL = (this.spfTests !== "") ? this.spfTests : "resource://grammalecte/"+this.gce.lang+"/tests_data.json";
+        const aData = JSON.parse(helpers.loadFile(sURL)).aData;
+        let nInvalid = 0;
+        let nTotal = 0;
         let sErrorText;
         let sSugg;
         let sExpectedErrors;
@@ -61,7 +64,7 @@ class TestGrammarChecking {
                               "\n  expected: " + sExpectedErrors +
                               "\n  found:    " + sFoundErrors +
                               "\n  errors:   \n" + sListErr;
-                        nInvalid = nInvalid + 1
+                        nInvalid = nInvalid + 1;
                     }
                     nTotal = nTotal + 1;
                 }
@@ -78,7 +81,7 @@ class TestGrammarChecking {
 
         if (bShowUntested) {
             i = 0;
-            for (let [sOpt, sLineId, sRuleId] of gce.listRules()) {
+            for (let [sOpt, sLineId, sRuleId] of this.gce.listRules()) {
                 if (!this._aRuleTested.has(sLineId) && !/^[0-9]+[sp]$|^[pd]_/.test(sRuleId)) {
                     sUntestedRules += sRuleId + ", ";
                     i += 1;
@@ -92,7 +95,7 @@ class TestGrammarChecking {
         const t1 = Date.now();
         yield "Tests parse finished in " + ((t1-t0)/1000).toString()
             + " s\nTotal errors: " + nInvalid.toString() + " / " + nTotal.toString();
-    };
+    }
 
     _getExpectedErrors (sLine) {
         try {
@@ -118,15 +121,15 @@ class TestGrammarChecking {
             helpers.logerror(e);
         }
         return " ".repeat(sLine.length);
-    };
+    }
 
     _getFoundErrors (sLine, bDebug, sOption) {
         try {
             let aErrs = [];
             if (sOption) {
-                gce.setOption(sOption, true);
+                this.gce.setOption(sOption, true);
                 aErrs = this.gce.parse(sLine, "FR", bDebug);
-                gce.setOption(sOption, false);
+                this.gce.setOption(sOption, false);
             } else {
                 aErrs = this.gce.parse(sLine, "FR", bDebug);
             }
@@ -143,7 +146,7 @@ class TestGrammarChecking {
             helpers.logerror(e);
         }
         return [" ".repeat(sLine.length), ""];
-    };
+    }
 
 }
 
