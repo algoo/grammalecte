@@ -22,7 +22,7 @@ function receivedMessageIframe (oEvent) {
 /*
 * Creation d'une iframe pour communiquer entre la page visitée et le Shareworker
 */
-let sFrameID = browser.extension.getURL("").split('/').pop();
+var sFrameID = browser.extension.getURL("").split('/')[2];
 var iframe = document.createElement('iframe');
 iframe.id = sFrameID;
 iframe.src = browser.extension.getURL('content_scripts/comunicate.html');
