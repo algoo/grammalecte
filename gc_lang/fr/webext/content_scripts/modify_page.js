@@ -22,26 +22,27 @@ function receivedMessageIframe (oEvent) {
 /*
 * Creation d'une iframe pour communiquer entre la page visitée et le Shareworker
 */
+let sFrameID = browser.extension.getURL("").split('/').pop();
 var iframe = document.createElement('iframe');
-iframe.id = "GrammaFrameModule";
+iframe.id = sFrameID;
 iframe.src = browser.extension.getURL('content_scripts/comunicate.html');
 iframe.hidden = true;
 iframe.onload= function() {
     console.log('[Web] Init protocol de communication');
     //var iframeContent = iframe.contentWindow;
-    var iframeContent = document.getElementById("GrammaFrameModule").contentWindow;
+    var iframeContent = document.getElementById(sFrameID).contentWindow;
     iframeContent.addEventListener("message", receivedMessageIframe, false);
 
     try {
         //La frame est chargé on envoie l'initialisation du Sharedworker
         console.log('[Web] Initialise the worker :s');
-        console.log('[Web] Domaine ext: '+browser.extension.getURL(''));
-        iframeContent.postMessage({sPath:browser.extension.getURL(''), sPage:location.origin.trim("/")}, browser.extension.getURL('') );
+        console.log('[Web] Domaine ext: '+browser.extension.getURL(""));
+        iframeContent.postMessage({sPath:browser.extension.getURL(""), sPage:location.origin.trim("/")}, browser.extension.getURL("") );
    
 
         //Un petit test pour débogage ;)
         console.log('[Web] Test the worker :s');
-        iframeContent.postMessage(["parse", {sText: "Vas... J’en aie mare...", sCountry: "FR", bDebug: false, bContext: false}], browser.extension.getURL(''));
+        iframeContent.postMessage(["parse", {sText: "Vas... J’en aie mare...", sCountry: "FR", bDebug: false, bContext: false}], browser.extension.getURL(""));
     }
     catch (e) {
         console.error(e);
