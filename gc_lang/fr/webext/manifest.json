@@ -44,7 +44,9 @@
     "grammalecte/fr/conj_data.json",
     "grammalecte/fr/mfsp_data.json",
     "grammalecte/fr/phonet_data.json",
-    "grammalecte/fr/tests_data.json"
+    "grammalecte/fr/tests_data.json",
+    "content_scripts/comunicate.html",
+    "content_scripts/comunicate.js"
   ],
   "permissions": [
     "activeTab",

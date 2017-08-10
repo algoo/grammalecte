@@ -2,93 +2,55 @@
 
 "use strict";
 
-console.log("Content script [start]");
 
 function showError (e) {
     console.error(e.fileName + "\n" + e.name + "\nline: " + e.lineNumber + "\n" + e.message);
 }
 
-/*
-    Worker (separate thread to avoid freezing Firefox)
-*/
-let xGCEWorker = new SharedWorker(browser.extension.getURL("../gce_sharedworker.js"));
+console.log("Content script [start]");
 
-xGCEWorker.onerror = function(e) {
-    console.log('There is an error with your worker!');
-    console.log(typeof(e));
-    console.log(e);
-    for (let sParam in e) {
-        console.log(sParam);
-        console.log(e.sParam);
-    }
+/*
+* Pour effectuer différent action sur la page en cours
+*/
+function receivedMessageIframe (oEvent) {
+    if ( typeof oEvent.data.SharedWorker !== "undefined" ) {
+        //C'est ici que les action devront être effectuées
+        console.log('[Web] received (from iframe (Sharedworker)):', oEvent);
+    }    
 }
 
-xGCEWorker.port.onmessage = function (e) {
-    // https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent
+/*
+* Creation d'une iframe pour communiquer entre la page visitée et le Shareworker
+*/
+var iframe = document.createElement('iframe');
+iframe.id = "GrammaFrameModule";
+iframe.src = browser.extension.getURL('content_scripts/comunicate.html');
+iframe.hidden = true;
+iframe.onload= function() {
+    console.log('[Web] Init protocol de communication');
+    //var iframeContent = iframe.contentWindow;
+    var iframeContent = document.getElementById("GrammaFrameModule").contentWindow;
+    iframeContent.addEventListener("message", receivedMessageIframe, false);
+
     try {
-        switch (e.data[0]) {
-            case "grammar_errors":
-                console.log("GRAMMAR ERRORS (SHARE)");
-                console.log(e.data[1].aGrammErr);
-                //browser.runtime.sendMessage({sCommand: "grammar_errors", aGrammErr: e.data[1].aGrammErr});
-                break;
-            case "spelling_and_grammar_errors":
-                console.log("SPELLING AND GRAMMAR ERRORS (SHARE)");
-                console.log(e.data[1].aSpellErr);
-                console.log(e.data[1].aGrammErr);
-                break;
-            case "text_to_test_result":
-                console.log("TESTS RESULTS (SHARE)");
-                console.log(e.data[1]);
-                break;
-            case "fulltests_result":
-                console.log("TESTS RESULTS (SHARE)");
-                console.log(e.data[1]);
-                break;
-            case "options":
-                console.log("OPTIONS (SHARE)");
-                console.log(e.data[1]);
-                break;
-            case "tokens":
-                console.log("TOKENS (SHARE)");
-                console.log(e.data[1]);
-                let xLxgTab = browser.tabs.create({
-                    url: browser.extension.getURL("panel/lexicographer.html"),
-                });
-                xLxgTab.then(onCreated, onError);
-                break;
-            case "error":
-                console.log("ERROR (SHARE)");
-                console.log(e.data[1]);
-                break;
-            default:
-                console.log("Unknown command (SHARE): " + e.data[0]);
-        }
+        //La frame est chargé on envoie l'initialisation du Sharedworker
+        console.log('[Web] Initialise the worker :s');
+        console.log('[Web] Domaine ext: '+browser.extension.getURL(''));
+        iframeContent.postMessage({sPath:browser.extension.getURL(''), sPage:location.origin.trim("/")}, browser.extension.getURL('') );
+   
+
+        //Un petit test pour débogage ;)
+        console.log('[Web] Test the worker :s');
+        iframeContent.postMessage(["parse", {sText: "Vas... J’en aie mare...", sCountry: "FR", bDebug: false, bContext: false}], browser.extension.getURL(''));
     }
     catch (e) {
-        showError(e);
+        console.error(e);
     }
-};
-
-console.log("Content script [worker]");
-console.log(xGCEWorker);
+}
+document.body.appendChild(iframe);
 
 
-//xGCEWorker.port.start();
-//console.log("Content script [port started]");
-
-//xGCEWorker.port.postMessage(["init", {sExtensionPath: browser.extension.getURL("."), sOptions: "", sContext: "Firefox"}]);
-
-console.log("Content script [worker initialzed]");
-
-xGCEWorker.port.postMessage(["parse", {sText: "Vas... J’en aie mare...", sCountry: "FR", bDebug: false, bContext: false}]);
-//xGCEWorker.port.postMessage(["parseAndSpellcheck", {sText: oRequest.sText, sCountry: "FR", bDebug: false, bContext: false}]);
-//xGCEWorker.port.postMessage(["getListOfTokens", {sText: oRequest.sText}]);
-//xGCEWorker.port.postMessage(["textToTest", {sText: oRequest.sText, sCountry: "FR", bDebug: false, bContext: false}]);
-//xGCEWorker.port.postMessage(["fullTests"]);
-
-
-
+console.log('[Web] La suite des initialisations');
 function wrapTextareas() {;
     let lNode = document.getElementsByTagName("textarea");
     for (let xNode of lNode) {

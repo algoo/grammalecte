@@ -61,11 +61,19 @@ importScripts("grammalecte/tests.js");
 
 let xPort = null;
 
+function showError (e) {
+    for (let sParam in e) {
+        console.log(sParam);
+        console.log(e[sParam]);
+    }
+}
+
 onconnect = function(e) {
     console.log("START CONNECTION");
     xPort = e.ports[0];
 
     xPort.onmessage = function (e) {
+        console.log("[Sharedworker] ONMESSAGE");
         console.log(e);
         console.log(e.data[0]);
         let oParam = e.data[1];
@@ -104,7 +112,7 @@ onconnect = function(e) {
                 getListOfTokens(oParam.sText);
                 break;
             default:
-                console.log("Unknown command: " + e.data[0]);
+                console.log("Unknown command: " + showError(e.data[0]));
         }
     }
     //xPort.start();
@@ -132,7 +140,7 @@ function loadGrammarChecker (sExtensionPath, sGCOptions="", sContext="JavaScript
             gc_engine.setOptions(helpers.objectToMap(JSON.parse(sGCOptions)));
         }
         oTokenizer = new Tokenizer("fr");
-        tests();
+        //tests();
         // we always retrieve options from the gc_engine, for setOptions filters obsolete options
         xPort.postMessage(["options", gc_engine.getOptions().gl_toString()]);
     }
