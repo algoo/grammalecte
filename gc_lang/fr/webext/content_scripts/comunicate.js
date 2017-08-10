@@ -58,18 +58,19 @@ var savePathExtension = '';
 var savePathOrigine = '';
 console.log('[Iframe] Set receivedMessageWeb');
 function receivedMessageWeb (oEvent) {
-    console.log('[Iframe] received:', oEvent, savePathExtension, savePathOrigine, oEvent.origin);
     //Pour être sure que ca viens bien de notre iframe ;)
     if ( !xGCEWorker && typeof oEvent.data.sPath !== "undefined" && typeof oEvent.data.sPage !== "undefined" && oEvent.data.sPage === oEvent.origin ){
-        console.log('Create the Sharedworker ', oEvent.origin);
+        console.log('[Iframe] Create the Sharedworker ', oEvent.origin);
         savePathExtension = oEvent.data.sPath;
         savePathOrigine = oEvent.origin;
         //On créer le Shraredworker
         createSharedworker(savePathExtension);
         //On initialise le Shraredworker
         xGCEWorker.port.postMessage(["init", {sExtensionPath: savePathExtension, sOptions: "", sContext: "Firefox"}]);
-    } else if ( xGCEWorker && savePathOrigine === oEvent.origin) {
-        //Les messages reçus maintenant on un Sharedworker fonctionnel et donc si ça viens bien de la page on lui transmet
+    } else if ( xGCEWorker && savePathOrigine === oEvent.origin && typeof oEvent.data.SharedWorker === "undefined") {
+        console.log('[Iframe] received (no Sharedworker):', oEvent, savePathExtension, savePathOrigine, oEvent.origin);
+        //Les messages reçus maintenant, on un Sharedworker fonctionnel 
+        //On transmet au Sharedworker uniquement si ça viens bien de la page web et on s'assure que c'est pas une réponse du Sharedworker
         //TODO: Fodrait établir un protocol de communication afin qu'on ne traite vraiment que les messages a transmettre util ;)
         console.log('[Iframe] exec command with Sharedworker');
         xGCEWorker.port.postMessage(oEvent.data);
