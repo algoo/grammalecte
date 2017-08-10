@@ -53,26 +53,19 @@ document.body.appendChild(iframe);
 * Bidoule pour les les images du module et les intégrès sur la page
 */
 function loadImage(sContennaireID, sImagePath){
-        let xRequest;
+    let xRequest;
+    xRequest = new XMLHttpRequest();
+    xRequest.open('GET', browser.extension.getURL("")+sImagePath, false);
+    xRequest.responseType = "arraybuffer";
+    xRequest.send();
 
-        xRequest = new XMLHttpRequest();
-        xRequest.open('GET', browser.extension.getURL("")+sImagePath, false);
-        xRequest.responseType = "arraybuffer";
-        xRequest.send();
+    let blobTxt = new Blob([xRequest.response], {type: 'image/png'});
+    let img = document.createElement('img');
+    img.src = (URL || webkitURL).createObjectURL(blobTxt);
 
-        let blobTxt = new Blob([xRequest.response], {type: 'image/png'});
-
-        var img = document.createElement('img');;
-        img.src = (URL || webkitURL).createObjectURL(blobTxt);
-        //img.src = 'data:image/png;base64, '+btoa(xRequest.response);
-
-        let elmClass = document.getElementsByClassName(sContennaireID);
-        
-        for (let oElment in elmClass) {
-            if( typeof elmClass[oElment].appendChild === "function" ){
-                elmClass[oElment].appendChild(img);
-            }
-        }        
+    Array.filter( document.getElementsByClassName(sContennaireID), function(oElment){
+        oElment.appendChild(img);
+    });     
 }
 
 console.log('[Web] La suite des initialisations');
