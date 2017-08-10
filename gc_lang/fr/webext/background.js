@@ -9,7 +9,9 @@ function showError (e) {
 /*
     Worker (separate thread to avoid freezing Firefox)
 */
-let xGCEWorker = new Worker("gce_worker.js");
+//let xGCEWorker = new Worker("gce_worker.js");
+let xGCESharedWorker = new SharedWorker(browser.extension.getURL("gce_sharedworker.js"));
+let xGCEWorker = xGCESharedWorker.port;
 
 xGCEWorker.onmessage = function (e) {
     // https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent
@@ -178,77 +180,3 @@ async function newwin () {
 }
 
 //newwin();
-
-
-/*
-    Worker (separate thread to avoid freezing Firefox)
-*/
-/*
-let xGCESharedWorker = new SharedWorker("gce_sharedworker.js");
-
-xGCESharedWorker.port.onmessage = function (e) {
-    // https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent
-    try {
-        switch (e.data[0]) {
-            case "grammar_errors":
-                console.log("GRAMMAR ERRORS (SHARE)");
-                console.log(e.data[1].aGrammErr);
-                //browser.runtime.sendMessage({sCommand: "grammar_errors", aGrammErr: e.data[1].aGrammErr});
-                break;
-            case "spelling_and_grammar_errors":
-                console.log("SPELLING AND GRAMMAR ERRORS (SHARE)");
-                console.log(e.data[1].aSpellErr);
-                console.log(e.data[1].aGrammErr);
-                break;
-            case "text_to_test_result":
-                console.log("TESTS RESULTS (SHARE)");
-                console.log(e.data[1]);
-                break;
-            case "fulltests_result":
-                console.log("TESTS RESULTS (SHARE)");
-                console.log(e.data[1]);
-                break;
-            case "options":
-                console.log("OPTIONS (SHARE)");
-                console.log(e.data[1]);
-                break;
-            case "tokens":
-                console.log("TOKENS (SHARE)");
-                console.log(e.data[1]);
-                let xLxgTab = browser.tabs.create({
-                    url: browser.extension.getURL("panel/lexicographer.html"),
-                });
-                xLxgTab.then(onCreated, onError);
-                break;
-            case "error":
-                console.log("ERROR (SHARE)");
-                console.log(e.data[1]);
-                break;
-            default:
-                console.log("Unknown command (SHARE): " + e.data[0]);
-        }
-    }
-    catch (e) {
-        showError(e);
-    }
-};
-
-console.log("Content script [worker]");
-console.log(xGCESharedWorker);
-
-
-//xGCESharedWorker.port.start();
-//console.log("Content script [port started]");
-
-xGCESharedWorker.port.postMessage(["init", {sExtensionPath: browser.extension.getURL("."), sOptions: "", sContext: "Firefox"}]);
-
-console.log("Content script [worker initialzed]");
-
-xGCESharedWorker.port.postMessage(["parse", {sText: "Vas... J’en aie mare...", sCountry: "FR", bDebug: false, bContext: false}]);
-//xGCESharedWorker.port.postMessage(["parseAndSpellcheck", {sText: oRequest.sText, sCountry: "FR", bDebug: false, bContext: false}]);
-//xGCESharedWorker.port.postMessage(["getListOfTokens", {sText: oRequest.sText}]);
-//xGCESharedWorker.port.postMessage(["textToTest", {sText: oRequest.sText, sCountry: "FR", bDebug: false, bContext: false}]);
-//xGCESharedWorker.port.postMessage(["fullTests"]);
-
-
-*/
