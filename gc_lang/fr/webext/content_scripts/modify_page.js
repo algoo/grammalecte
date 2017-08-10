@@ -49,6 +49,31 @@ iframe.onload= function() {
 }
 document.body.appendChild(iframe);
 
+/*
+* Bidoule pour les les images du module et les intégrès sur la page
+*/
+function loadImage(sContennaireID, sImagePath){
+        let xRequest;
+
+        xRequest = new XMLHttpRequest();
+        xRequest.open('GET', browser.extension.getURL("")+sImagePath, false);
+        xRequest.responseType = "arraybuffer";
+        xRequest.send();
+
+        let blobTxt = new Blob([xRequest.response], {type: 'image/png'});
+
+        var img = document.createElement('img');;
+        img.src = (URL || webkitURL).createObjectURL(blobTxt);
+        //img.src = 'data:image/png;base64, '+btoa(xRequest.response);
+
+        let elmClass = document.getElementsByClassName(sContennaireID);
+        
+        for (let oElment in elmClass) {
+            if( typeof elmClass[oElment].appendChild === "function" ){
+                elmClass[oElment].appendChild(img);
+            }
+        }        
+}
 
 console.log('[Web] La suite des initialisations');
 
@@ -76,6 +101,8 @@ function createWrapper (xTextArea) {
         xWrapper.appendChild(xTextArea); // move textarea in wrapper
         let xToolbar = createWrapperToolbar(xTextArea);
         xWrapper.appendChild(xToolbar);
+
+        loadImage("GrammalecteTitle", "img/logo-16.png");
     }
     catch (e) {
         showError(e);
@@ -92,6 +119,11 @@ function createWrapperToolbar (xTextArea) {
         /*let xLogo = document.createElement("img");
         xLogo.src = browser.extension.getURL("img/logo-16.png");
         xTitle.appendChild(xLogo);*/
+
+        let xImage = document.createElement("span");
+        xImage.className = "GrammalecteTitle";
+        xToolbar.appendChild(xImage);
+
         xToolbar.appendChild(document.createTextNode("Grammalecte"));
         let xConjButton = document.createElement("div");
         xConjButton.textContent = "Conjuguer";
