@@ -132,22 +132,22 @@ function createWrapperToolbar (xTextArea) {
         let xTFButton = document.createElement("div");
         xTFButton.textContent = "Formater";
         xTFButton.style = sButtonStyle;
-        xTFButton.onclick = function(xTextArea) {
-            createTFPanel();
+        xTFButton.onclick = function() {
+            createTFPanel(xTextArea);
         };
         xToolbar.appendChild(xTFButton);
         let xLxgButton = document.createElement("div");
         xLxgButton.textContent = "Analyser";
         xLxgButton.style = sButtonStyle;
-        xLxgButton.onclick = function(xTextArea) {
-            createLxgPanel();
+        xLxgButton.onclick = function() {
+            createLxgPanel(xTextArea);
         };
         xToolbar.appendChild(xLxgButton);
         let xGCButton = document.createElement("div");
         xGCButton.textContent = "Corriger";
         xGCButton.style = sButtonStyle;
-        xGCButton.onclick = function(xTextArea) {
-            createGCPanel();
+        xGCButton.onclick = function() {
+            createGCPanel(xTextArea);
         };
         xToolbar.appendChild(xGCButton);
         return xToolbar;
