@@ -15,13 +15,14 @@ console.log("Content script [start]");
 function receivedMessageFromIframe (oEvent) {
     if (typeof oEvent.data.SharedWorker !== "undefined") {
         console.log('[Web] received (from iframe (Sharedworker)):', oEvent);
-        let [sCommand, answer] = oEvent.data.SharedWorker;
-        console.log(sCommand);
-        switch (sCommand) {
-            case "grammar_errors":
-                console.log(answer.aGrammErr);
-                for (let oErr of answer.aGrammErr) {
+        let {sActionDone, result, dInfo, bError} = oEvent.data.SharedWorker;
+        console.log(sActionDone);
+        switch (sActionDone) {
+            case "parse":
+                console.log(result);
+                for (let oErr of result) {
                     console.log(oErr);
+                    console.log(text.getReadableError(oErr));
                 }
                 break;
         }
@@ -49,7 +50,7 @@ xIframe.onload= function () {
         xFrameContent.postMessage({sPath: browser.extension.getURL(""), sPage: location.origin.trim("/")}, browser.extension.getURL(""));
         //Un petit test pour débogage ;)
         console.log('[Web] Test the worker :s');
-        xFrameContent.postMessage(["parse", {sText: "Vas... J’en aie mare...", sCountry: "FR", bDebug: false, bContext: false}], browser.extension.getURL(""));
+        xFrameContent.postMessage({sCommand: "parse", dParam: {sText: "Vas... J’en aie mare...", sCountry: "FR", bDebug: false, bContext: false}, dInfo: {}}, browser.extension.getURL(""));
     }
     catch (e) {
         console.error(e);
@@ -140,14 +141,14 @@ function createWrapperToolbar (xTextArea) {
         xLxgButton.textContent = "Analyser";
         xLxgButton.style = sButtonStyle;
         xLxgButton.onclick = function() {
-            createLxgPanel(xTextArea);
+            console.log("Analyser");
         };
         xToolbar.appendChild(xLxgButton);
         let xGCButton = document.createElement("div");
         xGCButton.textContent = "Corriger";
         xGCButton.style = sButtonStyle;
         xGCButton.onclick = function() {
-            createGCPanel(xTextArea);
+            xFrameContent.postMessage({sCommand: "parse", dParam: {sText: xTextArea.value, sCountry: "FR", bDebug: false, bContext: false}, dInfo: {sInfoId: xTextArea.id}}, browser.extension.getURL(""));
         };
         xToolbar.appendChild(xGCButton);
         return xToolbar;
@@ -186,7 +187,6 @@ function createLxgPanel (xTextArea) {
 
 function createGCPanel (xTextArea) {
     console.log("Correction grammaticale");
-    xFrameContent.postMessage(["parse", {sText: xTextArea.value, sCountry: "FR", bDebug: false, bContext: false}], browser.extension.getURL(""));
 }
 
 function createCloseButton (xParentNode) {

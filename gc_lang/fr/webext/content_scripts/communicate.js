@@ -37,7 +37,7 @@ function createSharedWorker (sPath) {
     //xGCEWorker.port.start();
     //console.log("Content script [port started]");
 
-    xGCEWorker.port.postMessage(["init", {sExtensionPath: sPath, sOptions: "", sContext: "Firefox"}]);
+    xGCEWorker.port.postMessage({sCommand: "init", dParam: {sExtensionPath: sPath, sOptions: "", sContext: "Firefox"}, dInfo: {}});
     //xGCEWorker.port.postMessage(["parse", {sText: "Vas... J’en aie mare...", sCountry: "FR", bDebug: false, bContext: false}]);
     //xGCEWorker.port.postMessage(["parseAndSpellcheck", {sText: oRequest.sText, sCountry: "FR", bDebug: false, bContext: false}]);
     //xGCEWorker.port.postMessage(["getListOfTokens", {sText: oRequest.sText}]);

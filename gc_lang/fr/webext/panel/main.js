@@ -84,17 +84,23 @@ function sendMessageAndWaitResponse (oData) {
 */
 function handleMessage (oMessage, xSender, sendResponse) {
     console.log(xSender);
+    console.log(oMessage.sCommand);
     switch(oMessage.sCommand) {
         case "show_tokens":
             console.log("show tokens");
             addParagraphOfTokens(oMessage.oResult);
             break;
-        case "text_to_test_result":
+        case "textToTest":
+            console.log(oMessage.sResult);
             showTestResult(oMessage.sResult);
             break;
-        case "fulltests_result":
+        case "fullTests":
+            console.log(oMessage.sResult);
             showTestResult(oMessage.sResult);
             break;
+        default:
+            console.log("Unknow command: " + oMessage.sCommand);
+
     }
     sendResponse({sCommand: "none", sResult: "done"});
 }

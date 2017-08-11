@@ -36,7 +36,7 @@
   "content_scripts": [
     {
       "matches": ["*://*/*"],
-      "js": ["content_scripts/modify_page.js"]
+      "js": ["content_scripts/modify_page.js", "grammalecte/text.js"]
     }
   ],
   "web_accessible_resources": [
