@@ -45,8 +45,8 @@
     "grammalecte/fr/mfsp_data.json",
     "grammalecte/fr/phonet_data.json",
     "grammalecte/fr/tests_data.json",
-    "content_scripts/comunicate.html",
-    "content_scripts/comunicate.js",
+    "content_scripts/communicate.html",
+    "content_scripts/communicate.js",
     "img/logo-16.png"
   ],
   "permissions": [

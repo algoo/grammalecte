@@ -34,7 +34,7 @@ function receivedMessageFromIframe (oEvent) {
 var sFrameID = browser.extension.getURL("").split('/')[2];
 var xIframe = document.createElement('iframe');
 xIframe.id = sFrameID;
-xIframe.src = browser.extension.getURL('content_scripts/comunicate.html');
+xIframe.src = browser.extension.getURL('content_scripts/communicate.html');
 xIframe.hidden = true;
 xIframe.onload= function () {
     console.log('[Web] Init protocol de communication');
