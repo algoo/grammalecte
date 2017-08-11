@@ -30,6 +30,7 @@ function createSharedWorker (sPath) {
             console.error(e);
         }
     };
+    xGCEWorker.port.start();
 
     console.log("[Iframe] [worker]");
     console.log(xGCEWorker);
@@ -56,7 +57,7 @@ function receivedMessageWeb (oEvent) {
         createSharedWorker(oEvent.data.sPath);
     } else if (xGCEWorker && sPathOrigin === oEvent.origin && typeof oEvent.data.SharedWorker === "undefined") {
         console.log('[Iframe] received (no SharedWorker):', oEvent, oEvent.origin);
-        // Les messages reçus maintenant ont un SharedWorker fonctionnel 
+        // Les messages reçus maintenant ont un SharedWorker fonctionnel
         // On transmet au SharedWorker uniquement si ça vient de la page web et on s’assure que ce n’est pas une réponse du SharedWorker.
         // TODO: Établir un protocole de communication afin de traiter uniquement les messages utiles
         console.log('[Iframe] exec command with SharedWorker');

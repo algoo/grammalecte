@@ -69,12 +69,11 @@ function showError (e) {
     }
 }
 
-onconnect = function(e) {
+self.addEventListener("connect", function(e){
     console.log("START CONNECTION");
     xPort = e.ports[0];
     xListPort.push(xPort);
-
-    xPort.onmessage = function (e) {
+    xPort.addEventListener("message", function(e){
         console.log("[Sharedworker] ONMESSAGE");
         console.log(e);
         console.log(e.data[0]);
@@ -114,19 +113,21 @@ onconnect = function(e) {
                 getListOfTokens(oParam.sText);
                 break;
             case "other":
+                console.log("[Sharedworker Other] Number of client: "+xListPort.length);
                 console.log("Message to Other");
                 toReply.Other("Message to Other");
                 break;
             case "all":
+                console.log("[Sharedworker All] Number of client: "+xListPort.length);
                 console.log("Message to All");
                 toReply.All("Message to All");
                 break;
             default:
                 console.log("Unknown command: " + showError(e.data[0]));
         }
-    }
-    //xPort.start();
-}
+    });
+    xPort.start();
+});
 
 let toReply = {
     All: function(data){

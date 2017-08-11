@@ -1,4 +1,4 @@
-// Background 
+// Background
 
 "use strict";
 
@@ -59,7 +59,7 @@ xGCEWorker.onmessage = function (e) {
         showError(e);
     }
 };
-
+xGCEWorker.start();
 xGCEWorker.postMessage(["init", {sExtensionPath: browser.extension.getURL("."), sOptions: "", sContext: "Firefox"}]);
 
 
@@ -160,7 +160,7 @@ browser.contextMenus.onClicked.addListener(function (xInfo, xTab) {
             });
             xConjTab.then(onCreated, onError);
             break;
-    }    
+    }
 });
 
 
