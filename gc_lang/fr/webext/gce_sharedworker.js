@@ -113,6 +113,14 @@ onconnect = function(e) {
             case "getListOfTokens":
                 getListOfTokens(oParam.sText);
                 break;
+            case "other":
+                console.log("Message to Other");
+                toReply.Other("Message to Other");
+                break;
+            case "all":
+                console.log("Message to All");
+                toReply.All("Message to All");
+                break;
             default:
                 console.log("Unknown command: " + showError(e.data[0]));
         }

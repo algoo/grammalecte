@@ -25,7 +25,7 @@ function receivedMessageFromIframe (oEvent) {
                 }
                 break;
         }
-    }    
+    }
 }
 
 /*
@@ -50,6 +50,10 @@ xIframe.onload= function () {
         //Un petit test pour débogage ;)
         console.log('[Web] Test the worker :s');
         xFrameContent.postMessage(["parse", {sText: "Vas... J’en aie mare...", sCountry: "FR", bDebug: false, bContext: false}], browser.extension.getURL(""));
+        //Un test qui envoie a tout le monde
+        xFrameContent.postMessage(["all", {}], browser.extension.getURL(""));
+        //Un test qui envoie aux autres
+        xFrameContent.postMessage(["other", {}], browser.extension.getURL(""));
     }
     catch (e) {
         console.error(e);
@@ -69,7 +73,7 @@ function loadImage (sContainerClass, sImagePath) {
     img.src = (URL || webkitURL).createObjectURL(blobTxt);
     Array.filter(document.getElementsByClassName(sContainerClass), function (oElem) {
         oElem.appendChild(img);
-    });     
+    });
 }
 
 
