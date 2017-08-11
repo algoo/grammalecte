@@ -12,10 +12,19 @@ console.log("Content script [start]");
 /*
 * Pour effectuer différent action sur la page en cours
 */
-function receivedMessageIframe (oEvent) {
-    if ( typeof oEvent.data.SharedWorker !== "undefined" ) {
-        //C'est ici que les action devront être effectuées
+function receivedMessageFromIframe (oEvent) {
+    if (typeof oEvent.data.SharedWorker !== "undefined") {
         console.log('[Web] received (from iframe (Sharedworker)):', oEvent);
+        let [sCommand, answer] = oEvent.data.SharedWorker;
+        console.log(sCommand);
+        switch (sCommand) {
+            case "grammar_errors":
+                console.log(answer.aGrammErr);
+                for (let oErr of answer.aGrammErr) {
+                    console.log(oErr);
+                }
+                break;
+        }
     }    
 }
 
@@ -23,51 +32,46 @@ function receivedMessageIframe (oEvent) {
 * Creation d'une iframe pour communiquer entre la page visitée et le Shareworker
 */
 var sFrameID = browser.extension.getURL("").split('/')[2];
-var iframe = document.createElement('iframe');
-iframe.id = sFrameID;
-iframe.src = browser.extension.getURL('content_scripts/comunicate.html');
-iframe.hidden = true;
-iframe.onload= function() {
+var xIframe = document.createElement('iframe');
+xIframe.id = sFrameID;
+xIframe.src = browser.extension.getURL('content_scripts/comunicate.html');
+xIframe.hidden = true;
+xIframe.onload= function () {
     console.log('[Web] Init protocol de communication');
-    //var iframeContent = iframe.contentWindow;
-    var iframeContent = document.getElementById(sFrameID).contentWindow;
-    iframeContent.addEventListener("message", receivedMessageIframe, false);
-
+    //var xFrameContent = xIframe.contentWindow;
+    var xFrameContent = document.getElementById(sFrameID).contentWindow;
+    xFrameContent.addEventListener("message", receivedMessageFromIframe, false);
     try {
         //La frame est chargé on envoie l'initialisation du Sharedworker
         console.log('[Web] Initialise the worker :s');
         console.log('[Web] Domaine ext: '+browser.extension.getURL(""));
-        iframeContent.postMessage({sPath:browser.extension.getURL(""), sPage:location.origin.trim("/")}, browser.extension.getURL("") );
+        xFrameContent.postMessage({sPath: browser.extension.getURL(""), sPage: location.origin.trim("/")}, browser.extension.getURL(""));
    
-
         //Un petit test pour débogage ;)
         console.log('[Web] Test the worker :s');
-        iframeContent.postMessage(["parse", {sText: "Vas... J’en aie mare...", sCountry: "FR", bDebug: false, bContext: false}], browser.extension.getURL(""));
+        xFrameContent.postMessage(["parse", {sText: "Vas... J’en aie mare...", sCountry: "FR", bDebug: false, bContext: false}], browser.extension.getURL(""));
     }
     catch (e) {
         console.error(e);
     }
 }
-document.body.appendChild(iframe);
+document.body.appendChild(xIframe);
 
-/*
-* Bidoule pour les les images du module et les intégrès sur la page
-*/
-function loadImage(sContennaireID, sImagePath){
+
+function loadImage (sContainerClass, sImagePath) {
     let xRequest;
     xRequest = new XMLHttpRequest();
     xRequest.open('GET', browser.extension.getURL("")+sImagePath, false);
     xRequest.responseType = "arraybuffer";
     xRequest.send();
-
     let blobTxt = new Blob([xRequest.response], {type: 'image/png'});
     let img = document.createElement('img');
     img.src = (URL || webkitURL).createObjectURL(blobTxt);
-
-    Array.filter( document.getElementsByClassName(sContennaireID), function(oElment){
-        oElment.appendChild(img);
+    Array.filter(document.getElementsByClassName(sContainerClass), function (oElem) {
+        oElem.appendChild(img);
     });     
 }
+
 
 console.log('[Web] La suite des initialisations');
 
@@ -95,7 +99,6 @@ function createWrapper (xTextArea) {
         xWrapper.appendChild(xTextArea); // move textarea in wrapper
         let xToolbar = createWrapperToolbar(xTextArea);
         xWrapper.appendChild(xToolbar);
-
         loadImage("GrammalecteTitle", "img/logo-16.png");
     }
     catch (e) {
