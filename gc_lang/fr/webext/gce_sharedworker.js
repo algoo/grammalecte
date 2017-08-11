@@ -86,7 +86,7 @@ function showData (e) {
 }
 
 onconnect = function (e) {
-    console.log("START CONNECTION");
+    console.log("[Sharedworker] START CONNECTION");
     xPort = e.ports[0];
 
     xPort.onmessage = function (e) {
@@ -135,6 +135,7 @@ onconnect = function (e) {
     //xPort.start();
 }
 
+let bInitDone = false;
 
 let oDict = null;
 let oTokenizer = null;
@@ -144,22 +145,27 @@ let oTest = null;
 
 function init (sExtensionPath, sGCOptions="", sContext="JavaScript", dInfo={}) {
     try {
-        console.log("Loading… Extension path: " + sExtensionPath);
-        conj.init(helpers.loadFile(sExtensionPath + "/grammalecte/fr/conj_data.json"));
-        phonet.init(helpers.loadFile(sExtensionPath + "/grammalecte/fr/phonet_data.json"));
-        mfsp.init(helpers.loadFile(sExtensionPath + "/grammalecte/fr/mfsp_data.json"));
-        console.log("Modules have been initialized…");
-        gc_engine.load(sContext, sExtensionPath+"grammalecte/_dictionaries");
-        oDict = gc_engine.getDictionary();
-        oTest = new TestGrammarChecking(gc_engine, sExtensionPath+"/grammalecte/fr/tests_data.json");
-        oLxg = new Lexicographe(oDict);
-        if (sGCOptions !== "") {
-            gc_engine.setOptions(helpers.objectToMap(JSON.parse(sGCOptions)));
+        if (!bInitDone) {
+            console.log("[Sharedworker] Loading… Extension path: " + sExtensionPath);
+            conj.init(helpers.loadFile(sExtensionPath + "/grammalecte/fr/conj_data.json"));
+            phonet.init(helpers.loadFile(sExtensionPath + "/grammalecte/fr/phonet_data.json"));
+            mfsp.init(helpers.loadFile(sExtensionPath + "/grammalecte/fr/mfsp_data.json"));
+            console.log("[Sharedworker] Modules have been initialized…");
+            gc_engine.load(sContext, sExtensionPath+"grammalecte/_dictionaries");
+            oDict = gc_engine.getDictionary();
+            oTest = new TestGrammarChecking(gc_engine, sExtensionPath+"/grammalecte/fr/tests_data.json");
+            oLxg = new Lexicographe(oDict);
+            if (sGCOptions !== "") {
+                gc_engine.setOptions(helpers.objectToMap(JSON.parse(sGCOptions)));
+            }
+            oTokenizer = new Tokenizer("fr");
+            //tests();
+            // we always retrieve options from the gc_engine, for setOptions filters obsolete options
+            //xPort.postMessage(["options", gc_engine.getOptions().gl_toString()]);
+            bInitDone = true;
+        } else {
+            console.log("[Sharedworker] Already initialized…")
         }
-        oTokenizer = new Tokenizer("fr");
-        //tests();
-        // we always retrieve options from the gc_engine, for setOptions filters obsolete options
-        //xPort.postMessage(["options", gc_engine.getOptions().gl_toString()]);
         xPort.postMessage(createResponse("init", gc_engine.getOptions().gl_toString(), dInfo));
     }
     catch (e) {
@@ -222,7 +228,7 @@ function tests () {
 
 function textToTest (sText, sCountry, bDebug, bContext, dInfo={}) {
     if (!gc_engine || !oDict) {
-        xPort.postMessage(["error", "# Error: grammar checker or dictionary not loaded."]);
+        xPort.postMessage(createResponse("textToTest", "# Grammar checker or dictionary not loaded.", dInfo));
         return;
     }
     let aGrammErr = gc_engine.parse(sText, sCountry, bDebug, bContext);
@@ -236,7 +242,7 @@ function textToTest (sText, sCountry, bDebug, bContext, dInfo={}) {
 
 function fullTests (sGCOptions="", dInfo={}) {
     if (!gc_engine || !oDict) {
-        xPort.postMessage(["error", "# Error: grammar checker or dictionary not loaded."]);
+        xPort.postMessage(createResponse("fullTests", "# Grammar checker or dictionary not loaded.", dInfo));
         return;
     }
     let dMemoOptions = gc_engine.getOptions();
