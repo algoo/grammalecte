@@ -29,6 +29,14 @@ function receivedMessageFromIframe (oEvent) {
 }
 
 /*
+* Inject a script to page site to define extension path
+*/
+/*var xScript = document.createElement('script');
+xScript.textContent = 'var sExtensionPath = "'+browser.extension.getURL("")+'";';
+document.body.appendChild(xScript);*/
+
+
+/*
 * Creation d'une iframe pour communiquer entre la page visitée et le Shareworker
 */
 var sFrameID = browser.extension.getURL("").split('/')[2];
@@ -46,10 +54,10 @@ xIframe.onload= function () {
         //La frame est chargé on envoie l'initialisation du Sharedworker
         console.log('[Web] Initialise the worker :s');
         console.log('[Web] Domaine ext: '+browser.extension.getURL(""));
-        xFrameContent.postMessage({sPath: browser.extension.getURL(""), sPage: location.origin.trim("/")}, browser.extension.getURL(""));
+        xFrameContent.postMessage({sPage: location.origin.trim("/")}, browser.extension.getURL(""));
         //Un petit test pour débogage ;)
         console.log('[Web] Test the worker :s');
-        xFrameContent.postMessage(["parse", {sText: "Vas... J’en aie mare...", sCountry: "FR", bDebug: false, bContext: false}], browser.extension.getURL(""));
+        //xFrameContent.postMessage(["parse", {sText: "Vas... J’en aie mare...", sCountry: "FR", bDebug: false, bContext: false}], browser.extension.getURL(""));
         //Un test qui envoie a tout le monde
         xFrameContent.postMessage(["all", {}], browser.extension.getURL(""));
         //Un test qui envoie aux autres

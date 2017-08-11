@@ -59,9 +59,6 @@ importScripts("grammalecte/tests.js");
     https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent
 */
 
-let xListPort = [];
-let xPort = null;
-
 function showError (e) {
     for (let sParam in e) {
         console.log(sParam);
@@ -69,83 +66,86 @@ function showError (e) {
     }
 }
 
+var xListPort = xListPort || [];
+//var xPort = null;
+
 self.addEventListener("connect", function(e){
     console.log("START CONNECTION");
-    xPort = e.ports[0];
+    var xPort = e.ports[0];
     xListPort.push(xPort);
+
+
     xPort.addEventListener("message", function(e){
         console.log("[Sharedworker] ONMESSAGE");
         console.log(e);
         console.log(e.data[0]);
+        let oReplyToSend;
         let oParam = e.data[1];
         switch (e.data[0]) {
             case "init":
-                loadGrammarChecker(oParam.sExtensionPath, oParam.sOptions, oParam.sContext);
+                oReplyToSend = loadGrammarChecker(oParam.sExtensionPath, oParam.sOptions, oParam.sContext);
                 break;
             case "parse":
-                parse(oParam.sText, oParam.sCountry, oParam.bDebug, oParam.bContext);
+                oReplyToSend = parse(oParam.sText, oParam.sCountry, oParam.bDebug, oParam.bContext);
                 break;
             case "parseAndSpellcheck":
-                parseAndSpellcheck(oParam.sText, oParam.sCountry, oParam.bDebug, oParam.bContext);
+                oReplyToSend = parseAndSpellcheck(oParam.sText, oParam.sCountry, oParam.bDebug, oParam.bContext);
                 break;
             case "getOptions":
-                getOptions();
+                oReplyToSend = getOptions();
                 break;
             case "getDefaultOptions":
-                getDefaultOptions();
+                oReplyToSend = getDefaultOptions();
                 break;
             case "setOptions":
-                setOptions(oParam.sOptions);
+                oReplyToSend = setOptions(oParam.sOptions);
                 break;
             case "setOption":
-                setOption(oParam.sOptName, oParam.bValue);
+                oReplyToSend = setOption(oParam.sOptName, oParam.bValue);
                 break;
             case "resetOptions":
-                resetOptions();
+                oReplyToSend = resetOptions();
                 break;
             case "textToTest":
-                textToTest(oParam.sText, oParam.sCountry, oParam.bDebug, oParam.bContext);
+                oReplyToSend = textToTest(oParam.sText, oParam.sCountry, oParam.bDebug, oParam.bContext);
                 break;
             case "fullTests":
-                fullTests();
+                oReplyToSend = fullTests();
                 break;
             case "getListOfTokens":
-                getListOfTokens(oParam.sText);
+                oReplyToSend = getListOfTokens(oParam.sText);
                 break;
             case "other":
-                console.log("[Sharedworker Other] Number of client: "+xListPort.length);
-                console.log("Message to Other");
-                toReply.Other("Message to Other");
+                oReplyToSend = "Message to Other";
                 break;
             case "all":
-                console.log("[Sharedworker All] Number of client: "+xListPort.length);
-                console.log("Message to All");
-                toReply.All("Message to All");
+                oReplyToSend = "Message to All";
                 break;
             default:
                 console.log("Unknown command: " + showError(e.data[0]));
         }
+
+        console.log("[Sharedworker PortList] ",xListPort,this);
+        if ( e.data[0] == "all" ) {
+            console.log("[Sharedworker All] Number of client: "+xListPort.length);
+            xListPort.forEach(function(client){
+                client.postMessage(oReplyToSend);
+            });
+        } else if ( e.data[0] == "other" ) {
+            console.log("[Sharedworker Other] Number of client: "+xListPort.length);
+            xListPort.forEach(function(client){
+                if (client !== this){
+                    client.postMessage(oReplyToSend);
+                }
+            });
+        } else {
+            console.log("[Sharedworker Direct reply]");
+            this.postMessage(oReplyToSend);
+        }
+
     });
     xPort.start();
 });
-
-let toReply = {
-    All: function(data){
-        xListPort.forEach(function(client){
-            client.postMessage(data);
-        });
-    },
-    Other: function(data){
-        xListPort.forEach(function(client){
-            if (client !== xPort){
-                client.postMessage(data);
-            }
-        });
-    },
-    Me:  function(data){
-        xPort.postMessage(data);
-    }
-}
 
 
 let oDict = null;
@@ -171,46 +171,46 @@ function loadGrammarChecker (sExtensionPath, sGCOptions="", sContext="JavaScript
         oTokenizer = new Tokenizer("fr");
         //tests();
         // we always retrieve options from the gc_engine, for setOptions filters obsolete options
-        toReply.Me(["options", gc_engine.getOptions().gl_toString()]);
+        return ["options", gc_engine.getOptions().gl_toString()];
     }
     catch (e) {
         console.error(e.fileName + "\n" + e.name + "\nline: " + e.lineNumber + "\n" + e.message);
-        toReply.Me(["error", e.message]);
+        return ["error", e.message];
     }
 }
 
 function parse (sText, sCountry, bDebug, bContext) {
     let aGrammErr = gc_engine.parse(sText, sCountry, bDebug, bContext);
-    toReply.Me(["grammar_errors", {aGrammErr: aGrammErr}]);
+    return ["grammar_errors", {aGrammErr: aGrammErr}];
 }
 
 function parseAndSpellcheck (sText, sCountry, bDebug, bContext) {
     let aGrammErr = gc_engine.parse(sText, sCountry, bDebug, bContext);
     let aSpellErr = oTokenizer.getSpellingErrors(sText, oDict);
-    toReply.Me(["spelling_and_grammar_errors", {aGrammErr: aGrammErr, aSpellErr: aSpellErr}]);
+    return ["spelling_and_grammar_errors", {aGrammErr: aGrammErr, aSpellErr: aSpellErr}];
 }
 
 function getOptions () {
-    toReply.Me(["options", gc_engine.getOptions().gl_toString()]);
+    return ["options", gc_engine.getOptions().gl_toString()];
 }
 
 function getDefaultOptions () {
-    toReply.Me(["options", gc_engine.getDefaultOptions().gl_toString()]);
+    return ["options", gc_engine.getDefaultOptions().gl_toString()];
 }
 
 function setOptions (sGCOptions) {
     gc_engine.setOptions(helpers.objectToMap(JSON.parse(sGCOptions)));
-    toReply.Me(["options", gc_engine.getOptions().gl_toString()]);
+    return ["options", gc_engine.getOptions().gl_toString()];
 }
 
 function setOption (sOptName, bValue) {
     gc_engine.setOptions(new Map([ [sOptName, bValue] ]));
-    toReply.Me(["options", gc_engine.getOptions().gl_toString()]);
+    return ["options", gc_engine.getOptions().gl_toString()];
 }
 
 function resetOptions () {
     gc_engine.resetOptions();
-    toReply.Me(["options", gc_engine.getOptions().gl_toString()]);
+    return ["options", gc_engine.getOptions().gl_toString()];
 }
 
 function tests () {
@@ -226,21 +226,19 @@ function tests () {
 
 function textToTest (sText, sCountry, bDebug, bContext) {
     if (!gc_engine || !oDict) {
-        toReply.Me(["error", "# Error: grammar checker or dictionary not loaded."]);
-        return;
+        return ["error", "# Error: grammar checker or dictionary not loaded."];
     }
     let aGrammErr = gc_engine.parse(sText, sCountry, bDebug, bContext);
     let sMsg = "";
     for (let oErr of aGrammErr) {
         sMsg += text.getReadableError(oErr) + "\n";
     }
-    toReply.Me(["text_to_test_result", sMsg]);
+    return ["text_to_test_result", sMsg];
 }
 
 function fullTests (sGCOptions='{"nbsp":true, "esp":true, "unit":true, "num":true}') {
     if (!gc_engine || !oDict) {
-        toReply.Me(["error", "# Error: grammar checker or dictionary not loaded."]);
-        return;
+        return ["error", "# Error: grammar checker or dictionary not loaded."];
     }
     let dMemoOptions = gc_engine.getOptions();
     if (sGCOptions) {
@@ -252,7 +250,7 @@ function fullTests (sGCOptions='{"nbsp":true, "esp":true, "unit":true, "num":tru
         console.log(sRes);
     }
     gc_engine.setOptions(dMemoOptions);
-    toReply.Me(["fulltests_result", sMsg]);
+    return ["fulltests_result", sMsg];
 }
 
 
@@ -268,10 +266,10 @@ function getListOfTokens (sText) {
                 aElem.push(aRes);
             }
         }
-        toReply.Me(["tokens", aElem]);
+        return ["tokens", aElem];
     }
     catch (e) {
         helpers.logerror(e);
-        toReply.Me(["error", e.message]);
+        return ["error", e.message];
     }
 }

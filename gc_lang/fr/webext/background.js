@@ -10,8 +10,8 @@ function showError (e) {
     Worker (separate thread to avoid freezing Firefox)
 */
 //let xGCEWorker = new Worker("gce_worker.js");
-let xGCESharedWorker = new SharedWorker(browser.extension.getURL("gce_sharedworker.js"));
-let xGCEWorker = xGCESharedWorker.port;
+var xGCESharedWorker = xGCESharedWorker || new SharedWorker(browser.extension.getURL("gce_sharedworker.js"), {type:"classic", credentials:"omit", name:"GrammarWorker"});
+var xGCEWorker = xGCESharedWorker.port;
 
 xGCEWorker.onmessage = function (e) {
     // https://developer.mozilla.org/en-US/docs/Web/API/MessageEvent
