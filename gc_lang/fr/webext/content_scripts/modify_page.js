@@ -33,20 +33,20 @@ function receivedMessageFromIframe (oEvent) {
 */
 var sFrameID = browser.extension.getURL("").split('/')[2];
 var xIframe = document.createElement('iframe');
+let xFrameContent = null;
 xIframe.id = sFrameID;
 xIframe.src = browser.extension.getURL('content_scripts/communicate.html');
 xIframe.hidden = true;
 xIframe.onload= function () {
     console.log('[Web] Init protocol de communication');
     //var xFrameContent = xIframe.contentWindow;
-    var xFrameContent = document.getElementById(sFrameID).contentWindow;
+    xFrameContent = document.getElementById(sFrameID).contentWindow;
     xFrameContent.addEventListener("message", receivedMessageFromIframe, false);
     try {
         //La frame est chargé on envoie l'initialisation du Sharedworker
         console.log('[Web] Initialise the worker :s');
         console.log('[Web] Domaine ext: '+browser.extension.getURL(""));
         xFrameContent.postMessage({sPath: browser.extension.getURL(""), sPage: location.origin.trim("/")}, browser.extension.getURL(""));
-   
         //Un petit test pour débogage ;)
         console.log('[Web] Test the worker :s');
         xFrameContent.postMessage(["parse", {sText: "Vas... J’en aie mare...", sCountry: "FR", bDebug: false, bContext: false}], browser.extension.getURL(""));
@@ -132,21 +132,21 @@ function createWrapperToolbar (xTextArea) {
         let xTFButton = document.createElement("div");
         xTFButton.textContent = "Formater";
         xTFButton.style = sButtonStyle;
-        xTFButton.onclick = function() {
+        xTFButton.onclick = function(xTextArea) {
             createTFPanel();
         };
         xToolbar.appendChild(xTFButton);
         let xLxgButton = document.createElement("div");
         xLxgButton.textContent = "Analyser";
         xLxgButton.style = sButtonStyle;
-        xLxgButton.onclick = function() {
+        xLxgButton.onclick = function(xTextArea) {
             createLxgPanel();
         };
         xToolbar.appendChild(xLxgButton);
         let xGCButton = document.createElement("div");
         xGCButton.textContent = "Corriger";
         xGCButton.style = sButtonStyle;
-        xGCButton.onclick = function() {
+        xGCButton.onclick = function(xTextArea) {
             createGCPanel();
         };
         xToolbar.appendChild(xGCButton);
@@ -176,16 +176,17 @@ function createConjPanel () {
 
 
 
-function createTFPanel () {
+function createTFPanel (xTextArea) {
     console.log("Formateur de texte");
 }
 
-function createLxgPanel () {
+function createLxgPanel (xTextArea) {
     console.log("Analyse");
 }
 
-function createGCPanel () {
+function createGCPanel (xTextArea) {
     console.log("Correction grammaticale");
+    xFrameContent.postMessage(["parse", {sText: xTextArea.value, sCountry: "FR", bDebug: false, bContext: false}], browser.extension.getURL(""));
 }
 
 function createCloseButton (xParentNode) {
