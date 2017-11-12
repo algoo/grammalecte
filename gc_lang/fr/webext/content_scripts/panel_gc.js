@@ -310,9 +310,9 @@ class GrammalecteTooltip {
             let xNodeErr = document.getElementById(sNodeErrorId);
             this.sErrorId = xNodeErr.dataset.error_id; // we store error_id here to know if spell_suggestions are given to the right word.
             let nLimit = oGrammalecte.oGCPanel.getWidth() - 330; // paragraph width - tooltip width
-            this.xTooltipArrow.style.top = (xNodeErr.offsetTop + 16) + "px";
+            this.xTooltipArrow.style.top = (xNodeErr.offsetTop + 18) + "px";
             this.xTooltipArrow.style.left = (xNodeErr.offsetLeft + Math.floor((xNodeErr.offsetWidth / 2))-4) + "px"; // 4 is half the width of the arrow.
-            this.xTooltip.style.top = (xNodeErr.offsetTop + 20) + "px";
+            this.xTooltip.style.top = (xNodeErr.offsetTop + 22) + "px";
             this.xTooltip.style.left = (xNodeErr.offsetLeft > nLimit) ? nLimit + "px" : xNodeErr.offsetLeft + "px";
             if (xNodeErr.dataset.error_type === "grammar") {
                 // grammar error
