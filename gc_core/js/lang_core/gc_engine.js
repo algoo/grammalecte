@@ -1421,6 +1421,7 @@ if (typeof(exports) !== 'undefined') {
     exports._zEndOfParagraph = gc_engine._zEndOfParagraph;
     exports.getSentenceBoundaries = gc_engine.getSentenceBoundaries;
     // rules
+    exports.getIgnoreRules = gc_engine.getIgnoreRules;
     exports.ignoreRule = gc_engine.ignoreRule;
     exports.resetIgnoreRules = gc_engine.resetIgnoreRules;
     exports.reactivateRule = gc_engine.reactivateRule;
