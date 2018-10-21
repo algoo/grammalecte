@@ -16,6 +16,8 @@ https://stackoverflow.com/questions/41058569/what-is-the-difference-between-cons
 
 const argCmd = require("../lib/minimist.js")(process.argv.slice(2));
 const { performance } = require("perf_hooks");
+const path = require("path");
+const fs = require("fs");
 
 //Initialisation des messages
 const msgStart = "\x1b[31mBienvenue sur Grammalecte pour NodeJS!!!\x1b[0m\n";
@@ -167,7 +169,7 @@ function toTitle(aStr) {
 function repToText(oRep) {
     //console.log(oRep);
     let repText = "";
-    for (const action of ["json", "perf", "gceoption", "tfoption", "gcerule"]) {
+    for (const action of ["json", "perf", "gceoption", "tfoption", "gcerule", "dicomain", "dicoperso"]) {
         if (action in oRep) {
             repText += toTitle(action) + " " + oRep[action];
         }
@@ -416,9 +418,25 @@ function actionToExec(aArg) {
         }
     }
 
+    if (getArg(aArg, ["dicomain"])) {
+        let filename = sText.endsWith(".json") ? sText : sText + ".json";
+        repAction["dicomain"] = "Chargement du dictionnaire principal " + (oGrammarChecker.setMainDictionary(filename) ? "OK" : "Pas OK");
+    }
+
+    if (getArg(aArg, ["dicoperso"])) {
+        let pathnormalized = path.normalize(sText);
+        if (fs.existsSync(pathnormalized)) {
+            let filename = path.basename(pathnormalized);
+            let dirname = path.dirname(pathnormalized);
+            repAction["dicoperso"] = "Chargement du dictionnaire personnel " + (oGrammarChecker.setPersonalDictionary(filename, dirname) ? "OK" : "Pas OK");
+        } else {
+            repAction["dicoperso"] = "Le fichier de dictionnaire n'existe pas.";
+        }
+    }
+
     for (const action of ["gceoption", "tfoption", "gcerule"]) {
         if (getArg(aArg, [action])) {
-            let sFonction = (action == "gceoption") ? "GceOption" : (action == "tfoption") ? "TfOption" : "GceIgnoreRule";
+            let sFonction = action == "gceoption" ? "GceOption" : action == "tfoption" ? "TfOption" : "GceIgnoreRule";
             let sOpt = sText.split(" ");
             if (sOpt[0] == "reset") {
                 oGrammarChecker["reset" + sFonction + "s"]();
