@@ -297,7 +297,7 @@ function repToText(oRep) {
                             ascii1 = "└";
                             ascii1a = " ";
                         }
-                        repText += "\n " + ascii1 + " " + gramma.nStart + "->" + gramma.nEnd + " " + gramma.sMessage;
+                        repText += "\n " + ascii1 + " " + gramma.nStart + "->" + gramma.nEnd + " [" + gramma.sRuleId + "]\n " + ascii1a + " " + gramma.sMessage;
                         ascii2 = "├";
                         numRep2 = 0;
                         for (let suggestion of gramma.aSuggestions) {
@@ -410,9 +410,9 @@ function actionToExec(aArg) {
         }
     }
 
-    for (const action of ["gceoption", "tfoption"]) {
+    for (const action of ["gceoption", "tfoption", "gcerule"]) {
         if (getArg(aArg, [action])) {
-            let sFonction = action == "gceoption" ? "GceOption" : "TfOption";
+            let sFonction = (action == "gceoption") ? "GceOption" : (action == "tfoption") ? "TfOption" : "GceIgnoreRule";
             let sOpt = sText.split(" ");
             if (sOpt[0] == "reset") {
                 oGrammarChecker["reset" + sFonction + "s"]();

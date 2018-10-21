@@ -143,6 +143,51 @@ class GrammarChecker {
         return this._helpers.mapToObject(this._oGce.getOptions());
     }
 
+    getGceRules (bParagraph) {
+        if (!this.isInit.Grammalecte) {
+            this.load(["Grammalecte"]);
+        }
+        return this._oGce.getRules(bParagraph);
+    }
+
+    getGceIgnoreRules () {
+        if (!this.isInit.Grammalecte) {
+            this.load(["Grammalecte"]);
+        }
+        return Array.from(this._oGce.getIgnoreRules());
+    }
+
+    setGceIgnoreRules (dRules) {
+        if (!this.isInit.Grammalecte) {
+            this.load(["Grammalecte"]);
+        }
+        if (!(dRules instanceof Set)) {
+            dRules = new Set(dRules);
+        }
+        this._oGce._aIgnoredRules = dRules;
+        return Array.from(this._oGce.getIgnoreRules());
+    }
+
+    setGceIgnoreRule (sRuleId, bValue) {
+        if (!this.isInit.Grammalecte) {
+            this.load(["Grammalecte"]);
+        }
+        if (bValue){ //Add
+            this._oGce.ignoreRule(sRuleId);
+        } else {     //Delete
+            this._oGce.reactivateRule(sRuleId);
+        }
+        return Array.from(this._oGce.getIgnoreRules());
+    }
+
+    resetGceIgnoreRules () {
+        if (!this.isInit.Grammalecte) {
+            this.load(["Grammalecte"]);
+        }
+        this._oGce.resetIgnoreRules();
+        return Array.from(this._oGce.getIgnoreRules());
+    }
+
     //Fonctions concernant: Graphspell
     getGraphspell(){
         if (!this.isInit.Graphspell) {
