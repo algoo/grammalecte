@@ -29,6 +29,7 @@ Il y a trois modes de fonctionnement : client / client interactif / serveur.
 | morph     | mot      | Affiche les informations pour un mot.                         |
 | lemma     | mot      | Donne le lemme d’un mot.                                      |
 | gceoption | +/-name  | Définit les options à utiliser par le correcteur grammatical. |
+| gcerule   | +/-name  | Définit les règles à exclure par le correcteur grammatical. |
 | tfoption  | +/-name  | Définit les options à utiliser par le formateur de texte.     |
 
 ## Client interactif

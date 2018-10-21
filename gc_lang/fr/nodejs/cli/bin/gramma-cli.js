@@ -111,6 +111,12 @@ var cmdAction = {
         description: "Définit les options à utiliser par le correcteur grammatical.",
         execute: ""
     },
+    gcerule: {
+        short: "",
+        arg: "+/-name",
+        description: "Définit les règles à exclure par le correcteur grammatical.",
+        execute: ""
+    },
     tfoption: {
         short: "",
         arg: "+/-name",
@@ -161,7 +167,7 @@ function toTitle(aStr) {
 function repToText(oRep) {
     //console.log(oRep);
     let repText = "";
-    for (const action of ["json", "perf", "gceoption", "tfoption"]) {
+    for (const action of ["json", "perf", "gceoption", "tfoption", "gcerule"]) {
         if (action in oRep) {
             repText += toTitle(action) + " " + oRep[action];
         }
