@@ -10,7 +10,6 @@
 "use strict";
 
 class GrammarChecker {
-
     constructor(aInit, sLangCode = "fr", sContext = "Javascript") {
         this.sLangCode = sLangCode;
         this.sContext = sContext;
@@ -27,18 +26,18 @@ class GrammarChecker {
             Lexicographer: false
         };
 
-        if (aInit){
+        if (aInit) {
             this.load(aInit);
         }
     }
 
     //Auto-chargement avec dépendence
-    load(aInit = ["Grammalecte", "Graphspell", "TextFormatter", "Lexicographer", "Tokenizer"]){
+    load(aInit = ["Grammalecte", "Graphspell", "TextFormatter", "Lexicographer", "Tokenizer"]) {
         //aInit permet de charger que certain composant
         // => évite de charger toutes données si par exemple on a besoin que du lexigraphe
         // => sorte de gestionnaire de dépendence (peut être amélioré)
         this.isInit = {};
-        if ( aInit.indexOf("Grammalecte") !== false ){
+        if (aInit.indexOf("Grammalecte") !== false) {
             //console.log('init Grammalecte');
             this._oGce = require(this.sPathRoot + "/fr/gc_engine.js");
             this._oGce.load(this.sContext);
@@ -49,7 +48,7 @@ class GrammarChecker {
             this.isInit.Tokenizer = true;
         }
 
-        if ( !this.isInit.Graphspell && (aInit.indexOf("Graphspell") !== false || aInit.indexOf("Lexicographer") !== false)){
+        if (!this.isInit.Graphspell && (aInit.indexOf("Graphspell") !== false || aInit.indexOf("Lexicographer") !== false)) {
             //console.log('init Graphspell');
             this._SpellChecker = require(this.sPathRoot + "/graphspell/spellchecker.js");
             this.oSpellChecker = new this._SpellChecker.SpellChecker(this.sLangCode, this.sPathRoot + "/graphspell/_dictionaries");
@@ -58,21 +57,21 @@ class GrammarChecker {
             this.isInit.Tokenizer = true;
         }
 
-        if ( !this.isInit.Tokenizer && aInit.indexOf("Tokenizer") !== false ){
+        if (!this.isInit.Tokenizer && aInit.indexOf("Tokenizer") !== false) {
             //console.log('init Tokenizer');
             this._Tokenizer = require(this.sPathRoot + "/graphspell/tokenizer.js");
             this.oTokenizer = new this._Tokenizer.Tokenizer(this.sLangCode);
             this.isInit.Tokenizer = true;
         }
 
-        if ( aInit.indexOf("TextFormatter") !== false ){
+        if (aInit.indexOf("TextFormatter") !== false) {
             //console.log('init TextFormatter');
             this._oText = require(this.sPathRoot + "/fr/textformatter.js");
             this.oTextFormatter = new this._oText.TextFormatter();
             this.isInit.TextFormatter = true;
         }
 
-        if ( aInit.indexOf("Lexicographer") !== false ){
+        if (aInit.indexOf("Lexicographer") !== false) {
             //console.log('init Lexicographer');
             this._oLex = require(this.sPathRoot + "/fr/lexicographe.js");
             this.oLexicographer = new this._oLex.Lexicographe(
@@ -85,35 +84,35 @@ class GrammarChecker {
     }
 
     //Fonctions concernant: Grammalecte
-    getGrammalecte(){
+    getGrammalecte() {
         if (!this.isInit.Grammalecte) {
             this.load(["Grammalecte"]);
         }
         return this._oGce;
     }
 
-    gramma(sText){
+    gramma(sText) {
         if (!this.isInit.Grammalecte) {
             this.load(["Grammalecte"]);
         }
         return Array.from(this._oGce.parse(sText, this.sLangCode));
     }
 
-    getGceOptions () {
+    getGceOptions() {
         if (!this.isInit.Grammalecte) {
             this.load(["Grammalecte"]);
         }
         return this._helpers.mapToObject(this._oGce.getOptions());
     }
 
-    getGceDefaultOptions () {
+    getGceDefaultOptions() {
         if (!this.isInit.Grammalecte) {
             this.load(["Grammalecte"]);
         }
         return this._helpers.mapToObject(this._oGce.getDefaultOptions());
     }
 
-    setGceOptions (dOptions) {
+    setGceOptions(dOptions) {
         if (!this.isInit.Grammalecte) {
             this.load(["Grammalecte"]);
         }
@@ -124,7 +123,7 @@ class GrammarChecker {
         return this._helpers.mapToObject(this._oGce.getOptions());
     }
 
-    setGceOption (sOptName, bValue) {
+    setGceOption(sOptName, bValue) {
         if (!this.isInit.Grammalecte) {
             this.load(["Grammalecte"]);
         }
@@ -135,7 +134,7 @@ class GrammarChecker {
         return false;
     }
 
-    resetGceOptions () {
+    resetGceOptions() {
         if (!this.isInit.Grammalecte) {
             this.load(["Grammalecte"]);
         }
@@ -143,21 +142,21 @@ class GrammarChecker {
         return this._helpers.mapToObject(this._oGce.getOptions());
     }
 
-    getGceRules (bParagraph) {
+    getGceRules(bParagraph) {
         if (!this.isInit.Grammalecte) {
             this.load(["Grammalecte"]);
         }
         return this._oGce.getRules(bParagraph);
     }
 
-    getGceIgnoreRules () {
+    getGceIgnoreRules() {
         if (!this.isInit.Grammalecte) {
             this.load(["Grammalecte"]);
         }
         return Array.from(this._oGce.getIgnoreRules());
     }
 
-    setGceIgnoreRules (dRules) {
+    setGceIgnoreRules(dRules) {
         if (!this.isInit.Grammalecte) {
             this.load(["Grammalecte"]);
         }
@@ -168,19 +167,21 @@ class GrammarChecker {
         return Array.from(this._oGce.getIgnoreRules());
     }
 
-    setGceIgnoreRule (sRuleId, bValue) {
+    setGceIgnoreRule(sRuleId, bValue) {
         if (!this.isInit.Grammalecte) {
             this.load(["Grammalecte"]);
         }
-        if (bValue){ //Add
+        if (bValue) {
+            //Add
             this._oGce.ignoreRule(sRuleId);
-        } else {     //Delete
+        } else {
+            //Delete
             this._oGce.reactivateRule(sRuleId);
         }
         return Array.from(this._oGce.getIgnoreRules());
     }
 
-    resetGceIgnoreRules () {
+    resetGceIgnoreRules() {
         if (!this.isInit.Grammalecte) {
             this.load(["Grammalecte"]);
         }
@@ -189,18 +190,26 @@ class GrammarChecker {
     }
 
     //Fonctions concernant: Graphspell
-    getGraphspell(){
+    getGraphspell() {
         if (!this.isInit.Graphspell) {
             this.load(["Graphspell"]);
         }
         return this.oSpellChecker;
     }
 
-    spellParagraph(sText, bSuggest = true){
+    setMainDictionary(dictionary, sPath = "") {
+        return this.oSpellChecker.setMainDictionary(dictionary, sPath);
+    }
+
+    setPersonalDictionary(dictionary, sPath = "", bActivate = true) {
+        return this.oSpellChecker.setPersonalDictionary(dictionary, sPath, bActivate);
+    }
+
+    spellParagraph(sText, bSuggest = true) {
         if (!this.isInit.Graphspell) {
             this.load(["Graphspell"]);
         }
-        if (bSuggest){
+        if (bSuggest) {
             let lError = this.oSpellChecker.parseParagraph(sText);
             for (let token of lError) {
                 token.aSuggestions = this.suggest(token.sValue);
@@ -211,19 +220,19 @@ class GrammarChecker {
         }
     }
 
-    spell(sWord){
+    spell(sWord) {
         if (!this.isInit.Graphspell) {
             this.load(["Graphspell"]);
         }
         return this.oSpellChecker.isValid(sWord);
     }
 
-    suggest(sWord, nbLimit = 10, bMerge = true){
+    suggest(sWord, nbLimit = 10, bMerge = true) {
         if (!this.isInit.Graphspell) {
             this.load(["Graphspell"]);
         }
         let lSuggest = this.oSpellChecker.suggest(sWord, nbLimit);
-        if (bMerge){
+        if (bMerge) {
             let lSuggestRep = [];
             for (let lSuggestTmp of lSuggest) {
                 for (let word of lSuggestTmp) {
@@ -234,17 +243,16 @@ class GrammarChecker {
         } else {
             return Array.from(lSuggest);
         }
-
     }
 
-    lemma(sWord){
+    lemma(sWord) {
         if (!this.isInit.Graphspell) {
             this.load(["Graphspell"]);
         }
         return this.oSpellChecker.getLemma(sWord);
     }
 
-    morph(sWord){
+    morph(sWord) {
         if (!this.isInit.Graphspell) {
             this.load(["Graphspell"]);
         }
@@ -252,14 +260,14 @@ class GrammarChecker {
     }
 
     //Fonctions concernant: Lexicographer
-    getLexicographer(){
+    getLexicographer() {
         if (!this.isInit.Lexicographer) {
             this.load(["Lexicographer"]);
         }
         return this.oLexicographer;
     }
 
-    lexique(sText){
+    lexique(sText) {
         if (!this.isInit.Lexicographer) {
             this.load(["Lexicographer"]);
         }
@@ -267,14 +275,14 @@ class GrammarChecker {
     }
 
     //Fonctions concernant: TextFormatter
-    getTextFormatter(){
+    getTextFormatter() {
         if (!this.isInit.TextFormatter) {
             this.load(["TextFormatter"]);
         }
         return this.oTextFormatter;
     }
 
-    formatText(sText){
+    formatText(sText) {
         if (!this.isInit.TextFormatter) {
             this.load(["TextFormatter"]);
         }
@@ -311,7 +319,7 @@ class GrammarChecker {
     }
 
     //fonctions concernant plussieurs parties
-    verifParagraph(sText, bSuggest = true){
+    verifParagraph(sText, bSuggest = true) {
         if (!this.isInit.Grammalecte || !this.isInit.Graphspell) {
             this.load(["Grammalecte"]);
         }
@@ -320,7 +328,6 @@ class GrammarChecker {
             lSpellingErrors: this.spellParagraph(sText, bSuggest)
         };
     }
-
 }
 
 if (typeof exports !== "undefined") {
