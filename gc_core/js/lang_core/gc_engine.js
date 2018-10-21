@@ -94,6 +94,10 @@ var gc_engine = {
         return gc_rules.lParagraphRules;
     },
 
+    getIgnoreRules: function (bParagraph) {
+        return gc_rules._aIgnoredRules;
+    },
+
     ignoreRule: function (sRuleId) {
         _aIgnoredRules.add(sRuleId);
     },
