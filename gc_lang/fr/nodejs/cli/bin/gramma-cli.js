@@ -16,8 +16,6 @@ https://stackoverflow.com/questions/41058569/what-is-the-difference-between-cons
 
 const argCmd = require("../lib/minimist.js")(process.argv.slice(2));
 const { performance } = require("perf_hooks");
-const path = require("path");
-const fs = require("fs");
 
 //Initialisation des messages
 const msgStart = "\x1b[31mBienvenue sur Grammalecte pour NodeJS!!!\x1b[0m\n";
@@ -419,19 +417,11 @@ function actionToExec(aArg) {
     }
 
     if (getArg(aArg, ["dicomain"])) {
-        let filename = sText.endsWith(".json") ? sText : sText + ".json";
-        repAction["dicomain"] = "Chargement du dictionnaire principal " + (oGrammarChecker.setMainDictionary(filename) ? "OK" : "Pas OK");
+        repAction["dicomain"] = "Chargement du dictionnaire principal " + (oGrammarChecker.setMainDictionary(sText) ? "OK" : "Pas OK");
     }
 
     if (getArg(aArg, ["dicoperso"])) {
-        let pathnormalized = path.normalize(sText);
-        if (fs.existsSync(pathnormalized)) {
-            let filename = path.basename(pathnormalized);
-            let dirname = path.dirname(pathnormalized);
-            repAction["dicoperso"] = "Chargement du dictionnaire personnel " + (oGrammarChecker.setPersonalDictionary(filename, dirname) ? "OK" : "Pas OK");
-        } else {
-            repAction["dicoperso"] = "Le fichier de dictionnaire n'existe pas.";
-        }
+        repAction["dicoperso"] = "Chargement du dictionnaire personnel " + (oGrammarChecker.setPersonalDictionary(sText) ? "OK" : "Pas OK");
     }
 
     for (const action of ["gceoption", "tfoption", "gcerule"]) {

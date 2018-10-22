@@ -9,6 +9,9 @@
 
 "use strict";
 
+const path = require("path");
+const fs = require("fs");
+
 class GrammarChecker {
     constructor(aInit, sLangCode = "fr", sContext = "Javascript") {
         this.sLangCode = sLangCode;
@@ -197,12 +200,43 @@ class GrammarChecker {
         return this.oSpellChecker;
     }
 
-    setMainDictionary(dictionary, sPath = "") {
-        return this.oSpellChecker.setMainDictionary(dictionary, sPath);
+    setMainDictionary(dictionary) {
+        if (typeof dictionary == "string") {
+            let pathnormalized = path.normalize(dictionary);
+            if (pathnormalized == "fr-allvars" || pathnormalized == "fr-classic" || pathnormalized == "fr-reform") {
+                pathnormalized = path.normalize(this.sPathRoot + "/graphspell/_dictionaries/" + pathnormalized);
+            }
+            pathnormalized = !pathnormalized.endsWith(".json") ? pathnormalized + ".json" : pathnormalized;
+            if (fs.existsSync(pathnormalized)) {
+                let filename = path.basename(pathnormalized);
+                let dirname = path.dirname(pathnormalized);
+                return this.oSpellChecker.setMainDictionary(filename, dirname);
+            }
+            return false;
+        }
+        //It's a valid json?
+        if (typeof dictionary !== "undefined" && dictionary.sHeader && dictionary.sHeader.startsWith("/grammalecte-fsa/")) {
+            return this.oSpellChecker.setMainDictionary(dictionary);
+        }
+        return false;
     }
 
-    setPersonalDictionary(dictionary, sPath = "", bActivate = true) {
-        return this.oSpellChecker.setPersonalDictionary(dictionary, sPath, bActivate);
+    setPersonalDictionary(dictionary, bActivate = true) {
+        if (typeof dictionary == "string") {
+            let pathnormalized = path.normalize(dictionary);
+            pathnormalized = !pathnormalized.endsWith(".json") ? pathnormalized + ".json" : pathnormalized;
+            if (fs.existsSync(pathnormalized)) {
+                let filename = path.basename(pathnormalized);
+                let dirname = path.dirname(pathnormalized);
+                return this.oSpellChecker.setPersonalDictionary(filename, dirname, bActivate);
+            }
+            return false;
+        }
+        //It's a valid json?
+        if (typeof dictionary !== "undefined" && dictionary.sHeader && dictionary.sHeader.startsWith("/grammalecte-fsa/")) {
+            return this.oSpellChecker.setPersonalDictionary(dictionary, bActivate);
+        }
+        return false;
     }
 
     spellParagraph(sText, bSuggest = true) {
