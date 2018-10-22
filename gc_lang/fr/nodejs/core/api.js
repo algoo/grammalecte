@@ -234,7 +234,7 @@ class GrammarChecker {
         }
         //It's a valid json?
         if (typeof dictionary !== "undefined" && dictionary.sHeader && dictionary.sHeader.startsWith("/grammalecte-fsa/")) {
-            return this.oSpellChecker.setPersonalDictionary(dictionary, bActivate);
+            return this.oSpellChecker.setPersonalDictionary(dictionary, "", bActivate);
         }
         return false;
     }
