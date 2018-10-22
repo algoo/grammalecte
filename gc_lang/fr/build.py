@@ -1,6 +1,7 @@
 # Builder for French language
 
 import os
+import subprocess
 import platform
 import zipfile
 from distutils import dir_util, file_util
@@ -91,6 +92,18 @@ def _copyGrammalecteJSPackageInZipFile (hZip, spLangPack, sAddPath=""):
 
 
 def createNodeJSPackage (sLang):
+    print("Building for NodeJS")
     helpers.createCleanFolder("_build/nodejs/"+sLang)
     dir_util.copy_tree("gc_lang/"+sLang+"/nodejs/", "_build/nodejs/"+sLang)
     dir_util.copy_tree("grammalecte-js", "_build/nodejs/"+sLang+"/core/grammalecte")
+    corePack = ""
+    cliPack = ""
+    with helpers.cd("_build/nodejs/"+sLang):
+        corePack = subprocess.check_output("npm pack ./core", shell=True)
+    with helpers.cd("_build/nodejs/"+sLang+"/cli"):
+        subprocess.check_output("npm --no-save install ../"+corePack.decode("utf-8").split('\n', 1)[0], shell=True)
+    with helpers.cd("_build/nodejs/"+sLang):
+        cliPack = subprocess.check_output("npm pack ./cli", shell=True)
+    print("Fichiers à distribuer:")
+    print(" pour le dev: "+corePack.decode("utf-8").split('\n', 1)[0])
+    print(" pour une installation du client: "+cliPack.decode("utf-8").split('\n', 1)[0])

@@ -9,8 +9,12 @@
     "proofreader"
   ],
   "author": "Sébastien GRAVIER, Olivier R.",
-  "license": "GPL-3.0-or-later",
+  "license": "GPL-3.0",
   "homepage": "https://www.dicollecte.org/",
+  "repository": {
+    "type" : "fossil",
+    "url" : "http://212.47.254.152:8080/index"
+  },
   "bin": {
     "gramma-cli": "bin/gramma-cli.js"
   },
@@ -23,6 +27,9 @@
   "dependencies": {
     "grammalecte": "~1.0.0"
   },
+  "bundledDependencies": [
+    "grammalecte"
+  ],
   "files": [
     "bin",
     "lib",
