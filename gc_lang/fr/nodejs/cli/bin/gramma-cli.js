@@ -122,7 +122,19 @@ var cmdAction = {
         arg: "+/-name",
         description: "Définit les options à utiliser par le formateur de texte.",
         execute: ""
-    }
+    },
+    dicomain: {
+        short: "",
+        arg: "path/json",
+        description: "Charge un dictionnaire principal.",
+        execute: ""
+    },
+    dicoperso: {
+        short: "",
+        arg: "path/json",
+        description: "Charge un dictionnaire personnel.",
+        execute: ""
+    },
 };
 
 var cmdOne = ["json", "perf", "help", "exit"];
@@ -476,7 +488,7 @@ function actionToExec(aArg) {
         repAction["help"].push("========================= Les commandes/arguments: ========================");
         repAction["help"].push("");
         for (const action in cmdAction) {
-            repAction["help"].push(action.padEnd(10, " ") + ": " + cmdAction[action].arg.padEnd(8, " ") + ": " + cmdAction[action].description);
+            repAction["help"].push(action.padEnd(10, " ") + ": " + cmdAction[action].arg.padEnd(10, " ") + ": " + cmdAction[action].description);
         }
         repAction["help"].push("");
         repAction["help"].push("================================== Note: ==================================");
