@@ -114,6 +114,7 @@
     "grammalecte/fr/mfsp_data.json",
     "grammalecte/fr/phonet_data.json",
     "grammalecte/fr/tests_data.json",
+    "content_scripts/event.js",
     "img/logo-16.png"
   ],
 
