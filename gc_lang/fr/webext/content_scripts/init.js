@@ -380,7 +380,7 @@ document.addEventListener('GrammalecteEvent', function(event) {
             oGrammalecte.startGCPanel(elmForGramma);
             xGrammalectePort.postMessage({
                 sCommand: "parseAndSpellcheck",
-                dParam: {sText: sText || actionFromPage.parseAndSpellcheck, sCountry: "FR", bDebug: false, bContext: false},
+                dParam: {sText: sText || actionFromPage.spellcheck, sCountry: "FR", bDebug: false, bContext: false},
                 dInfo: dInfo
             });
         }
