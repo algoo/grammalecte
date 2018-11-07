@@ -365,30 +365,34 @@ document.documentElement.appendChild(scriptEvent);
 
 document.addEventListener('GrammalecteEvent', function(event) {
     let actionFromPage = event.detail;
-    console.log(event);
-    let sText = false;
-    let dInfo = {};
-    let elmForGramma = null;
-    if (actionFromPage.elm){
-        elmForGramma = document.getElementById(actionFromPage.elm);
-        sText = (elmForGramma.tagName == "TEXTAREA") ? elmForGramma.value : elmForGramma.innerText;
-        dInfo = {sTextAreaId: elmForGramma.id};
-    }
+    //console.log(event);
+    if(actionFromPage){
+        let sText = false;
+        let dInfo = {};
+        let elmForGramma = null;
+        if (actionFromPage.elm){
+            elmForGramma = document.getElementById(actionFromPage.elm);
+            sText = (elmForGramma.tagName == "TEXTAREA") ? elmForGramma.value : elmForGramma.innerText;
+            dInfo = {sTextAreaId: elmForGramma.id};
+        }
 
-    if (actionFromPage.spellcheck){
-        oGrammalecte.startGCPanel(elmForGramma);
-        xGrammalectePort.postMessage({
-            sCommand: "parseAndSpellcheck",
-            dParam: {sText: sText || actionFromPage.parseAndSpellcheck, sCountry: "FR", bDebug: false, bContext: false},
-            dInfo: dInfo
-        });
-    }
-    if (actionFromPage.lexique){
-        oGrammalecte.startLxgPanel();
-        xGrammalectePort.postMessage({
-            sCommand: "getListOfTokens",
-            dParam: {sText: sText || actionFromPage.lexique},
-            dInfo: dInfo
-        });
+        if (actionFromPage.spellcheck){
+            oGrammalecte.startGCPanel(elmForGramma);
+            xGrammalectePort.postMessage({
+                sCommand: "parseAndSpellcheck",
+                dParam: {sText: sText || actionFromPage.parseAndSpellcheck, sCountry: "FR", bDebug: false, bContext: false},
+                dInfo: dInfo
+            });
+        }
+        if (actionFromPage.lexique){
+            oGrammalecte.startLxgPanel();
+            xGrammalectePort.postMessage({
+                sCommand: "getListOfTokens",
+                dParam: {sText: sText || actionFromPage.lexique},
+                dInfo: dInfo
+            });
+        }
+    } else {
+        console.log("Vous devez spécifier l'action à effectuer");
     }
 });
