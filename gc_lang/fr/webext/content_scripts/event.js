@@ -36,25 +36,33 @@ if (typeof tinymce !== "undefined" && tinymce.majorVersion && tinymce.majorVersi
         let xEditorAdd = editor || event.editor;
         let bIsAdded = false;
 
-        if ( tinymce.majorVersion >= 4 ){
+        if (tinymce.majorVersion >= 4) {
             let aBtn = ["toolbar3", "toolbar2", "toolbar1", "toolbar"];
             let nBtn = aBtn.length;
             let iBtn = 0;
-            for (let eBtn of aBtn){
-                if ((!bIsAdded && typeof xEditorAdd.settings[eBtn] !== "undefined") || iBtn == nBtn){
+            for (let eBtn of aBtn) {
+                if (!bIsAdded && (typeof xEditorAdd.settings[eBtn] !== "undefined" || iBtn == nBtn)) {
                     bIsAdded = true;
-                    xEditorAdd.settings[eBtn] = (xEditorAdd.settings[eBtn] + " Grammalecte").trim()
+                    if (typeof xEditorAdd.settings[eBtn] !== "undefined") {
+                        xEditorAdd.settings[eBtn] = (xEditorAdd.settings[eBtn] + " Grammalecte").trim();
+                    } else {
+                        xEditorAdd.settings[eBtn] = "Grammalecte";
+                    }
                 }
                 iBtn++;
             }
-        } else if ( tinymce.majorVersion >= 3 ){
+        } else if (tinymce.majorVersion >= 3) {
             let aBtn = ["theme_advanced_buttons3", "theme_advanced_buttons2", "theme_advanced_buttons1"];
             let nBtn = aBtn.length;
             let iBtn = 0;
-            for (let eBtn of aBtn){
-                if ((!bIsAdded && typeof xEditorAdd.settings[eBtn] !== "undefined") || iBtn == nBtn){
+            for (let eBtn of aBtn) {
+                if (!bIsAdded && (typeof xEditorAdd.settings[eBtn] !== "undefined" || iBtn == nBtn)) {
                     bIsAdded = true;
-                    xEditorAdd.settings[eBtn] = (xEditorAdd.settings[eBtn] + ",Grammalecte").trim()
+                    if (typeof xEditorAdd.settings[eBtn] !== "undefined") {
+                        xEditorAdd.settings[eBtn] = (xEditorAdd.settings[eBtn] + ",Grammalecte").trim();
+                    } else {
+                        xEditorAdd.settings[eBtn] = "Grammalecte";
+                    }
                 }
                 iBtn++;
             }
