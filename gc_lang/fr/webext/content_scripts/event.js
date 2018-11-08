@@ -12,7 +12,7 @@ document.addEventListener("GrammalecteToPage", function respListener(event) {
     if (typeof data.init !== "undefined") {
         browserURL = data.init;
     }
-    console.log("GrammalecteToPage",data);
+    //console.log("GrammalecteToPage",data);
 });
 
 // ! Permet d'envoyer des message vers le content script
@@ -20,7 +20,7 @@ document.addEventListener("GrammalecteToPage", function respListener(event) {
 // La ID unique peut être util si on permet d'intérogé grammalecte sans zone
 function sendToGrammalecte(dataAction) {
     let dataToSend = dataAction;
-    if (typeof dataToSend.IdAction === "undefined"){
+    if (typeof dataToSend.IdAction === "undefined") {
         dataToSend.IdAction = uniqueID();
     }
     if (dataAction.elm) {
@@ -41,77 +41,87 @@ function sendToGrammalecte(dataAction) {
 var customAPILoaded = new CustomEvent("GrammalecteIsLoaded");
 document.dispatchEvent(customAPILoaded);
 
-
 // Gros Hack : Auto add a button in tinymce ;)
 // Page to test v4 https://www.quackit.com/html/html_editors/tinymce_editor.cfm
 // Page to test v3 http://www.imathas.com/editordemo/demo.html
-if (typeof tinymce !== "undefined" && tinymce.majorVersion && tinymce.majorVersion >= 3 && tinymce.majorVersion <= 5) {
+if (typeof tinyMCE !== "undefined" && tinyMCE.majorVersion && tinyMCE.majorVersion >= 3 && tinyMCE.majorVersion <= 5) {
     //console.log("Have TinyMCE");
     function TinyOnEditor(event, editor = null) {
         let xEditorAdd = editor || event.editor;
-        let bIsAdded = false;
 
-        function addBtnTiny(bIsAdded, eBtn, iBtn, nBtn) {
-            if (!bIsAdded && (typeof xEditorAdd.settings[eBtn] !== "undefined" || iBtn == nBtn)) {
-                bIsAdded = true;
-                if (typeof xEditorAdd.settings[eBtn] !== "undefined" && xEditorAdd.settings[eBtn] !== "") {
-                    xEditorAdd.settings[eBtn] = (xEditorAdd.settings[eBtn] + ",Grammalecte").trim();
-                } else {
-                    let m = /(.*)([0-9])/.exec(eBtn);
-                    if (m.length === 3 && parseInt(m[2]) > 1 && xEditorAdd.settings[eBtn] === "") {
-                        eBtn = m[1] + (parseInt(m[2]) - 1);
-                        xEditorAdd.settings[eBtn] = (xEditorAdd.settings[eBtn] + ",Grammalecte").trim();
+        if (typeof xEditorAdd.settings.Grammalecte === "undefined") {
+            let aBtn;
+            let plugSep;
+            let bIsAdded = false;
+            if (tinyMCE.majorVersion >= 4) {
+                plugSep = " ";
+                aBtn = ["toolbar3", "toolbar2", "toolbar1", "toolbar"];
+            } else if (tinyMCE.majorVersion >= 3) {
+                plugSep = ",";
+                aBtn = ["theme_advanced_buttons3", "theme_advanced_buttons2", "theme_advanced_buttons1", "theme_advanced_buttons1_add_before"];
+            }
+
+            let iBtn = 0;
+            let nBtn = aBtn.length;
+            for (let eBtn of aBtn) {
+                if (!bIsAdded && (typeof xEditorAdd.settings[eBtn] !== "undefined" || iBtn == nBtn)) {
+                    bIsAdded = true;
+                    if (typeof xEditorAdd.settings[eBtn] !== "undefined" && xEditorAdd.settings[eBtn] !== "") {
+                        xEditorAdd.settings[eBtn] = (xEditorAdd.settings[eBtn] + plugSep + "Grammalecte").trim();
                     } else {
-                        xEditorAdd.settings[eBtn] = "Grammalecte";
+                        let m = /(.*)([0-9])/.exec(eBtn);
+                        if (m.length === 3 && parseInt(m[2]) > 1 && xEditorAdd.settings[eBtn] === "") {
+                            eBtn = m[1] + (parseInt(m[2]) - 1);
+                            xEditorAdd.settings[eBtn] = (xEditorAdd.settings[eBtn] + plugSep + "Grammalecte").trim();
+                        } else {
+                            xEditorAdd.settings[eBtn] = "Grammalecte";
+                        }
                     }
                 }
+                iBtn++;
             }
-            return bIsAdded;
-        }
-
-        let aBtn;
-        let iBtn = 0;
-        if (tinymce.majorVersion >= 4) {
-            aBtn = ["toolbar3", "toolbar2", "toolbar1", "toolbar"];
-        } else if (tinymce.majorVersion >= 3) {
-            aBtn = ["theme_advanced_buttons3", "theme_advanced_buttons2", "theme_advanced_buttons1"];
-        }
-        let nBtn = aBtn.length;
-        for (let eBtn of aBtn) {
-            bIsAdded = addBtnTiny(bIsAdded, eBtn, iBtn, nBtn);
-            iBtn++;
+            xEditorAdd.settings.Grammalecte = true;
+            //xEditorAdd.settings.theme_advanced_buttons1_add_before = "Grammalecte";
         }
 
         xEditorAdd.addButton("Grammalecte", {
             text: "",
             icon: false,
-            image: browserURL +"img/logo-16.png",
+            image: browserURL + "img/logo-16.png",
             //"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAA3XAAAN1wFCKJt4AAAC8UlEQVQ4jX3TbUgTcRwH8P89ddu5u9tt082aZmpFEU4tFz0QGTUwCi0heniR9MSUIKRaD0RvIlKigsooo+iNFa0XJYuwIjEK19OcDtPElsG0ktyp591t7u7+vUh7MPX3+vf5/n8/+P0BmKJIPUUVlh2rdVVeesWlzEybqg+bFOsoylnqPmNavGFfknV2Omu2Lvja3vxAURKJib3opHizu8riLK6gjRyuKgmoSoMRFENRUqfXTzvBGK62LC2uoFkOl4RhjQ8+qWt7dPNE3sbdp+2LXbsGe9qb4rIo/BfwFy6nWQ4ThWGNDzbcfu29dMDh2nHU7CypYNLmzTda0/L5cNuzmDQi/A4Y27k6eQxLI79wS/11D0AAMNvs6XT6ojVJjJEgTbMy2BT77xBMp09KcpaWV1uc41jQoi0NdUHfjeOO9WWn7AVF7s7n986SithPJGeupBh2PCSP/xxqxAp3eq6wuUV7Wc6MSZIEhA8vHjbfOe/OcW3zmAuKy+nUzAyD2bow8ODaEROFq8AyZ5WBYdEZXGqGxZ61HJV+9HYCJRbTNA0QBA40HWunaKN5dKg/DBKxeCIe09Th/m4MJwiMSZmLEzMQAABQRuNqgu8NYX3doTcMpvCkLbtQZ2AJkrPOZG1zlnY13T+Hy9EehY90h57eqcorcZ/lctZuMzAsOjLEqwNv66/6vZcPYRBC+C3cGaBxhSet2av1BpYgTTY7k5y2JPT41slIR6Axv8R9nnOs+4Pf+2r992uOxGVJwgAAAEINfgt3BGgsESWtWas1iGDyl+CT/u7WpvxNFRc4x7qtBoZFhSFejb7z1fq9NYfjsiT+cwcQavBruCOgU4SIGo18amuoq3Js3FNlynVtH385+s53ze+t8cRkURx3yMTTRBAEQVAUXbFlf3XystJKA2NExeFBdWASDAAA+MQACCEEmqbJ0b6PMC7JwhDU8YFHV5u9NZ64LErT/oW/63tPV6uJwmKoOND78u7Fg5NhAAD4CVbzY9cwrWQrAAAAAElFTkSuQmCC",
             onclick: function(e) {
-                //console.log( editorAdd.getContent() );
-                //console.log( editorAdd.getBody().innerText )
+                //console.log( xEditorAdd.getContent() );
+                //console.log( xEditorAdd.getBody().innerText )
                 let sText = xEditorAdd.getBody().innerText;
-                sendToGrammalecte({ spellcheck: sText });
+                let iframeElement;
+                if (typeof xEditorAdd.iframeElement !== "undefined" && typeof xEditorAdd.iframeElement.id !== "undefined") {
+                    iframeElement = xEditorAdd.iframeElement.id;
+                } else if (typeof xEditorAdd.editorId !== "undefined") {
+                    iframeElement = xEditorAdd.editorId + "_ifr";
+                }
+
+                sendToGrammalecte({ spellcheck: sText, iframe: iframeElement });
             }
         });
-    };
-
-    if (tinymce.majorVersion >= 4) {
-        tinymce.on("AddEditor", TinyOnEditor);
-    } else if (tinymce.majorVersion >= 3) {
-        tinymce.onAddEditor.add(TinyOnEditor);
     }
 
-    for (var i = tinymce.editors.length - 1; i > -1; i--) {
-        let idTiny = tinymce.editors[i].id;
-        if (tinymce.majorVersion >= 4) {
-            tinymce.execCommand("mceRemoveEditor", true, idTiny);
-            tinymce.execCommand("mceAddEditor", true, idTiny);
-        } else if (tinymce.majorVersion >= 3) {
-            tinymce.execCommand("mceRemoveControl", true, idTiny);
-            tinymce.execCommand("mceAddControl", true, idTiny);
+    if (tinyMCE.majorVersion >= 4) {
+        tinyMCE.on("AddEditor", TinyOnEditor);
+    } else if (tinyMCE.majorVersion >= 3) {
+        tinyMCE.onAddEditor.add(TinyOnEditor);
+    }
+
+    for (var i = tinyMCE.editors.length - 1; i > -1; i--) {
+        let idTiny = tinyMCE.editors[i].id;
+        if (tinyMCE.majorVersion >= 4) {
+            tinyMCE.execCommand("mceRemoveEditor", true, idTiny);
+            tinyMCE.execCommand("mceAddEditor", true, idTiny);
+        } else if (tinyMCE.majorVersion >= 3) {
+            //tinyMCE.editors[i].onInit.add(TinyOnEditor);
+            tinyMCE.execCommand("mceRemoveControl", true, idTiny);
+            tinyMCE.execCommand("mceAddControl", true, idTiny);
         }
-        //tinymce.settings = old_global_settings;
+        //tinyMCE.settings = old_global_settings;
     }
 }
 

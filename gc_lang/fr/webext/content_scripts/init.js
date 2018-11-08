@@ -364,7 +364,7 @@ xGrammalectePort.onMessage.addListener(function (oMessage) {
     Page web => Script injecté => Content script => Background
     Pour la réponse se sont les même étape en sens inverse.
 */
-var scriptEvent = document.createElement('script');
+var scriptEvent = document.createElement("script");
 scriptEvent.src = browser.extension.getURL("content_scripts/event.js");
 document.documentElement.appendChild(scriptEvent);
 
@@ -375,36 +375,38 @@ function uniqueID() {
 }
 
 // ! Ecoute des messages venant du scipt injecté
-document.addEventListener('GrammalecteEvent', function(event) {
+document.addEventListener("GrammalecteEvent", function(event) {
     let actionFromPage = event.detail;
     //console.log(event);
     let sText = false;
     let dInfo = {};
     let elmForGramma = null;
-    if (actionFromPage.elm){
-        elmForGramma = document.getElementById(actionFromPage.elm);
-        sText = (elmForGramma.tagName == "TEXTAREA") ? elmForGramma.value : elmForGramma.innerText;
-        dInfo = {sTextAreaId: elmForGramma.id};
-    }
 
-    if (actionFromPage.spellcheck){
+    if (actionFromPage.iframe) {
+        elmForGramma = document.getElementById(actionFromPage.iframe).contentWindow.document.body;
+    }
+    if (actionFromPage.elm) {
+        elmForGramma = document.getElementById(actionFromPage.elm);
+        sText = elmForGramma.tagName == "TEXTAREA" ? elmForGramma.value : elmForGramma.innerText;
+        dInfo = { sTextAreaId: elmForGramma.id };
+    }
+    if (actionFromPage.spellcheck) {
         oGrammalecte.startGCPanel(elmForGramma);
         xGrammalectePort.postMessage({
             sCommand: "parseAndSpellcheck",
-            dParam: {sText: sText || actionFromPage.spellcheck, sCountry: "FR", bDebug: false, bContext: false},
+            dParam: { sText: sText || actionFromPage.spellcheck, sCountry: "FR", bDebug: false, bContext: false },
             dInfo: dInfo
         });
     }
-    if (actionFromPage.lexique){
+    if (actionFromPage.lexique) {
         oGrammalecte.startLxgPanel();
         xGrammalectePort.postMessage({
             sCommand: "getListOfTokens",
-            dParam: {sText: sText || actionFromPage.lexique},
+            dParam: { sText: sText || actionFromPage.lexique },
             dInfo: dInfo
         });
     }
 });
-
 
 let isLoaded = false;
 let bufferMsg = [];
@@ -413,7 +415,7 @@ let bufferMsg = [];
 // (peut aussi être lu par un script sur la page web)
 function sendToWebpage(dataAction) {
     let dataToSend = dataAction;
-    if (typeof dataToSend.IdAction === "undefined"){
+    if (typeof dataToSend.IdAction === "undefined") {
         dataToSend.IdAction = uniqueID();
     }
     if (dataAction.elm) {
@@ -423,7 +425,7 @@ function sendToWebpage(dataAction) {
         dataToSend.elm = dataAction.elm.id;
     }
 
-    if ( !isLoaded ){
+    if (!isLoaded) {
         bufferMsg.push(dataToSend);
     } else {
         //console.log('sendToWebpage', dataToSend);
@@ -435,10 +437,10 @@ function sendToWebpage(dataAction) {
 }
 
 // ! Les message ne peuvent être envoyer qu'après que le script est injecté
-document.addEventListener('GrammalecteIsLoaded', function() {
+document.addEventListener("GrammalecteIsLoaded", function() {
     //console.log("GrammalecteIsLoaded EXT");
     isLoaded = true;
-    if ( bufferMsg.length > 0 ){
+    if (bufferMsg.length > 0) {
         for (const dataToSend of bufferMsg) {
             var eventGrammalecte = new CustomEvent("GrammalecteToPage", { detail: dataToSend });
             document.dispatchEvent(eventGrammalecte);
@@ -446,4 +448,4 @@ document.addEventListener('GrammalecteIsLoaded', function() {
     }
 });
 
-sendToWebpage({init: browser.extension.getURL("")});
+sendToWebpage({ init: browser.extension.getURL("") });
