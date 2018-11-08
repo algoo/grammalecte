@@ -7,7 +7,8 @@ function uniqueID() {
 // ! Ecoute des messages venant du content script
 let browserURL;
 document.addEventListener("GrammalecteToPage", function respListener(event) {
-    var data = event.detail;
+    //console.log(event);
+    var data = JSON.parse(event.detail);
     // Message envoyer dès que le script est injecté
     if (typeof data.init !== "undefined") {
         browserURL = data.init;
@@ -31,7 +32,7 @@ function sendToGrammalecte(dataAction) {
     }
 
     //console.log('dataToSend', dataToSend);
-    var eventGrammalecte = new CustomEvent("GrammalecteEvent", { detail: dataToSend });
+    var eventGrammalecte = new CustomEvent("GrammalecteEvent", { detail: JSON.stringify(dataToSend) });
     document.dispatchEvent(eventGrammalecte);
     return dataToSend.IdAction;
 }

@@ -376,7 +376,7 @@ function uniqueID() {
 
 // ! Ecoute des messages venant du scipt injecté
 document.addEventListener("GrammalecteEvent", function(event) {
-    let actionFromPage = event.detail;
+    let actionFromPage = JSON.parse(event.detail);
     //console.log(event);
     let sText = false;
     let dInfo = {};
@@ -429,7 +429,7 @@ function sendToWebpage(dataAction) {
         bufferMsg.push(dataToSend);
     } else {
         //console.log('sendToWebpage', dataToSend);
-        var eventGrammalecte = new CustomEvent("GrammalecteToPage", { detail: dataToSend });
+        var eventGrammalecte = new CustomEvent("GrammalecteToPage", { detail: JSON.stringify(dataToSend) });
         document.dispatchEvent(eventGrammalecte);
     }
 
@@ -442,7 +442,7 @@ document.addEventListener("GrammalecteIsLoaded", function() {
     isLoaded = true;
     if (bufferMsg.length > 0) {
         for (const dataToSend of bufferMsg) {
-            var eventGrammalecte = new CustomEvent("GrammalecteToPage", { detail: dataToSend });
+            var eventGrammalecte = new CustomEvent("GrammalecteToPage", { detail: JSON.stringify(dataToSend) });
             document.dispatchEvent(eventGrammalecte);
         }
     }
