@@ -358,41 +358,92 @@ xGrammalectePort.onMessage.addListener(function (oMessage) {
 
 /*
     Communicate webpage script <=> web-extension
+    La méthode d'injection de ce script est importante !
+
+    Pour que la page web puisse envoyer des infos au background
+    Page web => Script injecté => Content script => Background
+    Pour la réponse se sont les même étape en sens inverse.
 */
 var scriptEvent = document.createElement('script');
 scriptEvent.src = browser.extension.getURL("content_scripts/event.js");
 document.documentElement.appendChild(scriptEvent);
 
+var min = Math.ceil(0);
+var max = Math.floor(9999999);
+function uniqueID() {
+    return Date.now().toString(36) + "-" + (Math.floor(Math.random() * (max - min)) + min).toString(36);
+}
+
+// ! Ecoute des messages venant du scipt injecté
 document.addEventListener('GrammalecteEvent', function(event) {
     let actionFromPage = event.detail;
     //console.log(event);
-    if(actionFromPage){
-        let sText = false;
-        let dInfo = {};
-        let elmForGramma = null;
-        if (actionFromPage.elm){
-            elmForGramma = document.getElementById(actionFromPage.elm);
-            sText = (elmForGramma.tagName == "TEXTAREA") ? elmForGramma.value : elmForGramma.innerText;
-            dInfo = {sTextAreaId: elmForGramma.id};
-        }
+    let sText = false;
+    let dInfo = {};
+    let elmForGramma = null;
+    if (actionFromPage.elm){
+        elmForGramma = document.getElementById(actionFromPage.elm);
+        sText = (elmForGramma.tagName == "TEXTAREA") ? elmForGramma.value : elmForGramma.innerText;
+        dInfo = {sTextAreaId: elmForGramma.id};
+    }
 
-        if (actionFromPage.spellcheck){
-            oGrammalecte.startGCPanel(elmForGramma);
-            xGrammalectePort.postMessage({
-                sCommand: "parseAndSpellcheck",
-                dParam: {sText: sText || actionFromPage.spellcheck, sCountry: "FR", bDebug: false, bContext: false},
-                dInfo: dInfo
-            });
-        }
-        if (actionFromPage.lexique){
-            oGrammalecte.startLxgPanel();
-            xGrammalectePort.postMessage({
-                sCommand: "getListOfTokens",
-                dParam: {sText: sText || actionFromPage.lexique},
-                dInfo: dInfo
-            });
-        }
-    } else {
-        console.log("Vous devez spécifier l'action à effectuer");
+    if (actionFromPage.spellcheck){
+        oGrammalecte.startGCPanel(elmForGramma);
+        xGrammalectePort.postMessage({
+            sCommand: "parseAndSpellcheck",
+            dParam: {sText: sText || actionFromPage.spellcheck, sCountry: "FR", bDebug: false, bContext: false},
+            dInfo: dInfo
+        });
+    }
+    if (actionFromPage.lexique){
+        oGrammalecte.startLxgPanel();
+        xGrammalectePort.postMessage({
+            sCommand: "getListOfTokens",
+            dParam: {sText: sText || actionFromPage.lexique},
+            dInfo: dInfo
+        });
     }
 });
+
+
+let isLoaded = false;
+let bufferMsg = [];
+
+// ! Permet d'envoyer des messages vers le scipt injecté
+// (peut aussi être lu par un script sur la page web)
+function sendToWebpage(dataAction) {
+    let dataToSend = dataAction;
+    if (typeof dataToSend.IdAction === "undefined"){
+        dataToSend.IdAction = uniqueID();
+    }
+    if (dataAction.elm) {
+        if (!dataAction.elm.id) {
+            dataAction.elm.id = uniqueID();
+        }
+        dataToSend.elm = dataAction.elm.id;
+    }
+
+    if ( !isLoaded ){
+        bufferMsg.push(dataToSend);
+    } else {
+        //console.log('sendToWebpage', dataToSend);
+        var eventGrammalecte = new CustomEvent("GrammalecteToPage", { detail: dataToSend });
+        document.dispatchEvent(eventGrammalecte);
+    }
+
+    return dataToSend.IdAction;
+}
+
+// ! Les message ne peuvent être envoyer qu'après que le script est injecté
+document.addEventListener('GrammalecteIsLoaded', function() {
+    //console.log("GrammalecteIsLoaded EXT");
+    isLoaded = true;
+    if ( bufferMsg.length > 0 ){
+        for (const dataToSend of bufferMsg) {
+            var eventGrammalecte = new CustomEvent("GrammalecteToPage", { detail: dataToSend });
+            document.dispatchEvent(eventGrammalecte);
+        }
+    }
+});
+
+sendToWebpage({init: browser.extension.getURL("")});
