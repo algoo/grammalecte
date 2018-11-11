@@ -13,7 +13,8 @@
 
 "use strict";
 
-function showError(e) {
+function showError (e) {
+    // because console can’t display error objects from content script
     console.error(e.fileName + "\n" + e.name + "\nline: " + e.lineNumber + "\n" + e.message);
 }
 
@@ -40,7 +41,7 @@ function loadImage (sContainerClass, sImagePath) {
 }
 */
 
-var tinyAdd = {};
+let oTinyAdd = {};
 
 const oGrammalecte = {
     nMenu: 0,
@@ -58,23 +59,23 @@ const oGrammalecte = {
 
     sExtensionUrl: null,
 
-    listenRightClick: function() {
+    listenRightClick: function () {
         // Node where a right click is done
         // Bug report: https://bugzilla.mozilla.org/show_bug.cgi?id=1325814
         document.addEventListener(
             "contextmenu",
-            function(xEvent) {
+            function (xEvent) {
                 this.xRightClickedNode = xEvent.target;
             }.bind(this),
             true
         );
     },
 
-    clearRightClickedNode: function() {
+    clearRightClickedNode: function () {
         this.xRightClickedNode = null;
     },
 
-    createMenus: function() {
+    createMenus: function () {
         if (bChrome) {
             browser.storage.local.get("ui_options", this._createMenus.bind(this));
             return;
@@ -82,7 +83,7 @@ const oGrammalecte = {
         browser.storage.local.get("ui_options").then(this._createMenus.bind(this), showError);
     },
 
-    _createMenus: function(dOptions) {
+    _createMenus: function (dOptions) {
         if (dOptions.hasOwnProperty("ui_options")) {
             dOptions = dOptions.ui_options;
             if (dOptions.textarea) {
@@ -102,25 +103,25 @@ const oGrammalecte = {
         }
     },
 
-    observePage: function() {
+    observePage: function () {
         /*
             When a textarea is added via jascript we add the menu :)
         */
-        function NodeTinyMCE(xNode) {
+        function NodeTinyMCE (xNode) {
             let parentNode = xNode.parentNode; //mutation.target
             if (
                 typeof xNode !== "undefined" &&
                 typeof xNode.id !== "undefined" &&
-                typeof tinyAdd[xNode.id] === "undefined" &&
+                typeof oTinyAdd[xNode.id] === "undefined" &&
                 (parentNode.classList.contains("mce-edit-area") || parentNode.classList.contains("mceIframeContainer"))
             ) {
-                //console.log(tinyAdd, xNode, parentNode, parentNode.classList);
-                tinyAdd[xNode.id] = true;
+                //console.log(oTinyAdd, xNode, parentNode, parentNode.classList);
+                oTinyAdd[xNode.id] = true;
                 sendToWebpage({ tiny: xNode.id.replace("_ifr", "") });
             }
         }
-        this.xObserver = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
+        this.xObserver = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
                 for (let i = 0; i < mutation.addedNodes.length; i++) {
                     let MutationNode = mutation.addedNodes[i];
                     let tagName = MutationNode.tagName;
@@ -196,28 +197,28 @@ const oGrammalecte = {
         }
     },
 
-    createLxgPanel: function() {
+    createLxgPanel: function () {
         if (this.oLxgPanel === null) {
             this.oLxgPanel = new GrammalecteLexicographer("grammalecte_lxg_panel", "Lexicographe", 500, 700);
             this.oLxgPanel.insertIntoPage();
         }
     },
 
-    createGCPanel: function() {
+    createGCPanel: function () {
         if (this.oGCPanel === null) {
             this.oGCPanel = new GrammalecteGrammarChecker("grammalecte_gc_panel", "Grammalecte", 500, 700);
             this.oGCPanel.insertIntoPage();
         }
     },
 
-    createMessageBox: function() {
+    createMessageBox: function () {
         if (this.oMessageBox === null) {
             this.oMessageBox = new GrammalecteMessageBox("grammalecte_message_box", "Grammalecte");
             this.oMessageBox.insertIntoPage();
         }
     },
 
-    startGCPanel: function(xNode = null) {
+    startGCPanel: function (xNode=null) {
         this.createGCPanel();
         this.oGCPanel.clear();
         this.oGCPanel.show();
@@ -232,19 +233,19 @@ const oGrammalecte = {
         this.oLxgPanel.startWaitIcon();
     },
 
-    startFTPanel: function(xNode = null) {
+    startFTPanel: function (xNode = null) {
         this.createTFPanel();
         this.oTFPanel.start(xNode);
         this.oTFPanel.show();
     },
 
-    showMessage: function(sMessage) {
+    showMessage: function (sMessage) {
         this.createMessageBox();
         this.oMessageBox.show();
         this.oMessageBox.setMessage(sMessage);
     },
 
-    getPageText: function() {
+    getPageText: function () {
         let sPageText = document.body.innerText;
         let nPos = sPageText.indexOf("__grammalecte_panel__");
         if (nPos >= 0) {
@@ -253,7 +254,7 @@ const oGrammalecte = {
         return sPageText;
     },
 
-    createNode: function(sType, oAttr, oDataset = null) {
+    createNode: function(sType, oAttr, oDataset=null) {
         try {
             let xNode = document.createElement(sType);
             Object.assign(xNode, oAttr);
@@ -266,7 +267,7 @@ const oGrammalecte = {
         }
     },
 
-    createStyle: function(sLinkCss, sLinkId = null, xNodeToAppendTo = null) {
+    createStyle: function (sLinkCss, sLinkId=null, xNodeToAppendTo=null) {
         try {
             let xNode = document.createElement("link");
             Object.assign(xNode, {
@@ -293,7 +294,7 @@ const oGrammalecte = {
 */
 let xGrammalectePort = browser.runtime.connect({ name: "content-script port" });
 
-xGrammalectePort.onMessage.addListener(function(oMessage) {
+xGrammalectePort.onMessage.addListener(function (oMessage) {
     let { sActionDone, result, dInfo, bEnd, bError } = oMessage;
     let sText = "";
     switch (sActionDone) {
@@ -407,93 +408,94 @@ xGrammalectePort.onMessage.addListener(function(oMessage) {
     }
 });
 
+
 /*
-    Communicate webpage script <=> web-extension
-    La méthode d'injection de ce script est importante !
+    Communicate webpage script <=> WebExtension
+    La méthode d’injection de ce script est importante !
 
     Pour que la page web puisse envoyer des infos au background
     Page web => Script injecté => Content script => Background
-    Pour la réponse se sont les même étape en sens inverse.
+    Pour la réponse, ce sont les mêmes étapes en sens inverse.
 */
-var scriptEvent = document.createElement("script");
-scriptEvent.src = browser.extension.getURL("content_scripts/event.js");
-document.documentElement.appendChild(scriptEvent);
+let xScriptNode = document.createElement("script");
+xScriptNode.src = browser.extension.getURL("content_scripts/event.js");
+document.documentElement.appendChild(xScriptNode);
 
-var min = Math.ceil(0);
-var max = Math.floor(9999999);
-function uniqueID() {
-    return Date.now().toString(36) + "-" + (Math.floor(Math.random() * (max - min)) + min).toString(36);
+let nMin = Math.ceil(0);
+let nMax = Math.floor(9999999);
+function uniqueID () {
+    return Date.now().toString(36) + "-" + (Math.floor(Math.random() * (nMax - nMin)) + nMin).toString(36);
 }
 
-// ! Ecoute des messages venant du scipt injecté
-document.addEventListener("GrammalecteEvent", function(event) {
-    let actionFromPage = JSON.parse(event.detail);
+// ! Écoute des messages venant du script injecté
+document.addEventListener("GrammalecteEvent", function (event) {
+    let oActionFromPage = JSON.parse(event.detail);
     //console.log(event);
     let sText = false;
     let dInfo = {};
-    let elmForGramma = null;
+    let xNodeToParse = null;
 
-    if (actionFromPage.iframe) {
-        elmForGramma = document.getElementById(actionFromPage.iframe).contentWindow.document.body;
+    if (oActionFromPage.iframe) {
+        xNodeToParse = document.getElementById(oActionFromPage.iframe).contentWindow.document.body;
     }
-    if (actionFromPage.elm) {
-        elmForGramma = document.getElementById(actionFromPage.elm);
-        sText = elmForGramma.tagName == "TEXTAREA" ? elmForGramma.value : elmForGramma.innerText;
-        dInfo = { sTextAreaId: elmForGramma.id };
+    if (oActionFromPage.elm) {
+        xNodeToParse = document.getElementById(oActionFromPage.elm);
+        sText = xNodeToParse.tagName == "TEXTAREA" ? xNodeToParse.value : xNodeToParse.innerText;
+        dInfo = { sTextAreaId: xNodeToParse.id };
     }
-    if (actionFromPage.spellcheck) {
-        oGrammalecte.startGCPanel(elmForGramma);
+    if (oActionFromPage.sTextToParse) {
+        oGrammalecte.startGCPanel(xNodeToParse);
         xGrammalectePort.postMessage({
             sCommand: "parseAndSpellcheck",
-            dParam: { sText: sText || actionFromPage.spellcheck, sCountry: "FR", bDebug: false, bContext: false },
+            dParam: { sText: sText || oActionFromPage.sTextToParse, sCountry: "FR", bDebug: false, bContext: false },
             dInfo: dInfo
         });
     }
-    if (actionFromPage.lexique) {
+    if (oActionFromPage.sTextForLexicographer) {
         oGrammalecte.startLxgPanel();
         xGrammalectePort.postMessage({
             sCommand: "getListOfTokens",
-            dParam: { sText: sText || actionFromPage.lexique },
+            dParam: { sText: sText || oActionFromPage.sTextForLexicographer },
             dInfo: dInfo
         });
     }
 });
 
-let isLoaded = false;
-let bufferMsg = [];
+let bInjectedScriptReady = false;
+let lBufferMsg = [];
 
-// ! Permet d'envoyer des messages vers le scipt injecté
+// ! Permet d’envoyer des messages vers le script injecté
 // (peut aussi être lu par un script sur la page web)
-function sendToWebpage(dataAction) {
-    let dataToSend = dataAction;
-    if (typeof dataToSend.IdAction === "undefined") {
-        dataToSend.IdAction = uniqueID();
+function sendToWebpage (oDataAction) {
+    let oDataToSend = oDataAction;
+    if (typeof oDataToSend.IdAction === "undefined") {
+        oDataToSend.IdAction = uniqueID();
     }
-    if (dataAction.elm) {
-        if (!dataAction.elm.id) {
-            dataAction.elm.id = uniqueID();
+    if (oDataAction.elm) {
+        if (!oDataAction.elm.id) {
+            oDataAction.elm.id = uniqueID();
         }
-        dataToSend.elm = dataAction.elm.id;
+        oDataToSend.elm = oDataAction.elm.id;
     }
 
-    if (!isLoaded) {
-        bufferMsg.push(dataToSend);
+    if (!bInjectedScriptReady) {
+        lBufferMsg.push(oDataToSend);
     } else {
-        //console.log('sendToWebpage', dataToSend);
-        var eventGrammalecte = new CustomEvent("GrammalecteToPage", { detail: JSON.stringify(dataToSend) });
+        //console.log('sendToWebpage', oDataToSend);
+        let eventGrammalecte = new CustomEvent("GrammalecteToPage", { detail: JSON.stringify(oDataToSend) });
         document.dispatchEvent(eventGrammalecte);
     }
 
-    return dataToSend.IdAction;
+    return oDataToSend.IdAction;
 }
 
-// ! Les message ne peuvent être envoyer qu'après que le script est injecté
-document.addEventListener("GrammalecteIsLoaded", function() {
-    //console.log("GrammalecteIsLoaded EXT");
-    isLoaded = true;
-    if (bufferMsg.length > 0) {
-        for (const dataToSend of bufferMsg) {
-            var eventGrammalecte = new CustomEvent("GrammalecteToPage", { detail: JSON.stringify(dataToSend) });
+// ! Les messages ne peuvent être envoyés qu’après l’injection du script
+document.addEventListener("GLInjectedScriptIsReady", function () {
+    //console.log("GLInjectedScriptIsReady EXT");
+    bInjectedScriptReady = true;
+    if (lBufferMsg.length > 0) {
+        for (const oDataToSend of lBufferMsg) {
+            let eventGrammalecte = new CustomEvent("GrammalecteToPage", { detail: JSON.stringify(oDataToSend) });
             document.dispatchEvent(eventGrammalecte);
         }
     }

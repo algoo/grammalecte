@@ -43,7 +43,7 @@ function sendToGrammalecte(dataAction) {
 
 // ! Envoie de l'information que l'injection est bien faite ;)
 // (peut être lu aussi bien par la page web que le content script)
-var customAPILoaded = new CustomEvent("GrammalecteIsLoaded");
+var customAPILoaded = new CustomEvent("GLInjectedScriptIsReady");
 document.dispatchEvent(customAPILoaded);
 
 // Gros Hack : Auto add a button in tinymce ;)
@@ -116,7 +116,7 @@ function TinyOnEditor(event, editor = null) {
                 iframeElement = xEditorAdd.editorId + "_ifr";
             }
 
-            sendToGrammalecte({ spellcheck: sText, iframe: iframeElement });
+            sendToGrammalecte({ sTextToParse: sText, iframe: iframeElement });
         }
     });
 }
@@ -151,22 +151,24 @@ if (typeof tinyMCE !== "undefined" && tinyMCE.majorVersion && tinyMCE.majorVersi
     }
     try {
         TinyInPage();
-    } catch (error) {}
+    } catch (e) {
+        console.error(e);
+    }
 }
 
 /* // ! In the webpage script :
-document.addEventListener('GrammalecteIsLoaded', function() {
+document.addEventListener('GLInjectedScriptIsReady', function() {
     // Le gestionnaire d'évènement est prêt!
     // La page web peut effectuer des actions
     ...
 });
 ...
 // Pour demander une correction sur le texte
-sendToGrammalecte({"spellcheck": "salut comment ca vaa?"});
+sendToGrammalecte({"sTextToParse": "salut comment ca vaa?"});
 // Pour demander une correction sur un élément html
-sendToGrammalecte({"spellcheck": true, "elm": elementHTML});
+sendToGrammalecte({"sTextToParse": true, "elm": elementHTML});
 // Pour avoir le lexicographe sur un texte
-sendToGrammalecte({"lexique": "salut comment ca vaa?"});
+sendToGrammalecte({"sTextForLexicographer": "salut comment ca vaa?"});
 // Pour avoir le lexicographe sur un élément html
-sendToGrammalecte({"lexique": true, "elm": elementHTML});
+sendToGrammalecte({"sTextForLexicographer": true, "elm": elementHTML});
 */
