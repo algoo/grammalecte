@@ -164,7 +164,7 @@ const oGrammalecte = {
         });
     },
 
-    rescanPage: function() {
+    rescanPage: function () {
         if (this.oTFPanel !== null) {
             this.oTFPanel.hide();
         }
@@ -182,7 +182,7 @@ const oGrammalecte = {
         this.createMenus();
     },
 
-    createTFPanel: function() {
+    createTFPanel: function () {
         if (this.oTFPanel === null) {
             this.oTFPanel = new GrammalecteTextFormatter("grammalecte_tf_panel", "Formateur de texte", 760, 615, false);
             //this.oTFPanel.logInnerHTML();
@@ -226,7 +226,7 @@ const oGrammalecte = {
         this.oGCPanel.startWaitIcon();
     },
 
-    startLxgPanel: function() {
+    startLxgPanel: function () {
         this.createLxgPanel();
         this.oLxgPanel.clear();
         this.oLxgPanel.show();
@@ -254,7 +254,7 @@ const oGrammalecte = {
         return sPageText;
     },
 
-    createNode: function(sType, oAttr, oDataset=null) {
+    createNode: function (sType, oAttr, oDataset=null) {
         try {
             let xNode = document.createElement(sType);
             Object.assign(xNode, oAttr);
@@ -468,8 +468,8 @@ let lBufferMsg = [];
 // (peut aussi être lu par un script sur la page web)
 function sendToWebpage (oDataAction) {
     let oDataToSend = oDataAction;
-    if (typeof oDataToSend.IdAction === "undefined") {
-        oDataToSend.IdAction = uniqueID();
+    if (typeof oDataToSend.sActionId === "undefined") {
+        oDataToSend.sActionId = uniqueID();
     }
     if (oDataAction.elm) {
         if (!oDataAction.elm.id) {
@@ -486,7 +486,7 @@ function sendToWebpage (oDataAction) {
         document.dispatchEvent(eventGrammalecte);
     }
 
-    return oDataToSend.IdAction;
+    return oDataToSend.sActionId;
 }
 
 // ! Les messages ne peuvent être envoyés qu’après l’injection du script
