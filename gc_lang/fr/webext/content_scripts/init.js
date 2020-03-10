@@ -21,7 +21,7 @@ function showError (e) {
 // Chrome don’t follow the W3C specification:
 // https://browserext.github.io/browserext/
 let bChrome = false;
-if (typeof browser !== "object") {
+if (typeof(browser) !== "object") {
     var browser = chrome;
     bChrome = true;
 }
@@ -62,7 +62,7 @@ const oGrammalecte = {
     listenRightClick: function () {
         // Node where a right click is done
         // Bug report: https://bugzilla.mozilla.org/show_bug.cgi?id=1325814
-        document.addEventListener("contextmenu", function (xEvent) {
+        document.addEventListener('contextmenu', function (xEvent) {
             this.xRightClickedNode = xEvent.target;
         }.bind(this), true);
     },
@@ -177,7 +177,7 @@ const oGrammalecte = {
             this.oTFPanel = new GrammalecteTextFormatter("grammalecte_tf_panel", "Formateur de texte", 760, 615, false);
             //this.oTFPanel.logInnerHTML();
             this.oTFPanel.insertIntoPage();
-            window.setTimeout(function(self) {
+            window.setTimeout(function(self){
                 self.oTFPanel.adjustHeight();
             }, 50, this);
         }
@@ -264,7 +264,7 @@ const oGrammalecte = {
                 href: this.sExtensionUrl + sLinkCss
             });
             if (sLinkId) {
-                Object.assign(xNode, { id: sLinkId });
+                Object.assign(xNode, {id: sLinkId});
             }
             if (xNodeToAppendTo) {
                 xNodeToAppendTo.appendChild(xNode);
@@ -280,10 +280,10 @@ const oGrammalecte = {
 /*
     Connexion to the background
 */
-let xGrammalectePort = browser.runtime.connect({ name: "content-script port" });
+let xGrammalectePort = browser.runtime.connect({name: "content-script port"});
 
 xGrammalectePort.onMessage.addListener(function (oMessage) {
-    let { sActionDone, result, dInfo, bEnd, bError } = oMessage;
+    let {sActionDone, result, dInfo, bEnd, bError} = oMessage;
     let sText = "";
     switch (sActionDone) {
         case "init":
@@ -324,8 +324,8 @@ xGrammalectePort.onMessage.addListener(function (oMessage) {
                 sText = oGrammalecte.xRightClickedNode.tagName == "TEXTAREA" ? oGrammalecte.xRightClickedNode.value : oGrammalecte.xRightClickedNode.innerText;
                 xGrammalectePort.postMessage({
                     sCommand: "parseAndSpellcheck",
-                    dParam: { sText: sText, sCountry: "FR", bDebug: false, bContext: false },
-                    dInfo: { sTextAreaId: oGrammalecte.xRightClickedNode.id }
+                    dParam: {sText: sText, sCountry: "FR", bDebug: false, bContext: false},
+                    dInfo: {sTextAreaId: oGrammalecte.xRightClickedNode.id}
                 });
             } else {
                 oGrammalecte.showMessage("Erreur. Le node sur lequel vous avez cliqué n’a pas pu être identifié. Sélectionnez le texte à corriger et relancez le correcteur via le menu contextuel.");
@@ -335,7 +335,7 @@ xGrammalectePort.onMessage.addListener(function (oMessage) {
             oGrammalecte.startGCPanel();
             xGrammalectePort.postMessage({
                 sCommand: "parseAndSpellcheck",
-                dParam: { sText: oGrammalecte.getPageText(), sCountry: "FR", bDebug: false, bContext: false },
+                dParam: {sText: oGrammalecte.getPageText(), sCountry: "FR", bDebug: false, bContext: false},
                 dInfo: {}
             });
             break;
@@ -350,8 +350,8 @@ xGrammalectePort.onMessage.addListener(function (oMessage) {
                 sText = oGrammalecte.xRightClickedNode.tagName == "TEXTAREA" ? oGrammalecte.xRightClickedNode.value : oGrammalecte.xRightClickedNode.innerText;
                 xGrammalectePort.postMessage({
                     sCommand: "getListOfTokens",
-                    dParam: { sText: sText },
-                    dInfo: { sTextAreaId: oGrammalecte.xRightClickedNode.id }
+                    dParam: {sText: sText},
+                    dInfo: {sTextAreaId: oGrammalecte.xRightClickedNode.id}
                 });
             } else {
                 oGrammalecte.showMessage("Erreur. Le node sur lequel vous avez cliqué n’a pas pu être identifié. Sélectionnez le texte à analyser et relancez le lexicographe via le menu contextuel.");
@@ -361,7 +361,7 @@ xGrammalectePort.onMessage.addListener(function (oMessage) {
             oGrammalecte.startLxgPanel();
             xGrammalectePort.postMessage({
                 sCommand: "getListOfTokens",
-                dParam: { sText: oGrammalecte.getPageText() },
+                dParam: {sText: oGrammalecte.getPageText()},
                 dInfo: {}
             });
             break;
