@@ -14,7 +14,7 @@
 "use strict";
 
 function showError (e) {
-    // because console can’t display error objects from content script
+    // console can’t display error objects from content scripts
     console.error(e.fileName + "\n" + e.name + "\nline: " + e.lineNumber + "\n" + e.message);
 }
 
@@ -62,13 +62,9 @@ const oGrammalecte = {
     listenRightClick: function () {
         // Node where a right click is done
         // Bug report: https://bugzilla.mozilla.org/show_bug.cgi?id=1325814
-        document.addEventListener(
-            "contextmenu",
-            function (xEvent) {
-                this.xRightClickedNode = xEvent.target;
-            }.bind(this),
-            true
-        );
+        document.addEventListener("contextmenu", function (xEvent) {
+            this.xRightClickedNode = xEvent.target;
+        }.bind(this), true);
     },
 
     clearRightClickedNode: function () {
@@ -165,15 +161,9 @@ const oGrammalecte = {
     },
 
     rescanPage: function () {
-        if (this.oTFPanel !== null) {
-            this.oTFPanel.hide();
-        }
-        if (this.oLxgPanel !== null) {
-            this.oLxgPanel.hide();
-        }
-        if (this.oGCPanel !== null) {
-            this.oGCPanel.hide();
-        }
+        if (this.oTFPanel !== null) { this.oTFPanel.hide(); }
+        if (this.oLxgPanel !== null) { this.oLxgPanel.hide(); }
+        if (this.oGCPanel !== null) { this.oGCPanel.hide(); }
         for (let oMenu of this.lMenu) {
             oMenu.deleteNodes();
         }
@@ -187,13 +177,9 @@ const oGrammalecte = {
             this.oTFPanel = new GrammalecteTextFormatter("grammalecte_tf_panel", "Formateur de texte", 760, 615, false);
             //this.oTFPanel.logInnerHTML();
             this.oTFPanel.insertIntoPage();
-            window.setTimeout(
-                function(self) {
-                    self.oTFPanel.adjustHeight();
-                },
-                50,
-                this
-            );
+            window.setTimeout(function(self) {
+                self.oTFPanel.adjustHeight();
+            }, 50, this);
         }
     },
 
@@ -233,7 +219,7 @@ const oGrammalecte = {
         this.oLxgPanel.startWaitIcon();
     },
 
-    startFTPanel: function (xNode = null) {
+    startFTPanel: function (xNode=null) {
         this.createTFPanel();
         this.oTFPanel.start(xNode);
         this.oTFPanel.show();
@@ -262,7 +248,8 @@ const oGrammalecte = {
                 Object.assign(xNode.dataset, oDataset);
             }
             return xNode;
-        } catch (e) {
+        }
+        catch (e) {
             showError(e);
         }
     },
@@ -283,7 +270,8 @@ const oGrammalecte = {
                 xNodeToAppendTo.appendChild(xNode);
             }
             return xNode;
-        } catch (e) {
+        }
+        catch (e) {
             showError(e);
         }
     }
@@ -340,9 +328,7 @@ xGrammalectePort.onMessage.addListener(function (oMessage) {
                     dInfo: { sTextAreaId: oGrammalecte.xRightClickedNode.id }
                 });
             } else {
-                oGrammalecte.showMessage(
-                    "Erreur. Le node sur lequel vous avez cliqué n’a pas pu être identifié. Sélectionnez le texte à corriger et relancez le correcteur via le menu contextuel."
-                );
+                oGrammalecte.showMessage("Erreur. Le node sur lequel vous avez cliqué n’a pas pu être identifié. Sélectionnez le texte à corriger et relancez le correcteur via le menu contextuel.");
             }
             break;
         case "rightClickGCPage":
@@ -368,9 +354,7 @@ xGrammalectePort.onMessage.addListener(function (oMessage) {
                     dInfo: { sTextAreaId: oGrammalecte.xRightClickedNode.id }
                 });
             } else {
-                oGrammalecte.showMessage(
-                    "Erreur. Le node sur lequel vous avez cliqué n’a pas pu être identifié. Sélectionnez le texte à analyser et relancez le lexicographe via le menu contextuel."
-                );
+                oGrammalecte.showMessage("Erreur. Le node sur lequel vous avez cliqué n’a pas pu être identifié. Sélectionnez le texte à analyser et relancez le lexicographe via le menu contextuel.");
             }
             break;
         case "rightClickLxgPage":
@@ -391,9 +375,7 @@ xGrammalectePort.onMessage.addListener(function (oMessage) {
                 if (oGrammalecte.xRightClickedNode.tagName == "TEXTAREA") {
                     oGrammalecte.startFTPanel(oGrammalecte.xRightClickedNode);
                 } else {
-                    oGrammalecte.showMessage(
-                        "Cette zone de texte n’est pas réellement un champ de formulaire, mais un node HTML éditable. Le formateur de texte n’est pas disponible pour ce type de champ de saisie."
-                    );
+                    oGrammalecte.showMessage("Cette zone de texte n’est pas réellement un champ de formulaire, mais un node HTML éditable. Le formateur de texte n’est pas disponible pour ce type de champ de saisie.");
                 }
             } else {
                 oGrammalecte.showMessage("Erreur. Le node sur lequel vous avez cliqué n’a pas pu être identifié.");
