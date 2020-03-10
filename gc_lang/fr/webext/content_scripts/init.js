@@ -277,6 +277,7 @@ const oGrammalecte = {
     }
 };
 
+
 /*
     Connexion to the background
 */
@@ -321,7 +322,7 @@ xGrammalectePort.onMessage.addListener(function (oMessage) {
         case "rightClickGCEditableNode":
             if (oGrammalecte.xRightClickedNode !== null) {
                 oGrammalecte.startGCPanel(oGrammalecte.xRightClickedNode);
-                sText = oGrammalecte.xRightClickedNode.tagName == "TEXTAREA" ? oGrammalecte.xRightClickedNode.value : oGrammalecte.xRightClickedNode.innerText;
+                sText = (oGrammalecte.xRightClickedNode.tagName == "TEXTAREA") ? oGrammalecte.xRightClickedNode.value : oGrammalecte.xRightClickedNode.innerText;
                 xGrammalectePort.postMessage({
                     sCommand: "parseAndSpellcheck",
                     dParam: {sText: sText, sCountry: "FR", bDebug: false, bContext: false},
@@ -347,7 +348,7 @@ xGrammalectePort.onMessage.addListener(function (oMessage) {
         case "rightClickLxgEditableNode":
             if (oGrammalecte.xRightClickedNode !== null) {
                 oGrammalecte.startLxgPanel();
-                sText = oGrammalecte.xRightClickedNode.tagName == "TEXTAREA" ? oGrammalecte.xRightClickedNode.value : oGrammalecte.xRightClickedNode.innerText;
+                sText = (oGrammalecte.xRightClickedNode.tagName == "TEXTAREA") ? oGrammalecte.xRightClickedNode.value : oGrammalecte.xRightClickedNode.innerText;
                 xGrammalectePort.postMessage({
                     sCommand: "getListOfTokens",
                     dParam: {sText: sText},
