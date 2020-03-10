@@ -118,7 +118,7 @@ const oGrammalecte = {
         }
         this.xObserver = new MutationObserver(function (mutations) {
             mutations.forEach(function (mutation) {
-                for (let i = 0; i < mutation.addedNodes.length; i++) {
+                for (let i = 0;  i < mutation.addedNodes.length;  i++) {
                     let MutationNode = mutation.addedNodes[i];
                     let tagName = MutationNode.tagName;
 
