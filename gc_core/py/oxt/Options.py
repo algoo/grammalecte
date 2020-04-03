@@ -13,7 +13,7 @@ import helpers
 import op_strings
 
 try:
-    import grammalecte.${lang} as gce
+    import grammalecte.${lang} as gc_engine
 except:
     traceback.print_exc()
 
@@ -23,7 +23,7 @@ def loadOptions (sLang):
     try:
         xNode = helpers.getConfigSetting("/org.openoffice.Lightproof_${implname}/Leaves", False)
         xChild = xNode.getByName(sLang)
-        dOpt = gce.gc_options.getOptions("Writer")
+        dOpt = gc_engine.gc_options.getDefaultOptions("Writer")
         for sKey in dOpt:
             sValue = xChild.getPropertyValue(sKey)
             if sValue != '':
@@ -32,7 +32,7 @@ def loadOptions (sLang):
     except:
         print("# Error. Unable to load options of language:", sLang)
         traceback.print_exc()
-        return gce.gc_options.getOptions("Writer")
+        return gc_engine.gc_options.getDefaultOptions("Writer")
 
 
 def saveOptions (sLang, dOpt):
@@ -72,7 +72,7 @@ class GC_Options (unohelper.Base, XActionListener):
     def run (self, sUI):
         try:
             dUI = op_strings.getUI(sUI)
-            dOptionUI = gce.gc_options.getUI(sUI)
+            dOptionUI = gc_engine.gc_options.getUI(sUI)
 
             # fonts
             xFDTitle = uno.createUnoStruct("com.sun.star.awt.FontDescriptor")
@@ -101,7 +101,7 @@ class GC_Options (unohelper.Base, XActionListener):
             sProdName, sVersion = helpers.getProductNameAndVersion()
             if True:
                 # no tab available (bug)
-                for sOptionType, lOptions in gce.gc_options.lStructOpt:
+                for sOptionType, lOptions in gc_engine.gc_options.lStructOpt:
                     x = 10
                     y += 10
                     self._addWidget(sOptionType, 'FixedLine', x, y, nWidth, nHeight, Label = dOptionUI.get(sOptionType, "#err")[0], FontDescriptor= xFDTitle)
@@ -164,7 +164,7 @@ class GC_Options (unohelper.Base, XActionListener):
     def actionPerformed (self, xActionEvent):
         try:
             if xActionEvent.ActionCommand == 'Default':
-                self._setWidgets(gce.gc_options.getOptions("Writer"))
+                self._setWidgets(gc_engine.gc_options.getDefaultOptions("Writer"))
             elif xActionEvent.ActionCommand == 'Apply':
                 self._save("${lang}")
                 self.xContainer.endExecute()
@@ -183,6 +183,6 @@ class GC_Options (unohelper.Base, XActionListener):
     def _save (self, sLang):
         try:
             saveOptions(sLang, { w.Name: str(w.State)  for w in self.lOptionWidgets })
-            gce.setOptions({ w.Name: bool(w.State)  for w in self.lOptionWidgets })
+            gc_engine.gc_options.setOptions({ w.Name: bool(w.State)  for w in self.lOptionWidgets })
         except:
             traceback.print_exc()

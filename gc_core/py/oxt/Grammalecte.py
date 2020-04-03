@@ -15,7 +15,7 @@ from com.sun.star.lang import XServiceInfo, XServiceName, XServiceDisplayName
 from com.sun.star.lang import Locale
 
 import helpers
-import grammalecte.${lang} as gce
+import grammalecte.${lang} as gc_engine
 #import lightproof_handler_${implname} as opt_handler
 import Options
 
@@ -25,22 +25,22 @@ class Grammalecte (unohelper.Base, XProofreader, XServiceInfo, XServiceName, XSe
     def __init__ (self, ctx, *args):
         self.ctx = ctx
         self.ServiceName = "com.sun.star.linguistic2.Proofreader"
-        self.ImplementationName = "org.openoffice.comp.pyuno.Lightproof." + gce.pkg
+        self.ImplementationName = "org.openoffice.comp.pyuno.Lightproof." + gc_engine.pkg
         self.SupportedServiceNames = (self.ServiceName, )
         self.locales = []
-        for i in gce.locales:
-            l = gce.locales[i]
+        for i in gc_engine.locales:
+            l = gc_engine.locales[i]
             self.locales.append(Locale(l[0], l[1], l[2]))
         self.locales = tuple(self.locales)
         # debug
         #helpers.startConsole()
         # init
-        gce.load("Writer", "nInt")
+        gc_engine.load("Writer", "nInt")
         # GC options
         #xContext = uno.getComponentContext()
         #opt_handler.load(xContext)
         dOpt = Options.loadOptions("${lang}")
-        gce.setOptions(dOpt)
+        gc_engine.gc_options.setOptions(dOpt)
         # dictionaries options
         self.loadUserDictionaries()
         # underlining options
@@ -111,7 +111,7 @@ class Grammalecte (unohelper.Base, XProofreader, XServiceInfo, XServiceName, XSe
         xRes.nBehindEndOfSentencePosition = xRes.nStartOfNextSentencePosition
 
         try:
-            xRes.aErrors = tuple(gce.parse(rText, rLocale.Country))
+            xRes.aErrors = tuple(gc_engine.parse(rText, rLocale.Country))
             # ->>> WORKAROUND
             if xRes.nStartOfNextSentencePosition > 3000:
                 self.dResult[nHashedVal] = xRes
@@ -126,18 +126,18 @@ class Grammalecte (unohelper.Base, XProofreader, XServiceInfo, XServiceName, XSe
         return xRes
 
     def ignoreRule (self, rid, aLocale):
-        gce.ignoreRule(rid)
+        gc_engine.ignoreRule(rid)
 
     def resetIgnoreRules (self):
-        gce.resetIgnoreRules()
+        gc_engine.resetIgnoreRules()
 
     # XServiceDisplayName
     def getServiceDisplayName (self, aLocale):
-        return gce.name
+        return gc_engine.name
 
     # Grammalecte
     def getSpellChecker (self):
-        return gce.getSpellChecker()
+        return gc_engine.getSpellChecker()
 
     def loadUserDictionaries (self):
         try:
@@ -146,7 +146,7 @@ class Grammalecte (unohelper.Base, XProofreader, XServiceInfo, XServiceName, XSe
             if xChild.getPropertyValue("use_personal_dic"):
                 sJSON = xChild.getPropertyValue("personal_dic")
                 if sJSON:
-                    oSpellChecker = gce.getSpellChecker();
+                    oSpellChecker = gc_engine.getSpellChecker();
                     oSpellChecker.setPersonalDictionary(json.loads(sJSON))
         except:
             traceback.print_exc()
@@ -157,13 +157,13 @@ class Grammalecte (unohelper.Base, XProofreader, XServiceInfo, XServiceName, XSe
             xChild = xSettingNode.getByName("o_${lang}")
             sLineType = xChild.getPropertyValue("line_type")
             bMulticolor = bool(xChild.getPropertyValue("line_multicolor"))
-            gce.setWriterUnderliningStyle(sLineType, bMulticolor)
+            gc_engine.setWriterUnderliningStyle(sLineType, bMulticolor)
         except:
             traceback.print_exc()
 
 
 g_ImplementationHelper = unohelper.ImplementationHelper()
-g_ImplementationHelper.addImplementation(Grammalecte, "org.openoffice.comp.pyuno.Lightproof."+gce.pkg, ("com.sun.star.linguistic2.Proofreader",),)
+g_ImplementationHelper.addImplementation(Grammalecte, "org.openoffice.comp.pyuno.Lightproof."+gc_engine.pkg, ("com.sun.star.linguistic2.Proofreader",),)
 
 # g_ImplementationHelper.addImplementation( opt_handler.LightproofOptionsEventHandler, \
-#     "org.openoffice.comp.pyuno.LightproofOptionsEventHandler." + gce.pkg, ("com.sun.star.awt.XContainerWindowEventHandler",),)
+#     "org.openoffice.comp.pyuno.LightproofOptionsEventHandler." + gc_engine.pkg, ("com.sun.star.awt.XContainerWindowEventHandler",),)

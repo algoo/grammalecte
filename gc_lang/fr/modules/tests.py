@@ -12,7 +12,8 @@ from contextlib import contextmanager
 
 from ..graphspell.ibdawg import IBDAWG
 from ..graphspell.echo import echo
-from . import gc_engine as gce
+from . import gc_engine
+from . import gc_options
 from . import conj
 from . import phonet
 from . import mfsp
@@ -34,8 +35,8 @@ def timeblock (label, hDst):
 def perf (sVersion, hDst=None):
     "performance tests"
     print("\nPerformance tests")
-    gce.load()
-    gce.parse("Texte sans importance… utile pour la compilation des règles avant le calcul des perfs.")
+    gc_engine.load()
+    gc_engine.parse("Texte sans importance… utile pour la compilation des règles avant le calcul des perfs.")
 
     spHere, _ = os.path.split(__file__)
     with open(os.path.join(spHere, "perf.txt"), "r", encoding="utf-8") as hSrc:
@@ -43,7 +44,7 @@ def perf (sVersion, hDst=None):
             hDst.write("{:<12}{:<20}".format(sVersion, time.strftime("%Y.%m.%d %H:%M")))
         for sText in ( s.strip() for s in hSrc if not s.startswith("#") and s.strip() ):
             with timeblock(sText[:sText.find(".")], hDst):
-                gce.parse(sText)
+                gc_engine.parse(sText)
         if hDst:
             hDst.write("\n")
 
@@ -159,7 +160,7 @@ class TestGrammarChecking (unittest.TestCase):
 
     @classmethod
     def setUpClass (cls):
-        gce.load()
+        gc_engine.load()
         cls._zError = re.compile(r"\{\{.*?\}\}")
         cls._aTestedRules = set()
 
@@ -207,7 +208,7 @@ class TestGrammarChecking (unittest.TestCase):
         # untested rules
         i = 0
         echo("Untested rules:")
-        for _, sOpt, sLineId, sRuleId in gce.listRules():
+        for _, sOpt, sLineId, sRuleId in gc_engine.listRules():
             if sOpt != "@@@@" and sRuleId not in self._aTestedRules and not re.search("^[0-9]+[sp]$|^[pd]_", sRuleId):
                 echo(sLineId + "/" + sRuleId)
                 i += 1
@@ -219,11 +220,11 @@ class TestGrammarChecking (unittest.TestCase):
 
     def _getFoundErrors (self, sLine, sOption):
         if sOption:
-            gce.setOption(sOption, True)
-            aErrs = gce.parse(sLine)
-            gce.setOption(sOption, False)
+            gc_options.setOption(sOption, True)
+            aErrs = gc_engine.parse(sLine)
+            gc_options.setOption(sOption, False)
         else:
-            aErrs = gce.parse(sLine)
+            aErrs = gc_engine.parse(sLine)
         sRes = " " * len(sLine)
         sListErr = ""
         lAllSugg = []
