@@ -13,6 +13,7 @@ import traceback
 
 import grammalecte
 import grammalecte.text as txt
+import grammalecte.fr.textformatter as tf
 from grammalecte.graphspell.echo import echo
 
 
@@ -151,10 +152,9 @@ def main ():
     xParser.add_argument("-d", "--debug", help="debugging mode (only in interactive mode)", action="store_true")
     xArgs = xParser.parse_args()
 
-    oGrammarChecker = grammalecte.GrammarChecker("fr")
-    oSpellChecker = oGrammarChecker.getSpellChecker()
-    oLexicographer = oGrammarChecker.getLexicographer()
-    oTextFormatter = oGrammarChecker.getTextFormatter()
+    grammalecte.load()
+    oSpellChecker = grammalecte.getSpellChecker()
+    oLexicographer = grammalecte.getLexicographer()
     if xArgs.personal_dict:
         oJSON = loadDictionary(xArgs.personal_dict)
         if oJSON:
@@ -162,14 +162,14 @@ def main ():
 
     if not xArgs.json:
         echo("Python v" + sys.version)
-        echo("Grammalecte v{}".format(oGrammarChecker.gce.version))
+        echo("Grammalecte v{}".format(grammalecte.version))
 
     # list options or rules
     if xArgs.list_options or xArgs.list_rules:
         if xArgs.list_options:
-            oGrammarChecker.gce.displayOptions("fr")
+            grammalecte.gc_options.displayOptions()
         if xArgs.list_rules:
-            oGrammarChecker.gce.displayRules(None  if xArgs.list_rules == "*"  else xArgs.list_rules)
+            grammalecte.displayRules(None  if xArgs.list_rules == "*"  else xArgs.list_rules)
         exit()
 
     # spell suggestions
@@ -189,16 +189,16 @@ def main ():
         xArgs.textformatter = False
 
     # grammar options
-    oGrammarChecker.gce.setOptions({"html": True, "latex": True})
+    grammalecte.gc_options.setOptions({"html": True, "latex": True})
     if xArgs.opt_on:
-        oGrammarChecker.gce.setOptions({ opt:True  for opt in xArgs.opt_on })
+        grammalecte.gc_options.setOptions({ opt:True  for opt in xArgs.opt_on })
     if xArgs.opt_off:
-        oGrammarChecker.gce.setOptions({ opt:False  for opt in xArgs.opt_off })
+        grammalecte.gc_options.setOptions({ opt:False  for opt in xArgs.opt_off })
 
     # disable grammar rules
     if xArgs.rule_off:
         for sRule in xArgs.rule_off:
-            oGrammarChecker.gce.ignoreRule(sRule)
+            grammalecte.ignoreRule(sRule)
 
 
     if xArgs.file or xArgs.file_to_file:
@@ -207,18 +207,18 @@ def main ():
         hDst = open(sFile[:sFile.rfind(".")]+".res.txt", "w", encoding="utf-8", newline="\n")  if xArgs.file_to_file or sys.platform == "win32"  else None
         bComma = False
         if xArgs.json:
-            output('{ "grammalecte": "'+oGrammarChecker.gce.version+'", "lang": "'+oGrammarChecker.gce.lang+'", "data" : [\n', hDst)
+            output('{ "grammalecte": "'+grammalecte.version+'", "lang": "'+grammalecte.lang+'", "data" : [\n', hDst)
         for i, sText, lLineSet in generateParagraphFromFile(sFile, xArgs.concat_lines):
             if xArgs.textformatter or xArgs.textformatteronly:
-                sText = oTextFormatter.formatText(sText)
+                sText = tf.formatText(sText)
             if xArgs.textformatteronly:
                 output(sText, hDst)
                 continue
             if xArgs.json:
-                sText = oGrammarChecker.getParagraphErrorsAsJSON(i, sText, bContext=xArgs.context, bEmptyIfNoErrors=xArgs.only_when_errors, \
+                sText = grammalecte.getParagraphErrorsAsJSON(i, sText, bContext=xArgs.context, bEmptyIfNoErrors=xArgs.only_when_errors, \
                                                                 bSpellSugg=xArgs.with_spell_sugg, bReturnText=xArgs.textformatter, lLineSet=lLineSet)
             else:
-                sText, _ = oGrammarChecker.getParagraphWithErrors(sText, bEmptyIfNoErrors=xArgs.only_when_errors, bSpellSugg=xArgs.with_spell_sugg, nWidth=xArgs.width)
+                sText, _ = grammalecte.getParagraphWithErrors(sText, bEmptyIfNoErrors=xArgs.only_when_errors, bSpellSugg=xArgs.with_spell_sugg, nWidth=xArgs.width)
             if sText:
                 if xArgs.json and bComma:
                     output(",\n", hDst)
@@ -234,9 +234,9 @@ def main ():
         hDst = open(sFile[:sFile.rfind(".")]+".res.txt", "w", encoding="utf-8", newline="\n")
         for i, sText, lLineSet in generateParagraphFromFile(sFile, xArgs.concat_lines):
             if xArgs.textformatter:
-                sText = oTextFormatter.formatText(sText)
+                sText = tf.formatText(sText)
             while True:
-                sResult, lErrors = oGrammarChecker.getParagraphWithErrors(sText, bEmptyIfNoErrors=False, bSpellSugg=True, nWidth=xArgs.width)
+                sResult, lErrors = grammalecte.getParagraphWithErrors(sText, bEmptyIfNoErrors=False, bSpellSugg=True, nWidth=xArgs.width)
                 print("\n\n============================== Paragraph " + str(i) + " ==============================\n")
                 echo(sResult)
                 print("\n")
@@ -292,33 +292,33 @@ def main ():
                 for aRes in oSpellChecker.select(sFlexPattern, sTagsPattern):
                     echo("{:<30} {:<30} {}".format(*aRes))
             elif sText.startswith("/o+ "):
-                oGrammarChecker.gce.setOptions({ opt:True  for opt in sText[3:].strip().split()  if opt in oGrammarChecker.gce.getOptions() })
+                grammalecte.gc_options.setOptions({ opt:True  for opt in sText[3:].strip().split()  if opt in grammalecte.gc_options.dOptions })
                 echo("done")
             elif sText.startswith("/o- "):
-                oGrammarChecker.gce.setOptions({ opt:False  for opt in sText[3:].strip().split()  if opt in oGrammarChecker.gce.getOptions() })
+                grammalecte.gc_options.setOptions({ opt:False  for opt in sText[3:].strip().split()  if opt in grammalecte.gc_options.dOptions })
                 echo("done")
             elif sText.startswith("/r- "):
                 for sRule in sText[3:].strip().split():
-                    oGrammarChecker.gce.ignoreRule(sRule)
+                    grammalecte.ignoreRule(sRule)
                 echo("done")
             elif sText.startswith("/r+ "):
                 for sRule in sText[3:].strip().split():
-                    oGrammarChecker.gce.reactivateRule(sRule)
+                    grammalecte.reactivateRule(sRule)
                 echo("done")
             elif sText in ("/debug", "/d"):
                 xArgs.debug = not xArgs.debug
                 echo("debug mode on"  if xArgs.debug  else "debug mode off")
             elif sText in ("/textformatter", "/tf"):
                 xArgs.textformatter = not xArgs.textformatter
-                echo("textformatter on"  if xArgs.debug  else "textformatter off")
+                echo("textformatter on"  if xArgs.textformatter  else "textformatter off")
             elif sText in ("/help", "/h"):
                 echo(_HELP)
             elif sText in ("/lopt", "/lo"):
-                oGrammarChecker.gce.displayOptions("fr")
+                grammalecte.gc_options.displayOptions()
             elif sText.startswith("/lr"):
                 sText = sText.strip()
                 sFilter = sText[sText.find(" "):].strip()  if " " in sText  else None
-                oGrammarChecker.gce.displayRules(sFilter)
+                grammalecte.displayRules(sFilter)
             elif sText in ("/quit", "/q"):
                 break
             elif sText.startswith("/rl"):
@@ -327,8 +327,8 @@ def main ():
             elif sText.startswith("$"):
                 for sParagraph in txt.getParagraph(sText[1:]):
                     if xArgs.textformatter:
-                        sParagraph = oTextFormatter.formatText(sParagraph)
-                    lParagraphErrors, lSentences = oGrammarChecker.gce.parse(sParagraph, bDebug=xArgs.debug, bFullInfo=True)
+                        sParagraph = tf.formatText(sParagraph)
+                    lParagraphErrors, lSentences = grammalecte.parse(sParagraph, bDebug=xArgs.debug, bFullInfo=True)
                     echo(txt.getReadableErrors(lParagraphErrors, xArgs.width))
                     for dSentence in lSentences:
                         echo("{nStart}:{nEnd}".format(**dSentence))
@@ -343,8 +343,8 @@ def main ():
             else:
                 for sParagraph in txt.getParagraph(sText):
                     if xArgs.textformatter:
-                        sParagraph = oTextFormatter.formatText(sParagraph)
-                    sRes, _ = oGrammarChecker.getParagraphWithErrors(sParagraph, bEmptyIfNoErrors=xArgs.only_when_errors, nWidth=xArgs.width, bDebug=xArgs.debug)
+                        sParagraph = tf.formatText(sParagraph)
+                    sRes, _ = grammalecte.getParagraphWithErrors(sParagraph, bEmptyIfNoErrors=xArgs.only_when_errors, nWidth=xArgs.width, bDebug=xArgs.debug)
                     if sRes:
                         echo("\n" + sRes)
                     else:

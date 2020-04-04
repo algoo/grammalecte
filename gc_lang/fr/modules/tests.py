@@ -13,7 +13,6 @@ from contextlib import contextmanager
 from ..graphspell.ibdawg import IBDAWG
 from ..graphspell.echo import echo
 from . import gc_engine
-from . import gc_options
 from . import conj
 from . import phonet
 from . import mfsp
@@ -220,9 +219,9 @@ class TestGrammarChecking (unittest.TestCase):
 
     def _getFoundErrors (self, sLine, sOption):
         if sOption:
-            gc_options.setOption(sOption, True)
+            gc_engine.gc_options.setOption(sOption, True)
             aErrs = gc_engine.parse(sLine)
-            gc_options.setOption(sOption, False)
+            gc_engine.gc_options.setOption(sOption, False)
         else:
             aErrs = gc_engine.parse(sLine)
         sRes = " " * len(sLine)

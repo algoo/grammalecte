@@ -16,25 +16,24 @@ from grammalecte.bottle import Bottle, run, request, response #, template, stati
 
 import grammalecte
 import grammalecte.text as txt
+import grammalecte.fr.textformatter as tf
 from grammalecte.graphspell.echo import echo
 
 
 #### GRAMMAR CHECKER ####
 
-oGrammarChecker = grammalecte.GrammarChecker("fr", "Server")
-oSpellChecker = oGrammarChecker.getSpellChecker()
-oTextFormatter = oGrammarChecker.getTextFormatter()
-oGCE = oGrammarChecker.getGCEngine()
+grammalecte.load("Server")
+oSpellChecker = grammalecte.getSpellChecker()
 
 
 def parseText (sText, dOptions=None, bFormatText=False, sError=""):
     "parse <sText> and return errors in a JSON format"
-    sJSON = '{ "program": "grammalecte-fr", "version": "'+oGCE.version+'", "lang": "'+oGCE.lang+'", "error": "'+sError+'", "data" : [\n'
+    sJSON = '{ "program": "grammalecte-fr", "version": "'+grammalecte.version+'", "lang": "'+grammalecte.lang+'", "error": "'+sError+'", "data" : [\n'
     sDataJSON = ""
     for i, sParagraph in enumerate(txt.getParagraph(sText), 1):
         if bFormatText:
-            sParagraph = oTextFormatter.formatText(sParagraph)
-        sResult = oGrammarChecker.getParagraphErrorsAsJSON(i, sParagraph, dOptions=dOptions, bEmptyIfNoErrors=True, bReturnText=bFormatText)
+            sParagraph = tf.formatText(sParagraph)
+        sResult = grammalecte.getParagraphErrorsAsJSON(i, sParagraph, dOptions=dOptions, bEmptyIfNoErrors=True, bReturnText=bFormatText)
         if sResult:
             if sDataJSON:
                 sDataJSON += ",\n"
@@ -187,9 +186,9 @@ def mainPage ():
 def listOptions ():
     "returns grammar options in a text JSON format"
     sUserId = request.cookies.user_id
-    dOptions = dUser[sUserId]["gc_options"]  if sUserId and sUserId in dUser  else oGCE.getOptions()
+    dOptions = dUser[sUserId]["gc_options"]  if sUserId and sUserId in dUser  else grammalecte.gc_options.getOptions()
     response.set_header("Content-Type", "application/json; charset=UTF-8")
-    return '{ "values": ' + json.dumps(dOptions, ensure_ascii=False) + ', "labels": ' + json.dumps(oGCE.getOptionsLabels("fr"), ensure_ascii=False) + ' }'
+    return '{ "values": ' + json.dumps(dOptions, ensure_ascii=False) + ', "labels": ' + json.dumps(grammalecte.gc_options.getOptionsLabels("fr"), ensure_ascii=False) + ' }'
 
 @app.route("/suggest/fr/<token>")
 def suggestGet (token):
@@ -219,7 +218,7 @@ def gcText ():
             response.delete_cookie("user_id", path="/")
     if request.forms.options:
         try:
-            dUserOptions = dict(oGCE.getOptions())  if not dUserOptions  else dict(dUserOptions)
+            dUserOptions = grammalecte.gc_options.getOptions()  if not dUserOptions  else dict(dUserOptions)
             dUserOptions.update(json.loads(request.forms.options))
         except (TypeError, json.JSONDecodeError):
             sError = "Request options not used."
@@ -239,7 +238,7 @@ def setOptions ():
     response.set_header("Content-Type", "application/json; charset=UTF-8")
     if request.forms.options:
         sUserId = request.cookies.user_id  if request.cookies.user_id  else next(userGenerator)
-        dOptions = dUser[sUserId]["gc_options"]  if sUserId in dUser  else dict(oGCE.getOptions())
+        dOptions = dUser[sUserId]["gc_options"]  if sUserId in dUser  else grammalecte.gc_options.getOptions()
         try:
             dOptions.update(json.loads(request.forms.options))
             dUser[sUserId] = { "time": int(time.time()), "gc_options": dOptions }
@@ -264,7 +263,7 @@ def resetOptions ():
 @app.route("/format_text/fr", method="POST")
 def formatText ():
     "apply the text formatter and returns text"
-    return oTextFormatter.formatText(request.forms.text)
+    return tf.formatText(request.forms.text)
 
 #@app.route('/static/<filepath:path>')
 #def server_static (filepath):
@@ -316,7 +315,7 @@ def main (sHost="localhost", nPort=8080, dOptions=None, bTestPage=False, nMultiC
         TESTPAGE = True
         HOMEPAGE = HOMEPAGE.replace("{SERVER_PORT}", str(nPort))
     if dOptions:
-        oGCE.setOptions(dOptions)
+        grammalecte.gc_options.setOptions(dOptions)
 
     # Python version
     print("Python: " + sys.version)
@@ -324,8 +323,8 @@ def main (sHost="localhost", nPort=8080, dOptions=None, bTestPage=False, nMultiC
         print("Python 3.7+ required")
         return
     # Grammalecte
-    echo("Grammalecte v{}".format(oGCE.version))
-    oGCE.displayOptions()
+    echo("Grammalecte v{}".format(grammalecte.version))
+    grammalecte.gc_options.displayOptions()
     # Process Pool Executor
     initExecutor(nMultiCPU)
     # Server (Bottle)

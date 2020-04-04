@@ -72,7 +72,7 @@ class GC_Options (unohelper.Base, XActionListener):
     def run (self, sUI):
         try:
             dUI = op_strings.getUI(sUI)
-            dOptionUI = gc_engine.gc_options.getUI(sUI)
+            dOptionUI = gc_engine.gc_options.getOptionLabels(sUI)
 
             # fonts
             xFDTitle = uno.createUnoStruct("com.sun.star.awt.FontDescriptor")

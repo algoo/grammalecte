@@ -244,22 +244,30 @@ dDefaultOptions = {
 }
 
 
-class TextFormatter:
-    "Text Formatter: purge typographic mistakes from text"
+_bCompiled = False
 
-    def __init__ (self):
-        for _, lTup in dReplTable.items():
-            for i, t in enumerate(lTup):
-                lTup[i] = (re.compile(t[0]), t[1])
+def _compileRegex():
+    global _bCompiled
+    for _, lTup in dReplTable.items():
+        for i, t in enumerate(lTup):
+            lTup[i] = (re.compile(t[0]), t[1])
+    _bCompiled = True
 
-    def formatText (self, sText):
-        "returns formatted text"
-        for sOptName, bVal in dDefaultOptions.items():
-            if bVal:
-                for zRgx, sRep in dReplTable[sOptName]:
-                    sText = zRgx.sub(sRep, sText)
-        return sText
 
-    def getDefaultOptions (self):
-        "returns default options"
-        return dDefaultOptions.copy()
+def formatText (sText, dOpt=None):
+    "returns formatted text"
+    if not _bCompiled:
+        _compileRegex()
+    dOptions = getDefaultOptions()
+    if dOpt:
+        dOptions.update(dOpt)
+    for sOptName, bVal in dOptions.items():
+        if bVal:
+            for zRgx, sRep in dReplTable[sOptName]:
+                sText = zRgx.sub(sRep, sText)
+    return sText
+
+
+def getDefaultOptions ():
+    "returns default options"
+    return dDefaultOptions.copy()

@@ -7,6 +7,7 @@ Grammar checker default options
 
 import traceback
 
+
 dOptions = {}
 
 _sAppContext = "Python"
@@ -26,10 +27,15 @@ def setOption (sOpt, bVal):
 
 
 def setOptions (dOpt):
-    "update the dictionary of options with <dOpt>"
+    "update the dictionary of options with <dOpt>, only known options are updated"
     for sKey, bVal in dOpt.items():
         if sKey in dOptions:
             dOptions[sKey] = bVal
+
+
+def getOptions ():
+    "return a copy of options as dictionary"
+    return dOptions.copy()
 
 
 def resetOptions ():
@@ -41,15 +47,15 @@ def resetOptions ():
 def displayOptions (sLang="${lang}"):
     "display the list of grammar checking options"
     print("Options:")
-    print("\n".join( [ k+":\t"+str(v)+"\t"+getUI(sLang).get(k, ("?", ""))[0]  for k, v  in sorted(dOptions.items()) ] ))
+    print("\n".join( [ k+":\t"+str(v)+"\t"+getOptionLabels(sLang).get(k, ("?", ""))[0]  for k, v  in sorted(dOptions.items()) ] ))
     print("")
 
 
-def getUI (sLang):
+def getOptionLabels (sLang="${sLang}"):
     "returns dictionary of UI labels"
     if sLang in _dOptLabel:
         return _dOptLabel[sLang]
-    return _dOptLabel["fr"]
+    return _dOptLabel["${sLang}"]
 
 
 def getDefaultOptions (sContext=""):

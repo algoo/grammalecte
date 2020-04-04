@@ -2,4 +2,4 @@
 Grammar checker
 """
 
-from .grammar_checker import *
+from .${lang}.gc_engine import *

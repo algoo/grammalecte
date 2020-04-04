@@ -5,6 +5,8 @@ Grammar checker engine
 
 import re
 import traceback
+import json
+import importlib
 #import unicodedata
 from itertools import chain
 
@@ -13,8 +15,9 @@ from ..graphspell.echo import echo
 
 from .. import text
 
-from . import gc_options
 from . import gc_engine_func as gce_func
+from . import gc_options
+
 
 try:
     # LibreOffice / OpenOffice
@@ -27,9 +30,9 @@ except ImportError:
     _bWriterError = False
 
 
-__all__ = [ "lang", "locales", "pkg", "name", "version", "author", \
-            "load", "parse", "getSpellChecker", \
-            "ignoreRule", "resetIgnoreRules", "reactivateRule", "listRules", "displayRules", "setWriterUnderliningStyle" ]
+#__all__ = [ "lang", "locales", "pkg", "name", "version", "author", \
+#            "load", "parse", "getSpellChecker", "getTextFormatter", "getLexicographer" \
+#            "ignoreRule", "resetIgnoreRules", "reactivateRule", "listRules", "displayRules", "setWriterUnderliningStyle" ]
 
 __version__ = "${version}"
 
@@ -45,9 +48,12 @@ author = "${author}"
 _rules = None                               # module gc_rules
 _rules_graph = None                         # module gc_rules_graph
 
-# Data
+# Tools
 _oSpellChecker = None
 _oTokenizer = None
+_oLexicographer = None
+
+# Data
 _aIgnoredRules = set()
 
 # Writer underlining style
@@ -74,9 +80,20 @@ def load (sContext="Python", sColorType="aRGB"):
         traceback.print_exc()
 
 
+#### Tools
+
 def getSpellChecker ():
     "return the spellchecker object"
     return _oSpellChecker
+
+
+def getLexicographer ():
+    "load and return the lexicographer"
+    global _oLexicographer
+    if _oLexicographer is None:
+        lxg = importlib.import_module(".lexicographe", "grammalecte.${lang}")
+        _oLexicographer = lxg.Lexicographe(_oSpellChecker)
+    return _oLexicographer
 
 
 #### Rules
@@ -127,7 +144,7 @@ def reactivateRule (sRuleId):
 
 
 def listRules (sFilter=None):
-    "generator: returns typle (sOption, sLineId, sRuleId)"
+    "generator: returns tuple (sRuleType, sOption, sLineId, sRuleId)"
     if sFilter:
         try:
             zFilter = re.compile(sFilter)
@@ -174,6 +191,35 @@ def setWriterUnderliningStyle (sStyle="BOLDWAVE", bMulticolor=True):
 
 
 #### Parsing
+
+def getParagraphErrors (sText, dOptions=None, bContext=False, bSpellSugg=False, bDebug=False):
+    "returns a tuple: (grammar errors, spelling errors)"
+    aGrammErrs = parse(sText, "FR", bDebug=bDebug, dOptions=dOptions, bContext=bContext)
+    aSpellErrs = _oSpellChecker.parseParagraph(sText, bSpellSugg)
+    return aGrammErrs, aSpellErrs
+
+
+def getParagraphWithErrors (sText, dOptions=None, bEmptyIfNoErrors=False, bSpellSugg=False, nWidth=100, bDebug=False):
+    "parse text and return a readable text with underline errors"
+    aGrammErrs, aSpellErrs = getParagraphErrors(sText, dOptions, False, bSpellSugg, bDebug)
+    if bEmptyIfNoErrors and not aGrammErrs and not aSpellErrs:
+        return ("", [])
+    return text.generateParagraph(sText, aGrammErrs, aSpellErrs, nWidth)
+
+
+def getParagraphErrorsAsJSON (iIndex, sText, dOptions=None, bContext=False, bEmptyIfNoErrors=False, bSpellSugg=False, bReturnText=False, lLineSet=None, bDebug=False):
+    "parse text and return errors as a JSON string"
+    aGrammErrs, aSpellErrs = getParagraphErrors(sText, dOptions, bContext, bSpellSugg, bDebug)
+    aGrammErrs = list(aGrammErrs)
+    if bEmptyIfNoErrors and not aGrammErrs and not aSpellErrs:
+        return ""
+    if lLineSet:
+        aGrammErrs, aSpellErrs = text.convertToXY(aGrammErrs, aSpellErrs, lLineSet)
+        return json.dumps({ "lGrammarErrors": aGrammErrs, "lSpellingErrors": aSpellErrs }, ensure_ascii=False)
+    if bReturnText:
+        return json.dumps({ "iParagraph": iIndex, "sText": sText, "lGrammarErrors": aGrammErrs, "lSpellingErrors": aSpellErrs }, ensure_ascii=False)
+    return json.dumps({ "iParagraph": iIndex, "lGrammarErrors": aGrammErrs, "lSpellingErrors": aSpellErrs }, ensure_ascii=False)
+
 
 def parse (sText, sCountry="${country_default}", bDebug=False, dOptions=None, bContext=False, bFullInfo=False):
     "init point to analyse <sText> and returns an iterable of errors or (with option <bFullInfo>) paragraphs errors and sentences with tokens and errors"
