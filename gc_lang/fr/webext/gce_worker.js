@@ -47,6 +47,7 @@ importScripts("grammalecte/fr/cregex.js");
 importScripts("grammalecte/fr/gc_options.js");
 importScripts("grammalecte/fr/gc_rules.js");
 importScripts("grammalecte/fr/gc_rules_graph.js");
+importScripts("grammalecte/fr/gc_engine_func.js");
 importScripts("grammalecte/fr/gc_engine.js");
 importScripts("grammalecte/fr/lexicographe.js");
 importScripts("grammalecte/tests.js");
@@ -186,15 +187,15 @@ function init (sExtensionPath, dOptions=null, sContext="JavaScript", oInfo={}) {
                 if (!(dOptions instanceof Map)) {
                     dOptions = helpers.objectToMap(dOptions);
                 }
-                gc_engine.setOptions(dOptions);
+                gc_options.setOptions(dOptions);
             }
             //tests();
             bInitDone = true;
         } else {
             console.log("[Worker] Already initialized…")
         }
-        // we always retrieve options from the gc_engine, for setOptions filters obsolete options
-        dOptions = helpers.mapToObject(gc_engine.getOptions());
+        // we always retrieve options from the gc_options, for setOptions filters obsolete options
+        dOptions = helpers.mapToObject(gc_options.getOptions());
         postMessage(createResponse("init", dOptions, oInfo, true));
     }
     catch (e) {
