@@ -8,6 +8,8 @@ Grammar checking functions
 import re
 
 from . import gc_options
+from ..graphspell.echo import echo
+
 
 _sAppContext = "Python"         # what software is running
 _oSpellChecker = None
