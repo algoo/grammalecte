@@ -51,7 +51,6 @@ _rules_graph = None                         # module gc_rules_graph
 # Tools
 _oSpellChecker = None
 _oTokenizer = None
-_oLexicographer = None
 
 # Data
 _aIgnoredRules = set()
@@ -85,15 +84,6 @@ def load (sContext="Python", sColorType="aRGB"):
 def getSpellChecker ():
     "return the spellchecker object"
     return _oSpellChecker
-
-
-def getLexicographer ():
-    "load and return the lexicographer"
-    global _oLexicographer
-    if _oLexicographer is None:
-        lxg = importlib.import_module(".lexicographe", "grammalecte.${lang}")
-        _oLexicographer = lxg.Lexicographe(_oSpellChecker)
-    return _oLexicographer
 
 
 #### Rules
