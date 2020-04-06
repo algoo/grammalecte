@@ -62,7 +62,7 @@ def createCleanFolder (sp):
         eraseFolder(sp)
 
 
-def copyFolderContent (spSrc, spDst):
+def copyFolder (spSrc, spDst):
     "copy folder content from src to dst"
     try:
         shutil.copytree(spSrc, spDst)
@@ -70,12 +70,18 @@ def copyFolderContent (spSrc, spDst):
         if e.errno == errno.ENOTDIR:
             shutil.copy(spSrc, spDst)
         else:
-            raise
+            print("Error while copying folder <"+spSrc+"> to <"+spDst+">.")
 
 
 def moveFolderContent (spSrc, spDst, sPrefix="", bLog=False):
     "move folder content from <spSrc> to <spDst>: if files already exist in <spDst>, they are replaced. (not recursive)"
     try:
+        if not os.path.isdir(spSrc):
+            print("Folder <"+spSrc+"> not found. Can’t move files.")
+            return
+        if not os.path.isdir(spDst):
+            print("Folder <"+spDst+"> not found. Can’t move files.")
+            return
         for sf in os.listdir(spSrc):
             spfSrc = os.path.join(spSrc, sf)
             if os.path.isfile(spfSrc):
@@ -83,8 +89,9 @@ def moveFolderContent (spSrc, spDst, sPrefix="", bLog=False):
                 shutil.move(spfSrc, spfDst)
                 if bLog:
                     print("file <" + spfSrc + "> moved to <"+spfDst+">")
-    except:
-        raise
+    except Error as e:
+        print("Error while moving folder <"+spSrc+"> to <"+spDst+">.")
+        print(e)
 
 
 def fileFile (spf, dVars):
