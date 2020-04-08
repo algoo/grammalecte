@@ -275,17 +275,22 @@ class GrammalecteGrammarChecker extends GrammalectePanel {
     }
 
     recheckParagraph (iParaNum) {
+        if (!this.bOpened) {
+            return;
+        }
         let sParagraphId = "grammalecte_paragraph" + iParaNum;
         let xParagraph = this.xParent.getElementById(sParagraphId);
         this._blockParagraph(xParagraph);
-        let sText = this.purgeText(xParagraph.textContent);
+        //let sText = this.purgeText(xParagraph.textContent);
+        let sText = this.oTextControl.getParagraph(iParaNum);
         oGrammalecteBackgroundPort.parseAndSpellcheck1(sText, "__GrammalectePanel__", sParagraphId);
-        this.oTextControl.setParagraph(iParaNum, sText);
-        this.oTextControl.write();
     }
 
     refreshParagraph (sParagraphId, oResult) {
         // function called when results are sent by the Worker
+        if (!this.bOpened) {
+            return;
+        }
         try {
             let xParagraph = this.xParent.getElementById(sParagraphId);
             // save caret position
@@ -405,8 +410,11 @@ class GrammalecteGrammarChecker extends GrammalectePanel {
             xNodeErr.textContent = this.xParent.getElementById(sNodeSuggId).textContent;
             xNodeErr.className = "grammalecte_error_corrected";
             xNodeErr.removeAttribute("style");
+            let iParaNum = parseInt(sErrorId.slice(0, sErrorId.indexOf("-")), 10);
+            this.oTextControl.setParagraph(iParaNum, this.purgeText(this.xParent.getElementById("grammalecte_paragraph" + iParaNum).textContent));
+            this.oTextControl.write();
             this.oTooltip.hide();
-            this.recheckParagraph(parseInt(sErrorId.slice(0, sErrorId.indexOf("-")), 10));
+            this.recheckParagraph(iParaNum);
         }
         catch (e) {
             showError(e);
@@ -1029,6 +1037,10 @@ class GrammalecteTextControl {
         this.dParagraph.set(iParagraph, sText);
     }
 
+    getParagraph (iParaNum) {
+        return this.dParagraph.get(iParaNum);
+    }
+
     eraseNodeContent () {
         while (this.xNode.firstChild) {
             this.xNode.removeChild(this.xNode.firstChild);
@@ -1040,26 +1052,30 @@ class GrammalecteTextControl {
             if (this.bResultInEvent) {
                 const xEvent = new CustomEvent("GrammalecteResult", { detail: JSON.stringify({ sType: "text", sText: this.getText() }) });
                 this.xNode.dispatchEvent(xEvent);
-                //console.log("Text to xNode:", xEvent.detail);
+                console.log("[Grammalecte debug] Text sent to xNode via event:", xEvent.detail);
             }
             else if (this.bTextArea) {
                 this.xNode.value = this.getText();
+                console.log("[Grammalecte debug] text written in textarea:", this.getText());
             }
             else if (this.bIframe) {
                 //console.log(this.getText());
             }
             else {
+                let sText = "";
                 this.eraseNodeContent();
                 this.dParagraph.forEach((val, key) => {
                     this.xNode.appendChild(document.createTextNode(val.normalize("NFC")));
                     this.xNode.appendChild(document.createElement("br"));
+                    sText += val.normalize("NFC") + "\n";
                 });
+                console.log("[Grammalecte debug] text written in editable node:", sText);
             }
         }
         else if (this.xResultNode !== null) {
             const xEvent = new CustomEvent("GrammalecteResult", { detail: JSON.stringify({ sType: "text", sText: this.getText() }) });
             this.xResultNode.dispatchEvent(xEvent);
-            //console.log("Text to xResultNode:", xEvent.detail);
+            console.log("[Grammalecte debug] Text sent to xResultNode via event:", xEvent.detail);
         }
     }
 }
