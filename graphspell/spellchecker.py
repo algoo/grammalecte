@@ -37,7 +37,7 @@ class SpellChecker ():
         self.oTokenizer = None
         # Default suggestions
         self.lexicographer = None
-        self.loadLang(sLangCode)
+        self.loadLexicographer(sLangCode)
         # storage
         self.bStorage = False
         self._dMorphologies = {}        # key: flexion, value: list of morphologies
@@ -102,10 +102,10 @@ class SpellChecker ():
 
     # Default suggestions
 
-    def loadLang (self, sLangCode):
+    def loadLexicographer (self, sLangCode):
         "load default suggestion module for <sLangCode>"
         try:
-            self.lexicographer = importlib.import_module("."+sLangCode, "grammalecte.graphspell")
+            self.lexicographer = importlib.import_module(".lexgraph_"+sLangCode, "grammalecte.graphspell")
         except ImportError:
             print("No suggestion module for language <"+sLangCode+">")
             return
