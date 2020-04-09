@@ -17,6 +17,8 @@ const dSugg = new Map ([
     ["cdlt", "cordialement"],
     ["construirent", "construire|construisirent|construisent|construiront"],
     ["càd", "c’est-à-dire"],
+    ["chai", "j’sais|je sais"],
+    ["chais", "j’sais|je sais"],
     ["chui", "j’suis|je suis"],
     ["chuis", "j’suis|je suis"],
     ["dc", "de|donc"],
