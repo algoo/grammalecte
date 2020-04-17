@@ -58,7 +58,7 @@ function loadGrammarChecker (sGCOptions="", sContext="JavaScript") {
             gc_engine.load(sContext, "sCSS");
             oSpellChecker = gc_engine.getSpellChecker();
             if (sGCOptions !== "") {
-                console.log(sGCOptions);
+                console.log("set options:", sGCOptions);
                 gc_options.setOptions(helpers.objectToMap(JSON.parse(sGCOptions)));
             }
             // we always retrieve options from the gc_engine, for setOptions filters obsolete options
