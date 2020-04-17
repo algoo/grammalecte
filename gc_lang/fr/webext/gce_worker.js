@@ -49,7 +49,6 @@ importScripts("grammalecte/fr/gc_rules.js");
 importScripts("grammalecte/fr/gc_rules_graph.js");
 importScripts("grammalecte/fr/gc_engine_func.js");
 importScripts("grammalecte/fr/gc_engine.js");
-importScripts("grammalecte/fr/lexicographe.js");
 importScripts("grammalecte/tests.js");
 /*
     Warning.
@@ -178,7 +177,7 @@ function init (sExtensionPath, dOptions=null, sContext="JavaScript", oInfo={}) {
             //console.log("[Worker] Modules have been initialized…");
             gc_engine.load(sContext, "aHSL", sExtensionPath+"grammalecte/graphspell/_dictionaries");
             oSpellChecker = gc_engine.getSpellChecker();
-            oTest = new TestGrammarChecking(gc_engine, sExtensionPath+"/grammalecte/fr/tests_data.json");
+            oTest = new TestGrammarChecking(gc_engine, gc_options, sExtensionPath+"/grammalecte/fr/tests_data.json");
             oTokenizer = new Tokenizer("fr");
             oLocution =  helpers.loadFile(sExtensionPath + "/grammalecte/fr/locutions_data.json");
             lexgraph_fr.load(oSpellChecker, oTokenizer, oLocution);
@@ -262,12 +261,12 @@ function getListOfTokens (sText, oInfo={}) {
 }
 
 function getOptions (oInfo={}) {
-    let dOptions = helpers.mapToObject(gc_engine.getOptions());
+    let dOptions = helpers.mapToObject(gc_options.getOptions());
     postMessage(createResponse("getOptions", dOptions, oInfo, true));
 }
 
 function getDefaultOptions (oInfo={}) {
-    let dOptions = helpers.mapToObject(gc_engine.getDefaultOptions());
+    let dOptions = helpers.mapToObject(gc_options.getDefaultOptions());
     postMessage(createResponse("getDefaultOptions", dOptions, oInfo, true));
 }
 
@@ -275,23 +274,23 @@ function setOptions (dOptions, oInfo={}) {
     if (!(dOptions instanceof Map)) {
         dOptions = helpers.objectToMap(dOptions);
     }
-    gc_engine.setOptions(dOptions);
-    dOptions = helpers.mapToObject(gc_engine.getOptions());
+    gc_options.setOptions(dOptions);
+    dOptions = helpers.mapToObject(gc_options.getOptions());
     postMessage(createResponse("setOptions", dOptions, oInfo, true));
 }
 
 function setOption (sOptName, bValue, oInfo={}) {
     console.log(sOptName+": "+bValue);
     if (sOptName) {
-        gc_engine.setOption(sOptName, bValue);
-        let dOptions = helpers.mapToObject(gc_engine.getOptions());
+        gc_options.setOption(sOptName, bValue);
+        let dOptions = helpers.mapToObject(gc_options.getOptions());
         postMessage(createResponse("setOption", dOptions, oInfo, true));
     }
 }
 
 function resetOptions (oInfo={}) {
-    gc_engine.resetOptions();
-    let dOptions = helpers.mapToObject(gc_engine.getOptions());
+    gc_options.resetOptions();
+    let dOptions = helpers.mapToObject(gc_options.getOptions());
     postMessage(createResponse("resetOptions", dOptions, oInfo, true));
 }
 
@@ -328,19 +327,19 @@ function fullTests (oInfo={}) {
         postMessage(createResponse("fullTests", "# Grammar checker not loaded.", oInfo, true));
         return;
     }
-    let dMemoOptions = gc_engine.getOptions();
-    let dTestOptions = gc_engine.getDefaultOptions();
+    let dMemoOptions = gc_options.getOptions();
+    let dTestOptions = gc_options.getDefaultOptions();
     dTestOptions.set("nbsp", true);
     dTestOptions.set("esp", true);
     dTestOptions.set("unit", true);
     dTestOptions.set("num", true);
-    gc_engine.setOptions(dTestOptions);
+    gc_options.setOptions(dTestOptions);
     let sMsg = "";
     for (let sRes of oTest.testParse()) {
         sMsg += sRes + "\n";
         console.log(sRes);
     }
-    gc_engine.setOptions(dMemoOptions);
+    gc_options.setOptions(dMemoOptions);
     postMessage(createResponse("fullTests", sMsg, oInfo, true));
 }
 

@@ -16,8 +16,9 @@ if(typeof(process) !== 'undefined') {
 
 class TestGrammarChecking {
 
-    constructor (gce, spfTests="") {
-        this.gce = gce;
+    constructor (gc_engine, gc_options, spfTests="") {
+        this.gc_engine = gc_engine;
+        this.gc_options = gc_options;
         this.spfTests = spfTests;
         this._aRuleTested = new Set();
     }
@@ -26,9 +27,9 @@ class TestGrammarChecking {
         const t0 = Date.now();
         let sURL;
         if(typeof(process) !== 'undefined') {
-            sURL = (this.spfTests !== "") ? this.spfTests : "./"+this.gce.lang+"/tests_data.json";
+            sURL = (this.spfTests !== "") ? this.spfTests : "./"+this.gc_engine.lang+"/tests_data.json";
         } else {
-            sURL = (this.spfTests !== "") ? this.spfTests : "resource://grammalecte/"+this.gce.lang+"/tests_data.json";
+            sURL = (this.spfTests !== "") ? this.spfTests : "resource://grammalecte/"+this.gc_engine.lang+"/tests_data.json";
         }
         const aData = JSON.parse(helpers.loadFile(sURL)).aData;
         let nInvalid = 0;
@@ -46,7 +47,7 @@ class TestGrammarChecking {
         let zOption = /^__([a-zA-Z0-9]+)__ /;
         let sOption;
         let m;
-        yield "Tests [" + this.gce.lang + "]: " + aData.length.toString();
+        yield "Tests [" + this.gc_engine.lang + "]: " + aData.length.toString();
         try {
             for (let sLine of aData) {
                 sLineNum = sLine.slice(0,10).trim();
@@ -92,7 +93,7 @@ class TestGrammarChecking {
 
         if (bShowUntested) {
             i = 0;
-            for (let [sOpt, sLineId, sRuleId] of this.gce.listRules()) {
+            for (let [sOpt, sLineId, sRuleId] of this.gc_engine.listRules()) {
                 if (sOpt !== "@@@@" && !this._aRuleTested.has(sLineId) && !/^[0-9]+[sp]$|^[pd]_/.test(sRuleId)) {
                     sUntestedRules += sLineId + "/" + sRuleId + ", ";
                     i += 1;
@@ -138,11 +139,11 @@ class TestGrammarChecking {
         try {
             let aErrs = [];
             if (sOption) {
-                this.gce.setOption(sOption, true);
-                aErrs = this.gce.parse(sLine, "FR", bDebug);
-                this.gce.setOption(sOption, false);
+                this.gc_options.setOption(sOption, true);
+                aErrs = this.gc_engine.parse(sLine, "FR", bDebug);
+                this.gc_options.setOption(sOption, false);
             } else {
-                aErrs = this.gce.parse(sLine, "FR", bDebug);
+                aErrs = this.gc_engine.parse(sLine, "FR", bDebug);
             }
             let sRes = " ".repeat(sLine.length);
             let sListErr = "";
