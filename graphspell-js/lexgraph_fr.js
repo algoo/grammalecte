@@ -9,7 +9,7 @@ ${map}
 
 //// Default Suggestions
 
-const dSugg = new Map ([
+const _dSugg = new Map ([
     ["bcp", "beaucoup"],
     ["ca", "ça"],
     ["cad", "c’est-à-dire"],
@@ -132,6 +132,8 @@ const dSugg = new Map ([
 //// Lexicographer
 
 var lexgraph_fr = {
+
+    dSugg: _dSugg,
 
     dTag: new Map([
             [':N', [" nom,", "Nom"]],
@@ -720,6 +722,5 @@ var lexgraph_fr = {
 
 
 if (typeof(exports) !== 'undefined') {
-    exports.dSugg = dSugg;
     exports.lexgraph_fr = lexgraph_fr;
 }
