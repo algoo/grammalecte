@@ -2,10 +2,6 @@
 
 // Grammar checker engine
 // PromiseWorker
-// This code is executed in a separate thread (×20 faster too!!!)
-
-// Firefox WTF: it’s impossible to use require as in the main thread here,
-// so it is required to declare a resource in the file “chrome.manifest”.
 
 
 "use strict";
@@ -42,36 +38,31 @@ self.addEventListener("message", msg => worker.handleMessage(msg));
 // end of copy/paste
 
 
-// no console here, use “dump”
-
-let gce = null; // module: grammar checker engine
-let gco = null;
-let text = null;
-let tkz = null; // module: tokenizer
-let lxg = null; // module: lexicographer
+let gc_engine = null; // module: grammar checker engine
+let gc_options = null; // module: grammar checker options
+let text = null; // module: text
+let lexgraph_fr = null; // module: lexicographer
 let helpers = null;
 
-let oTokenizer = null;
 let oSpellChecker = null;
-let oLxg = null;
+
 
 function loadGrammarChecker (sGCOptions="", sContext="JavaScript") {
-    if (gce === null) {
+    if (gc_engine === null) {
         try {
-            gco = require("resource://grammalecte/fr/gc_options.js");
-            gce = require("resource://grammalecte/fr/gc_engine.js");
+            gc_options = require("resource://grammalecte/fr/gc_options.js");
+            gc_engine = require("resource://grammalecte/fr/gc_engine.js");
             helpers = require("resource://grammalecte/graphspell/helpers.js");
             text = require("resource://grammalecte/text.js");
-            tkz = require("resource://grammalecte/graphspell/tokenizer.js");
-            //lxg = require("resource://grammalecte/fr/lexicographe.js");
-            oTokenizer = new tkz.Tokenizer("fr");
-            gce.load(sContext, "sCSS");
-            oSpellChecker = gce.getSpellChecker();
+            //lexgraph_fr = require("resource://grammalecte/graphspell/lexgraph_fr.js");
+            gc_engine.load(sContext, "sCSS");
+            oSpellChecker = gc_engine.getSpellChecker();
             if (sGCOptions !== "") {
-                gco.setOptions(helpers.objectToMap(JSON.parse(sGCOptions)));
+                console.log(sGCOptions);
+                gc_options.setOptions(helpers.objectToMap(JSON.parse(sGCOptions)));
             }
-            // we always retrieve options from the gce, for setOptions filters obsolete options
-            return gco.getOptions().gl_toString();
+            // we always retrieve options from the gc_engine, for setOptions filters obsolete options
+            return gc_options.getOptions().gl_toString();
         }
         catch (e) {
             console.log("# Error: " + e.fileName + "\n" + e.name + "\nline: " + e.lineNumber + "\n" + e.message);
@@ -102,12 +93,12 @@ function setDictionary (sTypeDic, sDictionary) {
 }
 
 function parse (sText, sCountry, bDebug, bContext) {
-    let aGrammErr = gce.parse(sText, sCountry, bDebug, bContext);
+    let aGrammErr = gc_engine.parse(sText, sCountry, bDebug, bContext);
     return JSON.stringify(aGrammErr);
 }
 
 function parseAndSpellcheck (sText, sCountry, bDebug, bContext) {
-    let aGrammErr = gce.parse(sText, sCountry, bDebug, null, bContext);
+    let aGrammErr = gc_engine.parse(sText, sCountry, bDebug, null, bContext);
     let aSpellErr = oSpellChecker.parseParagraph(sText);
     return JSON.stringify({ aGrammErr: aGrammErr, aSpellErr: aSpellErr });
 }
@@ -121,43 +112,43 @@ function suggest (sWord, nSuggLimit=10) {
 }
 
 function getOptions () {
-    return gco.getOptions().gl_toString();
+    return gc_options.getOptions().gl_toString();
 }
 
 function getDefaultOptions () {
-    return gco.getDefaultOptions().gl_toString();
+    return gc_options.getDefaultOptions().gl_toString();
 }
 
 function setOptions (sGCOptions) {
-    gco.setOptions(helpers.objectToMap(JSON.parse(sGCOptions)));
-    return gco.getOptions().gl_toString();
+    gc_options.setOptions(helpers.objectToMap(JSON.parse(sGCOptions)));
+    return gc_options.getOptions().gl_toString();
 }
 
 function setOption (sOptName, bValue) {
-    gco.setOptions(new Map([ [sOptName, bValue] ]));
-    return gco.getOptions().gl_toString();
+    gc_options.setOptions(new Map([ [sOptName, bValue] ]));
+    return gc_options.getOptions().gl_toString();
 }
 
 function resetOptions () {
-    gco.resetOptions();
-    return gco.getOptions().gl_toString();
+    gc_options.resetOptions();
+    return gc_options.getOptions().gl_toString();
 }
 
 function fullTests (sGCOptions="") {
-    if (!gce || !oSpellChecker || !gco) {
+    if (!gc_engine || !oSpellChecker || !gc_options) {
         return "# Error: grammar checker or dictionary not loaded."
     }
-    let dMemoOptions = gco.getOptions();
+    let dMemoOptions = gc_options.getOptions();
     if (sGCOptions) {
-        gco.setOptions(helpers.objectToMap(JSON.parse(sGCOptions)));
+        gc_options.setOptions(helpers.objectToMap(JSON.parse(sGCOptions)));
     }
     let tests = require("resource://grammalecte/tests.js");
-    let oTest = new tests.TestGrammarChecking(gce);
+    let oTest = new tests.TestGrammarChecking(gc_engine, gc_options);
     let sAllRes = "";
     for (let sRes of oTest.testParse()) {
         console.log(sRes+"\n");
         sAllRes += sRes+"\n";
     }
-    gco.setOptions(dMemoOptions);
+    gc_options.setOptions(dMemoOptions);
     return sAllRes;
 }

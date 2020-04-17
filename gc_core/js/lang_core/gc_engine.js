@@ -76,8 +76,8 @@ var gc_engine = {
             this.oOptionsColors = gc_options.getOptionsColors(sContext, sColorType);
             this.oTokenizer = this.oSpellChecker.getTokenizer();
             this.oSpellChecker.activateStorage();
-            gc_engine_func.load(sContext, this.oSpellChecker)
-            gc_options.load(sContext)
+            gc_engine_func.load(sContext, this.oSpellChecker);
+            gc_options.load(sContext);
         }
         catch (e) {
             console.error(e);
@@ -1012,6 +1012,7 @@ if (typeof(exports) !== 'undefined') {
     exports.version = gc_engine.version;
     exports.author = gc_engine.author;
     // objects
+    exports.getSpellChecker = gc_engine.getSpellChecker;
     exports.oSpellChecker = gc_engine.oSpellChecker;
     exports.oTokenizer = gc_engine.oTokenizer;
     exports.aIgnoredRules = gc_engine.aIgnoredRules;
