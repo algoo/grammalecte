@@ -16,102 +16,25 @@ function g_morphVC (oToken, sPattern, sNegPattern="") {
     return g_morph(oToken, sPattern, sNegPattern, 0, nEnd, false);
 }
 
-function rewriteSubject (s1, s2) {
-    // s1 is supposed to be prn/patr/npr (M[12P])
-    if (s2 == "lui") {
-        return "ils";
-    }
-    if (s2 == "moi") {
-        return "nous";
-    }
-    if (s2 == "toi") {
-        return "vous";
-    }
-    if (s2 == "nous") {
-        return "nous";
-    }
-    if (s2 == "vous") {
-        return "vous";
-    }
-    if (s2 == "eux") {
-        return "ils";
-    }
-    if (s2 == "elle" || s2 == "elles") {
-        if (cregex.mbNprMasNotFem(_oSpellChecker.getMorph(s1))) {
-            return "ils";
-        }
-        // si épicène, indéterminable, mais OSEF, le féminin l’emporte
-        return "elles";
-    }
-    return s1 + " et " + s2;
-}
-
 function apposition (sWord1, sWord2) {
     // returns true if nom + nom (no agreement required)
     return sWord2.length < 2 || (cregex.mbNomNotAdj(_oSpellChecker.getMorph(sWord2)) && cregex.mbPpasNomNotAdj(_oSpellChecker.getMorph(sWord1)));
 }
 
-function isAmbiguousNAV (sWord) {
-    // words which are nom|adj and verb are ambiguous (except être and avoir)
-    let lMorph = _oSpellChecker.getMorph(sWord);
-    if (lMorph.length === 0) {
-        return false;
-    }
-    if (!cregex.mbNomAdj(lMorph) || sWord == "est") {
-        return false;
-    }
-    if (cregex.mbVconj(lMorph) && !cregex.mbMG(lMorph)) {
-        return true;
-    }
-    return false;
-}
-
-function isAmbiguousAndWrong (sWord1, sWord2, sReqMorphNA, sReqMorphConj) {
-    //// use it if sWord1 won’t be a verb; word2 is assumed to be true via isAmbiguousNAV
-    let lMorph2 = _oSpellChecker.getMorph(sWord2);
-    if (lMorph2.length === 0) {
-        return false;
-    }
-    if (cregex.checkConjVerb(lMorph2, sReqMorphConj)) {
-        // verb word2 is ok
-        return false;
-    }
-    let lMorph1 = _oSpellChecker.getMorph(sWord1);
+function g_checkAgreement (oToken1, oToken2, bNotOnlyNames=true) {
+    // check agreement between <oToken1> and <oToken2>
+    let lMorph1 = oToken1.hasOwnProperty("lMorph") ? oToken1["lMorph"] : _oSpellChecker.getMorph(oToken1["sValue"]);
     if (lMorph1.length === 0) {
-        return false;
+        return true;
     }
-    if (cregex.checkAgreement(lMorph1, lMorph2) && (cregex.mbAdj(lMorph2) || cregex.mbAdj(lMorph1))) {
-        return false;
-    }
-    return true;
-}
-
-function isVeryAmbiguousAndWrong (sWord1, sWord2, sReqMorphNA, sReqMorphConj, bLastHopeCond) {
-    //// use it if sWord1 can be also a verb; word2 is assumed to be true via isAmbiguousNAV
-    let lMorph2 = _oSpellChecker.getMorph(sWord2);
+    let lMorph2 = oToken2.hasOwnProperty("lMorph") ? oToken2["lMorph"] : _oSpellChecker.getMorph(oToken2["sValue"]);
     if (lMorph2.length === 0) {
-        return false;
-    }
-    if (cregex.checkConjVerb(lMorph2, sReqMorphConj)) {
-        // verb word2 is ok
-        return false;
-    }
-    let lMorph1 = _oSpellChecker.getMorph(sWord1);
-    if (lMorph1.length === 0) {
-        return false;
-    }
-    if (cregex.checkAgreement(lMorph1, lMorph2) && (cregex.mbAdj(lMorph2) || cregex.mbAdjNb(lMorph1))) {
-        return false;
-    }
-    // now, we know there no agreement, and conjugation is also wrong
-    if (cregex.isNomAdj(lMorph1)) {
         return true;
     }
-    //if cregex.isNomAdjVerb(lMorph1): # considered true
-    if (bLastHopeCond) {
-        return true;
+    if (bNotOnlyNames && !(cregex.mbAdj(lMorph2) || cregex.mbAdjNb(lMorph1))) {
+        return false;
     }
-    return false;
+    return cregex.checkAgreement(lMorph1, lMorph2);
 }
 
 function checkAgreement (sWord1, sWord2) {
@@ -135,11 +58,3 @@ function mbUnit (s) {
     }
     return false;
 }
-
-
-// Exceptions
-
-const aREGULARPLURAL = new Set(["abricot", "amarante", "aubergine", "acajou", "anthracite", "brique", "caca", "café",
-                                "carotte", "cerise", "chataigne", "corail", "citron", "crème", "grave", "groseille",
-                                "jonquille", "marron", "olive", "pervenche", "prune", "sable"]);
-const aSHOULDBEVERB = new Set(["aller", "manger"]);

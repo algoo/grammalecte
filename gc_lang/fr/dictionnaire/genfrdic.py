@@ -1192,7 +1192,7 @@ class Flexion:
 
     _dTagReplacement = {
         # POS
-        "nom": ":N", "adj": ":A", "adv": ":W", "negadv": ":X", "mg": ":G", "nb": ":B",
+        "nom": ":N", "adj": ":A", "adv": ":W", "negadv": ":X", "mg": ":G", "nb": ":B", "nbro": ":Br",
         "loc.nom": ":Ñ", "loc.adj": ":Â", "loc.adv": ":Ŵ", "loc.verb": ":Ṽ",
         "interj": ":J", "loc.interj": ":Ĵ", "titr": ":T",
         "mas": ":m", "fem": ":f", "epi": ":e", "sg": ":s", "pl": ":p", "inv": ":i",
@@ -1201,7 +1201,7 @@ class Flexion:
         "ipre": ":Ip", "iimp": ":Iq", "ipsi": ":Is", "ifut": ":If",
         "spre": ":Sp", "simp": ":Sq", "cond": ":K", "impe": ":E",
         "1sg": ":1s", "1isg": ":1ś", "1jsg": ":1ŝ", "2sg": ":2s", "3sg": ":3s", "1pl": ":1p", "2pl": ":2p", "3pl": ":3p", "3pl!": ":3p!",
-        "prepv": ":Rv", "prep": ":R", "loc.prep": ":Ŕ", "loc.prepv": "Ŕ",
+        "prepv": ":Rv", "prep": ":R", "loc.prep": ":Ŕ", "loc.prepv": "Ŕv",
         "detpos": ":Dp", "detdem": ":Dd", "detind": ":Di", "detneg": ":Dn", "detex": ":De", "det": ":D",
         "advint": ":U",
         "prodem": ":Od", "proind": ":Oi", "proint": ":Ot", "proneg": ":On", "prorel": ":Or", "proadv": ":Ow",

@@ -10,6 +10,7 @@ import concurrent.futures
 
 import darg
 import compile_rules_js_convert as jsconv
+import helpers
 
 
 #### PROCESS POOL EXECUTOR ####
@@ -56,6 +57,7 @@ def rewriteCode (sCode):
     sCode = re.sub(r"\bbefore0\(\s*", 'look(sSentence0[:lToken[1+nTokenOffset]["nStart"]], ', sCode)        # before0(sCode)
     sCode = re.sub(r"\bafter0\(\s*", 'look(sSentence[lToken[nLastToken]["nEnd"]:], ', sCode)                # after0(sCode)
     sCode = re.sub(r"\banalyseWord[(]", 'analyse(', sCode)
+    sCode = re.sub(r"\bcheckAgreement[(]\\(\d+), *\\(\d+)", 'g_checkAgreement(lToken[nTokenOffset+\\1], lToken[nTokenOffset+\\2]', sCode)
     sCode = re.sub(r"[\\](\d+)", 'lToken[nTokenOffset+\\1]["sValue"]', sCode)
     sCode = re.sub(r"[\\]-(\d+)", 'lToken[nLastToken-\\1+1]["sValue"]', sCode)
     sCode = re.sub(r">1", 'lToken[nLastToken+1]["sValue"]', sCode)
@@ -182,7 +184,7 @@ class GraphBuilder:
     def createGraphAndActions (self, lRuleLine):
         "create a graph as a dictionary with <lRuleLine>"
         fStartTimer = time.time()
-        print("{:>8,} rules in {:<30} ".format(len(lRuleLine), "<"+self.sGraphName+"|"+self.sGraphCode+">"), end="")
+        print("{:>8,} rules in {:<30} ".format(len(lRuleLine), f"<{self.sGraphName}|{self.sGraphCode}>"), end="")
         lPreparedRule = []
         for i, sRuleName, sTokenLine, iActionBlock, lActions, nPriority in lRuleLine:
             for aRule in self.createRule(i, sRuleName, sTokenLine, iActionBlock, lActions, nPriority):
@@ -237,7 +239,7 @@ class GraphBuilder:
                 for iAction, (iActionLine, sAction) in enumerate(lActions, 1):
                     sAction = sAction.strip()
                     if sAction:
-                        sActionId = self.sGraphCode + "__" + sRuleName + "__b" + str(iActionBlock) + "_a" + str(iAction)
+                        sActionId = f"{self.sGraphCode}__{sRuleName}__b{iActionBlock}_a{iAction}"
                         aAction = self.createAction(sActionId, sAction, nPriority, len(lToken), dPos, iActionLine)
                         if aAction:
                             sActionName = self.storeAction(sActionId, aAction)
@@ -248,13 +250,17 @@ class GraphBuilder:
                             #    print(sActionId, aAction)
                             yield lResult
                         else:
-                            print(" # Error on action at line:", iLine)
+                            print("# Error on action at line:", iLine)
                             print(sTokenLine, "\n", lActions)
+                            exit()
                     else:
                         print("No action found for ", iActionLine)
+                        exit()
 
     def createAction (self, sActionId, sAction, nPriority, nToken, dPos, iActionLine):
         "create action rule as a list"
+        sLineId = "#" + str(iActionLine)
+
         # Option
         sOption = False
         m = re.match("/(\\w+)/", sAction)
@@ -267,8 +273,8 @@ class GraphBuilder:
         # valid action?
         m = re.search(r"(?P<action>[-=~/!>])(?P<start>-?\d+\.?|)(?P<end>:\.?-?\d+|)(?P<casing>:|)>>", sAction)
         if not m:
-            print("\n# Error. No action found at: ", sActionId)
-            return None
+            print("\n# Error. No action found at: ", sLineId, sActionId)
+            exit()
 
         # Condition
         sCondition = sAction[:m.start()].strip()
@@ -293,7 +299,7 @@ class GraphBuilder:
             iEndAction = 0
         else:
             if cAction != "-" and (m.group("start").endswith(".") or m.group("end").startswith(":.")):
-                print("\n# Error. Wrong selection on tokens.", sActionId)
+                print("\n# Error. Wrong selection on tokens at: ", sLineId ,sActionId)
                 return None
             if m.group("start").endswith("."):
                 cStartLimit = ">"
@@ -315,13 +321,14 @@ class GraphBuilder:
 
         if cAction == "-":
             ## error
-            iMsg = sAction.find(" # ")
+            iMsg = sAction.find(" && ")
             if iMsg == -1:
                 sMsg = "# Error. Error message not found."
                 sURL = ""
-                print("\n" + sMsg + " Action id: " + sActionId)
+                print("\n# Error. No message at: ", sLineId, sActionId)
+                exit()
             else:
-                sMsg = sAction[iMsg+3:].strip()
+                sMsg = sAction[iMsg+4:].strip()
                 sAction = sAction[:iMsg].strip()
                 sURL = ""
                 mURL = re.search("[|] *(https?://.*)", sMsg)
@@ -337,14 +344,13 @@ class GraphBuilder:
         # checking consistancy
         checkTokenNumbers(sAction, sActionId, nToken)
 
-        sLineId = "#" + str(iActionLine)
-
         if cAction == ">":
             ## no action, break loop if condition is False
             return [sLineId, sOption, sCondition, cAction, ""]
 
         if not sAction and cAction != "!":
-            print("\n# Error in action at line <" + sActionId + ">:  This action is empty.")
+            print(f"\n# Error in action at line <{sLineId}/{sActionId}>:  This action is empty.")
+            exit()
 
         if sAction[0:1] != "=" and cAction != "=":
             checkIfThereIsCode(sAction, sActionId)
@@ -356,7 +362,8 @@ class GraphBuilder:
             elif sAction.startswith('"') and sAction.endswith('"'):
                 sAction = sAction[1:-1]
             if not sMsg:
-                print("\n# Error in action at line <" + sActionId + ">:  The message is empty.")
+                print(f"\n# Error in action at line <{sLineId}/{sActionId}>:  The message is empty.")
+                exit()
             return [sLineId, sOption, sCondition, cAction, sAction, iStartAction, iEndAction, cStartLimit, cEndLimit, bCaseSensitivity, nPriority, sMsg, sURL]
         if cAction == "~":
             ## text processor
@@ -368,9 +375,9 @@ class GraphBuilder:
                 nToken = sAction.count("|") + 1
                 if iStartAction > 0 and iEndAction > 0:
                     if (iEndAction - iStartAction + 1) != nToken:
-                        print("\n# Error in action at line <" + sActionId + ">: numbers of modified tokens modified.")
+                        print(f"\n# Error in action at line <{sLineId}/{sActionId}>: numbers of modified tokens modified.")
                 elif iStartAction < 0 or iEndAction < 0 and iStartAction != iEndAction:
-                    print("\n# Warning in action at line <" + sActionName + ">: rewriting with possible token position modified.")
+                    print(f"\n# Warning in action at line <{sLineId}/{sActionId}>: rewriting with possible token position modified.")
             return [sLineId, sOption, sCondition, cAction, sAction, iStartAction, iEndAction, bCaseSensitivity]
         if cAction in "!/":
             ## tags
@@ -378,10 +385,11 @@ class GraphBuilder:
         if cAction == "=":
             ## disambiguator
             if "define(" in sAction and not re.search(r"define\(\\-?\d+ *, *\[.*\] *\)", sAction):
-                print("\n# Error in action at line <" + sActionId + ">: second argument for <define> must be a list of strings")
+                print(f"\n# Error in action at line <{sLineId}/{sActionId}>: second argument for <define> must be a list of strings")
+                exit()
             sAction = self.createFunction("da", sAction)
             return [sLineId, sOption, sCondition, cAction, sAction]
-        print("\n# Unknown action.", sActionId)
+        print("\n# Unknown action at ", sLineId, sActionId)
         return None
 
     def storeAction (self, sActionId, aAction):
@@ -436,10 +444,10 @@ class GraphBuilder:
                 print("# Unknown function type in [" + sFuncName + "]")
                 continue
             # Python
-            sPyCallables += "def {} ({}):\n".format(sFuncName, sParams)
-            sPyCallables += "    return " + sReturn + "\n"
+            sPyCallables += f"def {sFuncName} ({sParams}):\n"
+            sPyCallables += f"    return {sReturn}\n"
             # JavaScript
-            sJSCallables += "    {}: function ({})".format(sFuncName, sParams) + " {\n"
+            sJSCallables += f"    {sFuncName}: function ({sParams}) {{\n"
             sJSCallables += "        return " + jsconv.py2js(sReturn) + ";\n"
             sJSCallables += "    },\n"
         return sPyCallables, sJSCallables
@@ -472,7 +480,7 @@ def make (lRule, sLang, dDef, dDecl, dOptPriority):
         sLine = sLine.rstrip()
         if "\t" in sLine:
             # tabulation not allowed
-            print("Error. Tabulation at line: ", iLine)
+            print("# Error. Tabulation at line: ", iLine)
             exit()
         elif sLine.startswith("@@@@GRAPH: "):
             # rules graph call
@@ -481,12 +489,12 @@ def make (lRule, sLang, dDef, dDecl, dOptPriority):
                 sGraphName = m.group(1)
                 sGraphCode = m.group(2)
                 if sGraphName in dAllGraph or sGraphCode in dGraphCode:
-                    print("Error at line " + iLine + ". Graph name <" + sGraphName + "> or graph code <" + sGraphCode + "> already exists.")
+                    print(f"# Error at line {iLine}. Graph name <{sGraphName}> or graph code <{sGraphCode}> already exists.")
                     exit()
                 dAllGraph[sGraphName] = []
                 dGraphCode[sGraphName] = sGraphCode
             else:
-                print("Error. Graph name not found at line", iLine)
+                print("# Error. Graph name not found at line", iLine)
                 exit()
         elif sLine.startswith("__") and sLine.endswith("__"):
             # new rule group
@@ -494,13 +502,13 @@ def make (lRule, sLang, dDef, dDecl, dOptPriority):
             if m:
                 sRuleName = m.group(1)
                 if sRuleName in aRuleName:
-                    print("Error at line " + str(iLine) + ". Rule name <" + sRuleName + "> already exists.")
+                    print(f"# Error at line {iLine}. Rule name <{sRuleName}> already exists.")
                     exit()
                 aRuleName.add(sRuleName)
                 iActionBlock = 1
                 nPriority = int(m.group(2)[1:]) if m.group(2)  else -1
             else:
-                print("Syntax error in rule group: ", sLine, " -- line:", iLine)
+                print("# Syntax error in rule group: ", sLine, " -- line:", iLine)
                 exit()
         elif re.match("    \\S", sLine):
             # tokens line
@@ -514,7 +522,7 @@ def make (lRule, sLang, dDef, dDecl, dOptPriority):
             lActions.append([iLine, sLine[12:].strip()])
             if not re.search(r"[-=~/!>](?:-?\d\.?(?::\.?-?\d+|)|):?>>", sLine):
                 bActionBlock = True
-        elif sLine.startswith("        # "):
+        elif sLine.startswith("        && "):
             # action message
             iPrevLine, sPrevLine = lActions[-1]
             lActions[-1] = [iPrevLine, sPrevLine + sLine]
@@ -529,11 +537,11 @@ def make (lRule, sLang, dDef, dDecl, dOptPriority):
             if not lTokenLine:
                 continue
             if bActionBlock or not lActions:
-                print("Error. No action found at line:", iLine)
+                print("# Error. No action found at line:", iLine)
                 print(bActionBlock, lActions)
                 exit()
             if not sGraphName:
-                print("Error. All rules must belong to a named graph. Line: ", iLine)
+                print("# Error. All rules must belong to a named graph. Line: ", iLine)
                 exit()
             for j, sTokenLine in lTokenLine:
                 dAllGraph[sGraphName].append((j, sRuleName, sTokenLine, iActionBlock, list(lActions), nPriority))
@@ -541,12 +549,13 @@ def make (lRule, sLang, dDef, dDecl, dOptPriority):
             lActions.clear()
             iActionBlock += 1
         else:
-            print("Unknown line at:", iLine)
+            print("# Unknown line at:", iLine)
             print(sLine)
+            exit()
 
     # processing rules
     print("  processing graph rules...")
-    initProcessPoolExecutor()
+    initProcessPoolExecutor(len(dAllGraph))
     fStartTimer = time.time()
     # build graph
     lResult = []
@@ -571,15 +580,31 @@ def make (lRule, sLang, dDef, dDecl, dOptPriority):
         dAllActions.update(dActions)
         sPyCallables += sPy
         sJSCallables += sJS
+    # create a dictionary of URL
+    dTempURL = { "": 0 }
+    i = 1
+    for sKey, lValue in dAllActions.items():
+        if lValue[3] == "-":
+            if lValue[-1]:
+                if lValue[-1] not in dTempURL:
+                    dTempURL[lValue[-1]] = i
+                    i += 1
+                lValue[-1] = dTempURL[lValue[-1]]
+            else:
+                lValue[-1] = 0
+    dURL = { v: k  for k, v in dTempURL.items() } # reversing key and values
+    # end
     print("  Total: ", nRule, "rules, ", len(dAllActions), "actions")
     print("  Build time: {:.2f} s".format(time.time() - fStartTimer))
 
     return {
         # the graphs describe paths of tokens to actions which eventually execute callables
-        "rules_graphs": str(dAllGraph),
+        "rules_graphs": str(dAllGraph), # helpers.convertDictToString(dAllGraph)
+        "rules_actions": helpers.convertDictToString(dAllActions), # str(dAllActions)
+        "rules_graph_URL": helpers.convertDictToString(dURL), # str(dURL)
         "rules_graphsJS": str(dAllGraph),
-        "rules_actions": str(dAllActions),
         "rules_actionsJS": jsconv.pyActionsToString(dAllActions),
+        "rules_graph_URLJS": str(dURL),
         "graph_callables": sPyCallables,
         "graph_callablesJS": sJSCallables
     }

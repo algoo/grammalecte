@@ -645,7 +645,7 @@ class TextParser {
                         console.log("   >TRY: " + sRuleId + " " + sLineId);
                     }
                     let [_, sOption, sFuncCond, cActionType, sWhat, ...eAct] = gc_rules_graph.dRule[sRuleId];
-                    // Suggestion    [ option, condition, "-", replacement/suggestion/action, iTokenStart, iTokenEnd, cStartLimit, cEndLimit, bCaseSvty, nPriority, sMessage, sURL ]
+                    // Suggestion    [ option, condition, "-", replacement/suggestion/action, iTokenStart, iTokenEnd, cStartLimit, cEndLimit, bCaseSvty, nPriority, sMessage, iURL ]
                     // TextProcessor [ option, condition, "~", replacement/suggestion/action, iTokenStart, iTokenEnd, bCaseSvty ]
                     // Disambiguator [ option, condition, "=", replacement/suggestion/action ]
                     // Tag           [ option, condition, "/", replacement/suggestion/action, iTokenStart, iTokenEnd ]
@@ -656,14 +656,15 @@ class TextParser {
                         if (bCondMemo) {
                             if (cActionType == "-") {
                                 // grammar error
-                                let [iTokenStart, iTokenEnd, cStartLimit, cEndLimit, bCaseSvty, nPriority, sMessage, sURL] = eAct;
+                                let [iTokenStart, iTokenEnd, cStartLimit, cEndLimit, bCaseSvty, nPriority, sMessage, iURL] = eAct;
                                 let nTokenErrorStart = (iTokenStart > 0) ? nTokenOffset + iTokenStart : nLastToken + iTokenStart;
                                 if (!this.lToken[nTokenErrorStart].hasOwnProperty("bImmune")) {
                                     let nTokenErrorEnd = (iTokenEnd > 0) ? nTokenOffset + iTokenEnd : nLastToken + iTokenEnd;
                                     let nErrorStart = this.nOffsetWithinParagraph + ((cStartLimit == "<") ? this.lToken[nTokenErrorStart]["nStart"] : this.lToken[nTokenErrorStart]["nEnd"]);
                                     let nErrorEnd = this.nOffsetWithinParagraph + ((cEndLimit == ">") ? this.lToken[nTokenErrorEnd]["nEnd"] : this.lToken[nTokenErrorEnd]["nStart"]);
                                     if (!this.dError.has(nErrorStart) || nPriority > this.dErrorPriority.gl_get(nErrorStart, -1)) {
-                                        this.dError.set(nErrorStart, this._createErrorFromTokens(sWhat, nTokenOffset, nLastToken, nTokenErrorStart, nErrorStart, nErrorEnd, sLineId, sRuleId, bCaseSvty, sMessage, sURL, bShowRuleId, sOption, bContext));
+                                        this.dError.set(nErrorStart, this._createErrorFromTokens(sWhat, nTokenOffset, nLastToken, nTokenErrorStart, nErrorStart, nErrorEnd, sLineId, sRuleId, bCaseSvty,
+                                                                                                 sMessage, gc_rules_graph.dURL[iURL], bShowRuleId, sOption, bContext));
                                         this.dErrorPriority.set(nErrorStart, nPriority);
                                         this.dSentenceError.set(nErrorStart, this.dError.get(nErrorStart));
                                         if (bDebug) {
@@ -760,7 +761,7 @@ class TextParser {
         return bChange;
     }
 
-    _createErrorFromRegex (sText, sText0, sSugg, nOffset, m, iGroup, sLineId, sRuleId, bUppercase, sMsg, sURL, bShowRuleId, sOption, bContext) {
+    _createErrorFromRegex (sText, sText0, sSugg, nOffset, m, iGroup, sLineId, sRuleId, bCaseSvty, sMsg, sURL, bShowRuleId, sOption, bContext) {
         let nStart = nOffset + m.start[iGroup];
         let nEnd = nOffset + m.end[iGroup];
         // suggestions
@@ -773,8 +774,8 @@ class TextParser {
         } else {
             lSugg = sSugg.gl_expand(m).split("|");
         }
-        if (bUppercase && lSugg.length > 0 && m[iGroup].slice(0,1).gl_isUpperCase()) {
-            lSugg = capitalizeArray(lSugg);
+        if (bCaseSvty && lSugg.length > 0 && m[iGroup].slice(0,1).gl_isUpperCase()) {
+            lSugg = (m[iGroup].gl_isUpperCase()) ? lSugg.map((s) => s.toUpperCase()) : capitalizeArray(lSugg);
         }
         // Message
         let sMessage = (sMsg.startsWith("=")) ? gc_engine_func[sMsg.slice(1)](sText, m) : sMsg.gl_expand(m);
@@ -797,7 +798,7 @@ class TextParser {
             lSugg = this._expand(sSugg, nTokenOffset, nLastToken).split("|");
         }
         if (bCaseSvty && lSugg.length > 0 && this.lToken[iFirstToken]["sValue"].slice(0,1).gl_isUpperCase()) {
-            lSugg = capitalizeArray(lSugg);
+            lSugg = (this.lToken[iFirstToken]["sValue"].gl_isUpperCase()) ? lSugg.map((s) => s.toUpperCase()) : capitalizeArray(lSugg);
         }
         // Message
         let sMessage = (sMsg.startsWith("=")) ? gc_engine_func[sMsg.slice(1)](this.lToken, nTokenOffset, nLastToken) : this._expand(sMsg, nTokenOffset, nLastToken);

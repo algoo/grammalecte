@@ -108,7 +108,7 @@ class TestPhonet (unittest.TestCase):
     def setUpClass (cls):
         cls.lSet = [
             ["ce", "se"],
-            ["ces", "ses", "sais", "sait"],
+            ["ces", "saie", "saies", "ses", "sais", "sait"],
             ["cet", "cette", "sept", "set", "sets"],
             ["dé", "dés", "dès", "dais", "des"],
             ["don", "dons", "dont"],
@@ -124,7 +124,6 @@ class TestPhonet (unittest.TestCase):
             ["or", "ors", "hors"],
             ["hou", "houe", "houes", "ou", "où", "houx"],
             ["peu", "peux", "peut"],
-            ["ses", "ces", "sais", "sait"],
             ["son", "sons", "sont"],
             ["tes", "tais", "tait", "taie", "taies", "thé", "thés"],
             ["toi", "toit", "toits"],
@@ -206,12 +205,12 @@ class TestGrammarChecking (unittest.TestCase):
                 print("Unexpected errors:", nError)
         # untested rules
         i = 0
-        echo("Untested rules:")
         for _, sOpt, sLineId, sRuleId in gc_engine.listRules():
             if sOpt != "@@@@" and sRuleId not in self._aTestedRules and not re.search("^[0-9]+[sp]$|^[pd]_", sRuleId):
-                echo(sLineId + "/" + sRuleId)
+                echo(f"# untested rule: {sLineId}/{sRuleId}")
                 i += 1
-        echo("[{} untested rules]".format(i))
+        if i:
+            echo("  [{} untested rules]".format(i))
 
     def _splitTestLine (self, sLine):
         sText, sSugg = sLine.split("->>")

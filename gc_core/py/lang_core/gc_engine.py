@@ -577,7 +577,7 @@ class TextParser:
                     if bDebug:
                         echo("   >TRY: " + sRuleId + " " + sLineId)
                     _, sOption, sFuncCond, cActionType, sWhat, *eAct = _rules_graph.dRule[sRuleId]
-                    # Suggestion    [ sActionLineId, option, condition, "-", replacement/suggestion/action, iTokenStart, iTokenEnd, cStartLimit, cEndLimit, bCaseSvty, nPriority, sMessage, sURL ]
+                    # Suggestion    [ sActionLineId, option, condition, "-", replacement/suggestion/action, iTokenStart, iTokenEnd, cStartLimit, cEndLimit, bCaseSvty, nPriority, sMessage, iURL ]
                     # TextProcessor [ sActionLineId, option, condition, "~", replacement/suggestion/action, iTokenStart, iTokenEnd, bCaseSvty ]
                     # Disambiguator [ sActionLineId, option, condition, "=", replacement/suggestion/action ]
                     # Tag           [ sActionLineId, option, condition, "/", replacement/suggestion/action, iTokenStart, iTokenEnd ]
@@ -588,14 +588,15 @@ class TextParser:
                         if bCondMemo:
                             if cActionType == "-":
                                 # grammar error
-                                iTokenStart, iTokenEnd, cStartLimit, cEndLimit, bCaseSvty, nPriority, sMessage, sURL = eAct
+                                iTokenStart, iTokenEnd, cStartLimit, cEndLimit, bCaseSvty, nPriority, sMessage, iURL = eAct
                                 nTokenErrorStart = nTokenOffset + iTokenStart  if iTokenStart > 0  else nLastToken + iTokenStart
                                 if "bImmune" not in self.lToken[nTokenErrorStart]:
                                     nTokenErrorEnd = nTokenOffset + iTokenEnd  if iTokenEnd > 0  else nLastToken + iTokenEnd
                                     nErrorStart = self.nOffsetWithinParagraph + (self.lToken[nTokenErrorStart]["nStart"] if cStartLimit == "<"  else self.lToken[nTokenErrorStart]["nEnd"])
                                     nErrorEnd = self.nOffsetWithinParagraph + (self.lToken[nTokenErrorEnd]["nEnd"] if cEndLimit == ">"  else self.lToken[nTokenErrorEnd]["nStart"])
                                     if nErrorStart not in self.dError or nPriority > self.dErrorPriority.get(nErrorStart, -1):
-                                        self.dError[nErrorStart] = self._createErrorFromTokens(sWhat, nTokenOffset, nLastToken, nTokenErrorStart, nErrorStart, nErrorEnd, sLineId, sRuleId, bCaseSvty, sMessage, sURL, bShowRuleId, sOption, bContext)
+                                        self.dError[nErrorStart] = self._createErrorFromTokens(sWhat, nTokenOffset, nLastToken, nTokenErrorStart, nErrorStart, nErrorEnd, sLineId, sRuleId, bCaseSvty, \
+                                                                                               sMessage, _rules_graph.dURL.get(iURL, ""), bShowRuleId, sOption, bContext)
                                         self.dErrorPriority[nErrorStart] = nPriority
                                         self.dSentenceError[nErrorStart] = self.dError[nErrorStart]
                                         if bDebug:
@@ -661,7 +662,7 @@ class TextParser:
                     raise Exception(str(e), sLineId, sRuleId, self.sSentence)
         return bChange
 
-    def _createErrorFromRegex (self, sText, sText0, sRepl, nOffset, m, iGroup, sLineId, sRuleId, bUppercase, sMsg, sURL, bShowRuleId, sOption, bContext):
+    def _createErrorFromRegex (self, sText, sText0, sRepl, nOffset, m, iGroup, sLineId, sRuleId, bCaseSvty, sMsg, sURL, bShowRuleId, sOption, bContext):
         nStart = nOffset + m.start(iGroup)
         nEnd = nOffset + m.end(iGroup)
         # suggestions
@@ -672,8 +673,8 @@ class TextParser:
             lSugg = []
         else:
             lSugg = m.expand(sRepl).split("|")
-        if bUppercase and lSugg and m.group(iGroup)[0:1].isupper():
-            lSugg = list(map(lambda s: s[0:1].upper()+s[1:], lSugg))
+        if bCaseSvty and lSugg and m.group(iGroup)[0:1].isupper():
+            lSugg = list(map(lambda s: s.upper(), lSugg))  if m.group(iGroup).isupper()  else list(map(lambda s: s[0:1].upper()+s[1:], lSugg))
         # Message
         sMessage = getattr(gce_func, sMsg[1:])(sText, m)  if sMsg[0:1] == "="  else  m.expand(sMsg)
         if bShowRuleId:
@@ -693,7 +694,7 @@ class TextParser:
         else:
             lSugg = self._expand(sSugg, nTokenOffset, nLastToken).split("|")
         if bCaseSvty and lSugg and self.lToken[iFirstToken]["sValue"][0:1].isupper():
-            lSugg = list(map(lambda s: s[0:1].upper()+s[1:], lSugg))
+            lSugg = list(map(lambda s: s.upper(), lSugg))  if self.lToken[iFirstToken]["sValue"].isupper()  else list(map(lambda s: s[0:1].upper()+s[1:], lSugg))
         # Message
         sMessage = getattr(gce_func, sMsg[1:])(self.lToken, nTokenOffset, nLastToken)  if sMsg[0:1] == "="  else self._expand(sMsg, nTokenOffset, nLastToken)
         if bShowRuleId:

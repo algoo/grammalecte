@@ -1,6 +1,6 @@
 # NOTES SUR LA LANGUE FRANÇAISE
 
-## CE QUI ENTOURE UN VERBE
+## CE QUI ENTOURE UN VERBE
 
     PRONOMS (avant)
         COD         COI
@@ -16,7 +16,7 @@
         se / s’     leur
                     y
 
-    ADVERBE DE NÉGATION (avant)
+    ADVERBE DE NÉGATION PRÉVERBAL
         ne / n’
 
     COMBINAISONS VALIDES
@@ -29,28 +29,27 @@
         ?[ne|n’]¿   ?[le|la|l’|les|me|m’|te|t’|se|s’|nous|vous|lui|leur]¿
         ?n’¿        [en|y]
 
-    RÉSUMÉ & SIMPLIFICATION
-        Toutes les combinaisons:
-            ?[ne|n’]¿   ?[le|la|l’|les|en|me|m’|te|t’|se|s’|nous|vous|lui|leur|y]¿
-            ?[ne|n’]¿   [me|m’|te|t’|se|s’|nous|vous]   [le|la|l’|les|en|y]
-            ?[ne|n’]¿   [le|la|l’|les]                  [lui|leur|en|y]
-            ?[ne|n’]¿   [lui|leur|y]                    en
+    Toutes les combinaisons:
+        ?[ne|n’]¿   ?[le|la|l’|les|en|me|m’|te|t’|se|s’|nous|vous|lui|leur|y]¿
+        ?[ne|n’]¿   [me|m’|te|t’|se|s’|nous|vous]   [le|la|l’|les|en|y]
+        ?[ne|n’]¿   [le|la|l’|les]                  [lui|leur|en|y]
+        ?[ne|n’]¿   [lui|leur|y]                    en
 
-        Détection des syntagmes verbaux:
-            [ne|n’|me|m’|te|t’|se|s’]
-            [le|la|l’|les|en|nous|vous|lui|leur|y]  @:(?:[123][sp]|P)
-            [nous|vous]     [le|la|l’|les|en|y]     @:(?:[123][sp]|P)
-            [le|la|l’|les]  [lui|leur|en|y]         @:(?:[123][sp]|P)
-            [lui|leur|y]    en                      @:(?:[123][sp]|P)
-            @:(?:[123][sp]|P)
+    Détection des syntagmes verbaux:
+        [ne|n’|me|m’|te|t’|se|s’]
+        [le|la|l’|les|en|nous|vous|lui|leur|y]  @:(?:[123][sp]|P)
+        [nous|vous]     [le|la|l’|les|en|y]     @:(?:[123][sp]|P)
+        [le|la|l’|les]  [lui|leur|en|y]         @:(?:[123][sp]|P)
+        [lui|leur|y]    en                      @:(?:[123][sp]|P)
+        @:(?:[123][sp]|P)
 
-    ADVERBE DE NÉGATION (après)
+    ADVERBE DE NÉGATION POST-VERBAL
         guère
         jamais
         pas
         plus
         point
-        que / qu’
+        que / qu’ (restriction)
         rien
 
     PRONOMS À L’IMPÉRATIF
@@ -93,10 +92,11 @@
     tout / toute            tous / toutes
     chaque
     aucun / aucune
-    nul / nulle
+    nul / nulle             nuls / nulles (?)
                             plusieurs
                             certains / certaines
                             divers / diverses
+                            maints / maintes
 
     DÉTERMINANT & PRÉPOSITION
     au / à la               aux
@@ -121,6 +121,29 @@
     soit                    malgré que          tant que
                             parce que
 
+## PRONOMS RELATIFS
+    auquel          proint prorel mas sg
+    auxquelles      proint prorel fem pl
+    auxquels        proint prorel mas pl
+    desquelles      proint prorel fem pl
+    desquels        proint prorel mas pl
+    dont            prorel
+    duquel          proint prorel mas sg
+    laquelle        proint prorel fem sg
+    lequel          proint prorel mas sg
+    lesquelles      proint prorel fem pl
+    lesquels        proint prorel mas pl
+    qué             proint prorel
+    qui             proint prorel
+    que             proint prorel
+    quid            proint
+    quoi            proint prorel
+    
+    combien         advint
+    comment         advint
+    où              advint prorel
+    pourquoi        advint
+
 
 ## PRÉPOSITIONS
 
@@ -129,11 +152,13 @@
 
     NOMINALES ET VERBALES
         à
+        de
         entre
         excepté
         outre
         par
         pour
+        quant à/au/à la/aux
         sans
         sauf
 
@@ -143,54 +168,58 @@
         audit
         auxdits
         auxdites
+        de
 
     NOMINALES
-        à l’instar de               devers                      par-dessus  (adv)
-        à mi-distance de            dixit                       par-devant  (adv)
-        après                       durant                      par-devers
-        attendu                     dès                         parmi
-        au-dedans   (adv)           en                          passé
-        au-dehors   (adv)           endéans                     pendant
-        au-delà     (adv)           envers                      pour
-        au-dessous  (adv)           ès                          quant à/au/à la/aux
-        au-dessus   (adv)           excepté                     revoici
-        au-devant   (adv)           face à                      revoilà
-        auprès de                   fors                        sauf
-        autour de                   grâce à                     sans
-        av                          hormis                      selon
-        avant                       hors                        sous
-        avec                        jusque                      suivant
-        chez                        jusques                     sur
-        concernant                  lez                         tandis      (adv)
-        contre                      lors de                     vers
-        courant (+mois)             lès                         versus
-        dans                        malgré                      via
-        depuis                      moins       (adv)           vis-à-vis
-        derrière                    nonobstant  (adv)           voici
-        dessous     (adv)           par-delà                    voilà
-        dessus      (adv)           par-derrière  (adv)         vs
-        devant      (adv)           par-dessous   (adv)         vu
+        à l’instar de           devers                  par-dessus  (adv)
+        à mi-distance de        dixit                   par-devant  (adv)
+        après       (adv)       durant                  par-devers
+        attendu                 dès                     parmi
+        au-dedans   (adv)       en                      passé
+        au-dehors   (adv)       endéans                 pendant
+        au-delà     (adv)       envers                  pour
+        au-dessous  (adv)       ès                      
+        au-dessus   (adv)       excepté                 revoici
+        au-devant   (adv)       face à/au/aux           revoilà
+        autour de               grâce à                 sans
+        av                      hormis                  selon
+        avant       (adv)       hors                    sous
+        avec        (adv)       jusque                  suivant
+        chez                    jusques                 sur
+        concernant              lez                     tandis      (adv)
+        contre                  lors de                 vers
+        courant (+mois)         lès                     versus
+        dans                    malgré                  via
+        depuis      (adv)       moins       (adv)       vis-à-vis
+        derrière    (adv)       nonobstant  (adv)       voici
+        dessous     (adv)       par-delà                voilà
+        dessus      (adv)       par-derrière  (adv)     vs
+        devant      (adv)       par-dessous   (adv)     vu
 
 
 ## PRONOMS
 
     PRONOMS PERSONNELS SUJETS
-        je                  moi-même                                mézigue
-        tu                  toi-même                                tézigue
-        il / elle           lui / lui-même / elle-même              césigue / sézigue
+        je              moi-même                            mézigue
+        tu              toi-même                            tézigue
+        il / elle       lui / lui-même / elle-même          césigue / sézigue
+        iel             iel-même
         on
-        nous                nous-même / nous-mêmes                  noszigues
-        vous                vous-même / vous-mêmes                  voszigues
-        ils / elles         eux / eux-mêmes / elles-mêmes           leurszigues
+        nous            nous-même / nous-mêmes              noszigues
+        vous            vous-même / vous-mêmes              voszigues
+        ils / elles     eux / eux-mêmes / elles-mêmes       leurszigues
+        iels            iel-mêmes
 
     PRONOMS PERSONNELS OBJETS
-        moi                 moi-même                                mézigue
-        toi                 toi-même                                tézigue
-        lui / elle          lui-même  / elle-même                   césigue / sézigue
-        soi                 soi-même
-        nous                nous-même / nous-mêmes                  noszigues
-        vous                vous-même / vous-mêmes                  voszigues
-        eux / elles         eux / eux-mêmes / elles-mêmes           leurszigues
+        moi             moi-même                            mézigue
+        toi             toi-même                            tézigue
+        lui / elle      lui-même  / elle-même               césigue / sézigue
+        iel             iel-même
+        soi             soi-même
+        nous            nous-même / nous-mêmes              noszigues
+        vous            vous-même / vous-mêmes              voszigues
+        eux / elles     eux / eux-mêmes / elles-mêmes       leurszigues
+        iels            iel-mêmes
 
     PRONOMS NÉGATIFS (SUJETS & OBJETS)
         aucun
@@ -232,11 +261,10 @@
         ceux qui        prodem mas pl
         ceux-ci         prodem mas pl
         ceux-là         prodem mas pl
-
-        icelle          detdem prodem fem sg
-        icelles         detdem prodem fem pl
-        icelui          detdem prodem mas sg
-        iceux           detdem prodem mas pl
+        icelle          prodem fem sg
+        icelles         prodem fem pl
+        icelui          prodem mas sg
+        iceux           prodem mas pl
 
     PRONOMS DÉMONSTRATIFS (SUJETS)
         ce
@@ -244,29 +272,14 @@
     PRONOMS DÉMONSTRATIFS (OBJETS)
         ci              (adv)
 
-    PRONOMS RELATIFS
-        auquel          proint prorel mas sg
-        auxquelles      proint prorel fem pl
-        auxquels        proint prorel mas pl
-        desquelles      proint prorel fem pl
-        desquels        proint prorel mas pl
-        dont            prorel
-        duquel          proint prorel mas sg
-        laquelle        proint prorel fem sg
-        lequel          proint prorel mas sg
-        lesquelles      proint prorel fem pl
-        lesquels        proint prorel mas pl
-        où              advint prorel
-        qué             proint prorel
-        qui             proint prorel
-        que             proint prorel
-        quid            proint
-        quoi            proint prorel
-
+    PRONOMS INDÉFINIS
         autre           proind
         autrui          proind
         quiconque       proind prorel
-        certaine        detind proind
+        certain         proind mas sg
+        certains        proind mas pl
+        certaine        proind fem sg
+        certaines       proind fem pl
         chacun          proind mas sg
         chacune         proind fem sg
         d’aucuns        proind mas pl
@@ -274,11 +287,68 @@
         n’importe quoi  proind
         n’importe qui   proind
         plupart         proind epi pl
+        quelque         proind
         quelques-unes   proind fem pl
         quelques-uns    proind mas pl
         quelqu’un       proind mas sg
         quelqu’une      proind fem sg
+        tel             proind
         telle           proind
+        tels            proind
+        telles          proind
+
+## ADVERBES
+
+    AUTONOMES
+        après-demain              
+        avant-hier
+        demain
+        dès lors
+        hier
+        loin
+        maintenant
+        sic
+        toutefois
+
+    COMBINABLES 
+        assez   
+        aussi   
+        autant  
+        beaucoup
+        davantage 
+        lors
+        mieux
+        moult
+        par-dehors 
+        peu 
+        peut-être   
+        pis  
+        presque 
+        tant
+        trop       
+
+    PRÉCURSEURS
+        même    
+        quelque
+        très
+
+
+## INTERJECTIONS POSITIVES
+
+    oui
+    ouais
+    mouais
+    moui
+    certes
+    d’accord
+    d’ac
+
+
+## INTERJECTIONS NÉGATIVES
+
+    nenni
+    non
+
 
 ## MOTS GRAMMATICAUX CONFUS
 
@@ -320,41 +390,24 @@
     vers
     y
 
+
 ## VERBES À TRAITER EN PARTICULIER
 
-    # auxiliaire
-    être
-    avoir
-    aller
+    ### Auxiliaires
+    être, avoir
 
-    # verbes modaux ou quasi-modaux
-    adorer
-    aimer
-    croire
-    devoir
-    espérer
-    faire
-    falloir
-    imaginer
-    laisser
-    partir
-    penser
-    pouvoir
-    savoir
-    venir
-    vouloir
+    ### Verbes modaux ou quasi-modaux
+    - devoir, avoir à, falloir, pouvoir, vouloir, souhaiter, désirer, faillir
+    - aller, partir, venir, revenir, faire (faire), envoyer (faire), oser
+    - adorer, aimer, détester, haïr
+    - croire, espérer, imaginer, penser, savoir
+    - autoriser (à), permettre (de), interdire (de), proscrire (de)
+    - regarder, entendre, écouter, ouïr, voir
 
-    # verbes d’état
-    apparaître
-    avoir l’air
-    demeurer
-    devenir
-    paraître
-    redevenir
-    rester
-    sembler
+    ### Verbes d’état
+    apparaître, avoir l’air, demeurer, devenir, paraître, redevenir, rester, sembler
 
-    # verbes d’action usuels
+    ## Verbes d’action usuels
     commencer
     donner
     finir
@@ -362,7 +415,7 @@
     trouver
     voir
 
-    # dialogue
+    ### Dialogues
     - aboyer, accepter, acclamer, accorder, accuser, achever, acquiescer, adhérer, adjurer, admettre, admonester, affirmer, affranchir, ajouter, alléguer, anathématiser, annoncer, annoter, apostropher, appeler, applaudir, apprendre, approuver, approuver, arguer, argumenter, arrêter, articuler, assener, assurer, attester, avancer, avertir, aviser, avouer, ânonner
     - babiller, badiner, bafouer, bafouiller, balbutier, baragouiner, bavarder, beugler, blaguer, blâmer, bougonner, bourdonner, bourrasser, brailler, bramer, bredouiller, bégayer, bénir
     - cafouiller, capituler, certifier, chanter, chantonner, choisir, chuchoter, clamer, combattre, commander, commenter, compatir, compléter, composer, conclure, concéder, confesser, confier, confirmer, congratuler, considérer, conspuer, conter, contester, contredire, converser, couiner, couper, cracher, crachoter, crier, critiquer, croire, crépiter, céder
@@ -384,4 +437,3 @@
     - taquiner, tempérer, tempêter, tenter, terminer, tonitruer, tonner, traduire
     - vanter, vanter, vilipender, vitupérer, vociférer, vomir, vérifier
     - zozoter, zézayer
-

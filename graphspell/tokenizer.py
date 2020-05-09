@@ -5,6 +5,8 @@ using regular expressions
 
 import re
 
+from unicodedata import normalize
+
 _PATTERNS = {
     "default":
         (
@@ -31,12 +33,12 @@ _PATTERNS = {
             r'(?P<HASHTAG>[#@][\w-]+)',
             r'(?P<HTML><\w+.*?>|</\w+ *>)',
             r'(?P<PSEUDOHTML>\[/?\w+\])',
-            r"(?P<WORD_ELIDED>(?:l|d|n|m|t|s|j|c|ç|lorsqu|puisqu|jusqu|quoiqu|qu|presqu|quelqu)['’´‘′`ʼ])",
+            r"(?P<WORD_ELIDED>(?:l|d|n|m|t|s|j|c|ç|lorsqu|puisqu|jusqu|quoiqu|qu|presqu|quelqu)['’ʼ‘‛´`′‵՚ꞌꞋ])",
             r'(?P<WORD_ORDINAL>\d+(?:ers?|res?|è[rm]es?|i[èe][mr]es?|de?s?|nde?s?|ès?|es?|ᵉʳˢ?|ʳᵉˢ?|ᵈᵉ?ˢ?|ⁿᵈᵉ?ˢ?|ᵉˢ?)\b)',
             r'(?P<HOUR>\d\d?[h:]\d\d(?:[m:]\d\ds?|)\b)',
             r'(?P<NUM>\d+(?:[.,]\d+|))',
             r'(?P<SIGN>[&%‰€$+±=*/<>⩾⩽#|×¥£¢§¬÷@-])',
-            r"(?P<WORD>\w+(?:[’'`-]\w+)*)"
+            r"(?P<WORD>[\w\u0300-\u036f]+(?:[’'`-][\w\u0300-\u036f]+)*)"
         )
 }
 
@@ -56,7 +58,7 @@ class Tokenizer:
         if bStartEndToken:
             yield { "i": 0, "sType": "INFO", "sValue": "<start>", "nStart": 0, "nEnd": 0, "lMorph": ["<start>"] }
         for i, m in enumerate(self.zToken.finditer(sText), 1):
-            yield { "i": i, "sType": m.lastgroup, "sValue": m.group(), "nStart": m.start(), "nEnd": m.end() }
+            yield { "i": i, "sType": m.lastgroup, "sValue": normalize("NFC", m.group()), "nStart": m.start(), "nEnd": m.end() }
         if bStartEndToken:
             iEnd = len(sText)
             yield { "i": i+1, "sType": "INFO", "sValue": "<end>", "nStart": iEnd, "nEnd": iEnd, "lMorph": ["<end>"] }
