@@ -7,7 +7,6 @@ __license__ = "MPL 2"
 
 import os
 import sys
-import time
 import re
 import collections
 import zipfile
@@ -45,16 +44,7 @@ dSUBDIC = { '*': 'Commun',
             'M': 'Moderne',
             'C': 'Classique',
             'A': 'Annexe',
-            'P': 'Multimots',
             'X': 'Contributeurs' }
-
-dMODERNE = { 'name': 'DICTIONNAIRE ORTHOGRAPHIQUE FRANÇAIS “MODERNE”',
-             'shortname': '“Moderne”',
-             'asciiName': 'fr-moderne',
-             'mozAsciiName': 'fr-FR-modern',
-             'subDicts': '*MX',
-             'mozId': 'fr-dicollecte-moderne',
-             'description': "Dictionnaire français “Moderne”" }
 
 dCLASSIQUE = { 'name': 'DICTIONNAIRE ORTHOGRAPHIQUE FRANÇAIS “CLASSIQUE”',
                'shortname': '“Classique”',
@@ -88,8 +78,8 @@ dMOZEXT = { 'name': 'DICTIONNAIRE ORTHOGRAPHIQUE FRANÇAIS',
 BUILD_PATH = '_build'
 PREFIX_DICT_PATH = 'hunspell-french-dictionaries-v'
 EXT_PREFIX_OOO = 'lo-oo-ressources-linguistiques-fr-v'
-EXT_PREFIX_MOZ = 'moz-hunspell-fr-dicollecte-v'
-LEX_PREFIX = 'lexique-dicollecte-fr-v'
+EXT_PREFIX_MOZ = 'moz-hunspell-fr-v'
+LEX_PREFIX = 'lexique-grammalecte-fr-v'
 STATS_NAME = 'statistiques-v'
 
 MPLHEADER = "# This Source Code Form is subject to the terms of the Mozilla Public\n" + \
@@ -315,7 +305,6 @@ class Dictionnaire:
                "# file, You can obtain one at http://mozilla.org/MPL/2.0/.\n\n" + \
                "# AFFIXES DU {} v{}\n".format(dTplVars['name'], self.sVersion) + \
                "# par Olivier R. -- licence MPL 2.0\n" + \
-               "# Généré le " + time.strftime("%d-%m-%Y à %H:%M") + "\n" \
                "# Pour améliorer le dictionnaire, allez sur https://grammalecte.net/\n\n"
 
         with open(spDst+'/'+dTplVars['asciiName']+'.aff', 'w', encoding='utf-8', newline="\n") as hDst:
@@ -516,7 +505,7 @@ class Dictionnaire:
         echo(' * Lexique >> [ {} ] '.format(spfDst))
         with open(spfDst, 'w', encoding='utf-8', newline="\n") as hDst:
             hDst.write(MPLHEADER)
-            hDst.write("# Lexique des formes fléchies du français - Dicollecte v{}\n# Licence : MPL v2.0\n\n".format(version))
+            hDst.write("# Lexique des formes fléchies du français - Grammalecte v{}\n# Licence : MPL v2.0\n\n".format(version))
             hDst.write(oStatsLex.getInfo())
             hDst.write(Flexion.header(oStatsLex))
             for oFlex in self.lFlexions:
@@ -590,7 +579,7 @@ class Dictionnaire:
         sExtensionName = EXT_PREFIX_MOZ + self.sVersion
         spExt = spBuild + '/' + sExtensionName
         dir_util.mkpath(spExt+'/dictionaries')
-        copyTemplate('_templates/moz', spExt, 'install.rdf', dTplVars)
+        copyTemplate('_templates/moz', spExt, 'manifest.json', dTplVars)
         spDict = spBuild + '/' + PREFIX_DICT_PATH + self.sVersion
         file_util.copy_file(spDict+'/fr-classique.dic', spExt+'/dictionaries/fr-classic.dic')
         file_util.copy_file(spDict+'/fr-classique.aff', spExt+'/dictionaries/fr-classic.aff')
@@ -616,7 +605,7 @@ class Dictionnaire:
         sLexName = LEX_PREFIX + version
         spLex = spBuild + '/' + sLexName
         dir_util.mkpath(spLex)
-        # write Dicollecte lexicon
+        # write lexicon
         self.sortLexiconByFreq()
         self.writeLexicon(spLex + '/' + sLexName + '.txt', version, oStatsLex)
         self.writeGrammarCheckerLexicon(spBuild + '/' + sLexName + '.lex', version)
@@ -647,60 +636,6 @@ class Dictionnaire:
         if spDestGL:
             echo("   Fichier de déclinaison copié dans Grammalecte...")
             file_util.copy_file(spBuild+'/dictDecl.txt', spDestGL)
-
-    def generateSpellVariants (self, nReq, spBuild):
-        if nReq < 1: nReq = 1
-        if nReq > 2: nReq = 2
-        echo(" * Lexique >> variantes par suppression... n = " + str(nReq))
-        with open(spBuild+'/dictSpellVariants-'+str(nReq)+'.txt', 'w', encoding='utf-8', newline="\n") as hDst:
-            for oFlex in frozenset(self.lFlexions):
-                hDst.write(oFlex.sFlexion+"\t_\t_\n")
-                if len(oFlex.sFlexion) <= 2:
-                    n = 0
-                elif len(oFlex.sFlexion) <= 5:
-                    n = 1
-                else:
-                    n = nReq
-                #lTup = self._generatePhonetVariants(oFlex.sFlexion)
-                lTup = self._generateDeleteVariants(oFlex.sFlexion, oFlex.sFlexion, n)
-                for t in lTup:
-                    sTag = t[1]  if "\t" in t[1]  else t[1]+"\t_"
-                    hDst.write(t[0]+"\t"+sTag+"\n")
-
-    _lTupPhonet = [ ("ph", "f"), ("qu", "k"), ("ss", "c"), ("ss", "ç"), ("ct", "x"),
-        ("oe", "œ"), ("ae", "æ"), ("ei", "é"), ("ai", "é"), ("au", "o"), ("eau", "o"),
-    ]
-
-    def _generatePhonetVariants (self, s):
-        l = []
-        for torep, rep in self._lTupPhonet():
-            for m in torep.finditer(s):
-                l.append( (s[:m.start(0)] + rep + s[m.end(0):], str(m.start(0))+":"+str(m.start(0)+len(rep))+">"+torep) )
-        return l
-
-    def _generateDeleteVariants (self, sWord0, sWordCur, n):
-        "renvoie une liste de tuples : (forme dégradée de sWord, code de genèse de sWord)"
-        # caution: recursive function
-        if n == 0:
-            return []
-        lTup = []
-        for i in range(len(sWordCur)):
-            sNew = sWordCur[0:i]+sWordCur[i+1:]
-            lTup.append( ( sNew, self._generateAddCode(sWord0, sNew) ) )
-            lTup += self._generateDeleteVariants(sWord0, sNew, n-1)
-        return lTup
-
-    def _generateAddCode (self, sWord, sCrippled):
-        "returns addCode to generate sWord from sCrippled"
-        sAdd = ""
-        for i in range(len(sWord)):
-            if sWord[i] != sCrippled[i:i+1]:
-                sCrippled = sCrippled[:i] + sWord[i] + sCrippled[i:]
-                if sAdd:
-                    sAdd += "\t"
-                sAdd += str(i)+"+"+sWord[i]
-        return sAdd  if sAdd  else "0"
-
 
 
 class Entree:
@@ -812,7 +747,7 @@ class Entree:
             sErr += 'espace en fin de lemme'
         if re.match(r"v[0123]", self.po) and not re.match(r"[eas_][ix_][tx_][nx_][pqreuvx_][mx_][ex_z][ax_z]\b", self.po[2:]):
             sErr += 'verbe inconnu: ' + self.po
-        if (re.match(r"S[*.]", self.flags) and re.search("[sxz]$", self.lemma)) or (re.match(r"X[*.]", self.flags) and not re.search("[ul]$", self.lemma)):
+        if (re.match(r"S[.]", self.flags) and re.search("[sxz]$", self.lemma)) or (re.match(r"X[.]", self.flags) and not re.search("[ul]$", self.lemma)):
             sErr += 'drapeau inutile'
         if self.iz == '' and re.match(r"[SXAI](?!=)", self.flags) and self.po:
             sErr += '[is] vide'
@@ -820,16 +755,11 @@ class Entree:
             sErr += '[is] incomplet'
         if re.match(r"[FW]", self.flags) and re.search(r"epi|mas|fem|inv|sg|pl", self.iz):
             sErr += '[is] incohérent'
-        if re.match(r".\*", self.flags) and re.match(r"[bcdfgjklmnpqrstvwxz]", self.lemma):
-            sErr += 'drapeau pour lemme commençant par une voyelle'
         if re.search(r"pl|sg|inv", self.iz) and re.match(r"[SXAIFW](?!=)", self.flags):
             sErr += '[is] incohérent'
-        if re.search(r"nom|adj", self.po) and re.match(r"(?i)[aâàäáeéèêëiîïíìoôöóòuûüúù]", self.lemma) and re.match("[SFWXAI][.]", self.flags) \
-           and "pel" not in self.lx:
-            sErr += 'le drapeau derait finir avec *'
         if self.iz.endswith(("mas", "fem", "epi")) and (not self.flags or not self.flags.startswith(("S", "X", "F", "W", "A", "I", "U"))):
             sErr += '[is] incomplet'
-        if self.flags.startswith(("a", "b", "c", "d")) and not self.lemma.endswith("er"):
+        if self.flags.startswith(("a0", "b0", "c0", "d0")) and not self.lemma.endswith("er"):
             sErr += "drapeau pour verbe du 1ᵉʳ groupe sur un lemme non conforme"
         if self.flags.startswith("f") and not self.lemma.endswith(("ir", "ïr")):
             sErr += "drapeau pour verbe du 2ᵉ groupe sur un lemme non conforme"
@@ -942,7 +872,7 @@ class Entree:
         for sFlag in makeLongFlags(self.flags):
             if sFlag not in dFlags:
                 if sFlag not in ['**', '()', '||', '--']:
-                    lFlexions.append( (self.lemma, '[unknown flag: {}]'.format(sFlag)) )
+                    lFlexions.append( (self.lemma, '[unknown flag: {}]'.format(sFlag), self.di) )
                     echo("ERROR: "  + self.lemma + ' - unknown flag: ' + sFlag)
             else:
                 oFlag = dFlags[sFlag]
@@ -1193,27 +1123,27 @@ class Flexion:
     _dTagReplacement = {
         # POS
         "nom": ":N", "adj": ":A", "adv": ":W", "negadv": ":X", "mg": ":G", "nb": ":B", "nbro": ":Br",
-        "loc.nom": ":Ñ", "loc.adj": ":Â", "loc.adv": ":Ŵ", "loc.verb": ":Ṽ",
-        "interj": ":J", "loc.interj": ":Ĵ", "titr": ":T",
+        "loc.nom": ":ÉN", "loc.adj": ":ÉA", "loc.adv": ":ÉW", "loc.verb": ":ÉV",
+        "interj": ":J", "loc.interj": ":ÉJ", "titr": ":T",
         "mas": ":m", "fem": ":f", "epi": ":e", "sg": ":s", "pl": ":p", "inv": ":i",
         "infi": ":Y",
         "ppre": ":P", "ppas": ":Q",
         "ipre": ":Ip", "iimp": ":Iq", "ipsi": ":Is", "ifut": ":If",
         "spre": ":Sp", "simp": ":Sq", "cond": ":K", "impe": ":E",
         "1sg": ":1s", "1isg": ":1ś", "1jsg": ":1ŝ", "2sg": ":2s", "3sg": ":3s", "1pl": ":1p", "2pl": ":2p", "3pl": ":3p", "3pl!": ":3p!",
-        "prepv": ":Rv", "prep": ":R", "loc.prep": ":Ŕ", "loc.prepv": "Ŕv",
+        "prepv": ":Rv", "prep": ":R", "loc.prep": ":ÉR", "loc.prepv": "ÉRv",
         "detpos": ":Dp", "detdem": ":Dd", "detind": ":Di", "detneg": ":Dn", "detex": ":De", "det": ":D",
         "advint": ":U",
         "prodem": ":Od", "proind": ":Oi", "proint": ":Ot", "proneg": ":On", "prorel": ":Or", "proadv": ":Ow",
         "properobj": ":Oo", "propersuj": ":Os", "1pe": ":O1", "2pe": ":O2", "3pe": ":O3", "preverb": ":Ov",
-        "cjco": ":Cc", "cjsub": ":Cs", "cj": ":C", "loc.cj": ":Ĉ", "loc.cjsub": ":Ĉs",
-        "prn": ":M1", "patr": ":M2", "loc.patr": ":Ḿ2", "npr": ":MP", "nompr": ":NM",
+        "cjco": ":Cc", "cjsub": ":Cs", "cj": ":C", "loc.cj": ":ÉC", "loc.cjsub": ":ÉCs",
+        "prn": ":M1", "patr": ":M2", "loc.patr": ":ÉM2", "npr": ":MP", "nompr": ":NM",
         "pfx": ":Zp", "sfx": ":Zs",
         "div": ":H",
         "err": ":F",
         "ponc": ":@p", "sign": ":@s",
         # LEX
-        "symb": ";S"
+        "symb": ";S", "unit": ";U"
     }
 
     def _getSimpleTags (self):
@@ -1509,7 +1439,6 @@ def main ():
     xParser.add_argument("-m", "--mode", help="0: no tags,  1: Hunspell tags (default),  2: All tags", type=int, choices=[0, 1, 2], default=1)
     xParser.add_argument("-u", "--uncompress", help="do not use Hunspell compression", action="store_true")
     xParser.add_argument("-s", "--simplify", help="no virtual lemmas", action="store_true")
-    xParser.add_argument("-sv", "--spellvariants", help="generate spell variants", action="store_true")
     xParser.add_argument("-gl", "--grammalecte", help="copy generated files to Grammalecte folders", action="store_true")
     xArgs = xParser.parse_args()
 
@@ -1531,7 +1460,7 @@ def main ():
     oFrenchDict = Dictionnaire(xArgs.verdic, "French dictionary")
     for sFile in ['orthographe/FRANCAIS.dic']:
         oFrenchDict.readDictionary(sFile)
-    oFrenchDict.readAffixes('orthographe/FRANCAIS_5.aff')
+    oFrenchDict.readAffixes('orthographe/FRANCAIS_7.aff')
 
     ### Contrôle
     oFrenchDict.sortEntriesNatural()
@@ -1543,8 +1472,6 @@ def main ():
     oFrenchDict.calcMetaphone2()
 
     #oFrenchDict.createNgrams(spBuild, 3)
-    if xArgs.spellvariants:
-        oFrenchDict.generateSpellVariants(1, spBuild)
 
     ### Statistiques
     spfStats = spBuild+'/'+STATS_NAME+xArgs.verdic+'.txt'

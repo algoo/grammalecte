@@ -39,8 +39,8 @@ def rewriteCode (sCode):
     sCode = sCode.replace("sContext", "_sAppContext")
     sCode = re.sub(r"\b(morph|morphVC|analyse|value|tag|displayInfo)[(]\\(\d+)", 'g_\\1(lToken[nTokenOffset+\\2]', sCode)
     sCode = re.sub(r"\b(morph|morphVC|analyse|value|tag|displayInfo)[(]\\-(\d+)", 'g_\\1(lToken[nLastToken-\\2+1]', sCode)
-    sCode = re.sub(r"\b(select|exclude|define|define_from|add_morph|change_meta)[(][\\](\d+)", 'g_\\1(lToken[nTokenOffset+\\2]', sCode)
-    sCode = re.sub(r"\b(select|exclude|define|define_from|add_morph|change_meta)[(][\\]-(\d+)", 'g_\\1(lToken[nLastToken-\\2+1]', sCode)
+    sCode = re.sub(r"\b(select|exclude|define|define_from|rewrite|add_morph|change_meta)[(][\\](\d+)", 'g_\\1(lToken[nTokenOffset+\\2]', sCode)
+    sCode = re.sub(r"\b(select|exclude|define|define_from|rewrite|add_morph|change_meta)[(][\\]-(\d+)", 'g_\\1(lToken[nLastToken-\\2+1]', sCode)
     sCode = re.sub(r"\b(tag_before|tag_after)[(][\\](\d+)", 'g_\\1(lToken[nTokenOffset+\\2], dTags', sCode)
     sCode = re.sub(r"\b(tag_before|tag_after)[(][\\]-(\d+)", 'g_\\1(lToken[nLastToken-\\2+1], dTags', sCode)
     sCode = re.sub(r"\bspace_after[(][\\](\d+)", 'g_space_between_tokens(lToken[nTokenOffset+\\1], lToken[nTokenOffset+\\1+1]', sCode)
@@ -84,7 +84,7 @@ def checkTokenNumbers (sText, sActionId, nToken):
 
 def checkIfThereIsCode (sText, sActionId):
     "check if there is code in <sText> (debugging)"
-    if re.search(r"[.]\w+[(]|sugg\w+[(]|\(\\[0-9]|\[[0-9]", sText):
+    if re.search(r"[.]\w+[(]|sugg\w+[(]|\(\\[0-9]|\[(?:[0-9]:|:)", sText):
         print("# Warning at line " + sActionId + ":  This message looks like code. Line should probably begin with =")
         print(sText)
 
@@ -384,9 +384,6 @@ class GraphBuilder:
             return [sLineId, sOption, sCondition, cAction, sAction, iStartAction, iEndAction]
         if cAction == "=":
             ## disambiguator
-            if "define(" in sAction and not re.search(r"define\(\\-?\d+ *, *\[.*\] *\)", sAction):
-                print(f"\n# Error in action at line <{sLineId}/{sActionId}>: second argument for <define> must be a list of strings")
-                exit()
             sAction = self.createFunction("da", sAction)
             return [sLineId, sOption, sCondition, cAction, sAction]
         print("\n# Unknown action at ", sLineId, sActionId)

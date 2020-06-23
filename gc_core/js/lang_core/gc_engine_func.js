@@ -452,6 +452,13 @@ function g_add_morph (oToken, lNewMorph) {
     return true;
 }
 
+function g_rewrite (oToken, sToReplace, sReplace) {
+    // Disambiguation: rewrite morphologies
+    let lMorph = (oToken.hasOwnProperty("lMorph")) ? oToken["lMorph"] : _oSpellChecker.getMorph(oToken["sValue"]);
+    oToken["lMorph"] = lMorph.map(s => s.replace(sToReplace, sReplace));
+    return true;
+}
+
 function g_define (oToken, lMorph) {
     // set morphologies of <oToken>, always return true
     oToken["lMorph"] = lMorph;
