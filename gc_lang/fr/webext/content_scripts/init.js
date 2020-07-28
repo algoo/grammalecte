@@ -22,16 +22,23 @@ function showError (e) {
 // Chrome don’t follow the W3C specification:
 // https://browserext.github.io/browserext/
 let bChrome = false;
+let bThunderbird = false;
 if (typeof(browser) !== "object") {
     var browser = chrome;
     bChrome = true;
 }
-
+if (typeof(messenger) === "object" || browser.hasOwnProperty("composeAction")) {
+    // JS sucks again.
+    // In Thunderbird, <browser> exists in content-scripts, but not <messenger>
+    // <browner> has property <composeAction> but is undefined...
+    bThunderbird = true;
+    //console.log("[Grammalecte] Thunderbird...");
+}
 
 /*
 function loadImage (sContainerClass, sImagePath) {
     let xRequest = new XMLHttpRequest();
-    xRequest.open('GET', browser.extension.getURL("")+sImagePath, false);
+    xRequest.open('GET', browser.runtime.getURL("")+sImagePath, false);
     xRequest.responseType = "arraybuffer";
     xRequest.send();
     let blobTxt = new Blob([xRequest.response], {type: 'image/png'});
@@ -63,7 +70,7 @@ const oGrammalecte = {
 
     oOptions: null,
 
-    bAutoRefresh: true,
+    bAutoRefresh: (bThunderbird) ? false : true,
 
     listen: function () {
         document.addEventListener("click", (xEvent) => {
@@ -121,6 +128,10 @@ const oGrammalecte = {
         this.oGCPanel.start(what, xResultNode);
         this.oGCPanel.startWaitIcon();
         let sText = this.oGCPanel.oTextControl.getText();
+        if (bThunderbird && sText.trim() === "") {
+            oGrammalecte.oGCPanel.clear();
+            oGrammalecte.showMessage("❓ Le message ne semble contenir aucune réponse. Si vous écrivez votre réponse avant le message auquel vous répondez, celle-ci ne peut être vue de Grammalecte que si vous avez réglé votre compte pour répondre au-dessus du message cité.\n➜ Pour modifier ce réglage, allez dans vos paramètres de compte et, dans la section [Rédaction et adressage], sélectionnez [La réponse commence avant la citation].\n❗ Si vous ne modifiez pas ce réglage, seul le texte écrit après les passages cités sera vu et analysé par Grammalecte.");
+        }
         oGrammalecteBackgroundPort.parseAndSpellcheck(sText, "__GrammalectePanel__");
     },
 
@@ -137,6 +148,10 @@ const oGrammalecte = {
             sPageText = sPageText.slice(0, nPos).normalize("NFC");
         }
         return sPageText;
+    },
+
+    purgeText: function (sText) {
+        return sText.replace(/&nbsp;/g, " ").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
     },
 
     createNode: function (sType, oAttr, oDataset=null) {
@@ -261,6 +276,9 @@ const oGrammalecte = {
 
 function autoRefreshOption (oSavedOptions=null) {
     // auto recallable function
+    if (bThunderbird) {
+        return;
+    }
     if (oSavedOptions === null) {
         if (bChrome) {
             browser.storage.local.get("autorefresh_option", autoRefreshOption);
@@ -286,7 +304,7 @@ const oGrammalecteBackgroundPort = {
     xConnect: browser.runtime.connect({name: "content-script port"}),
 
     start: function () {
-        //console.log("[Grammalecte] background port: start.");
+        console.log("[Grammalecte] background port: start.");
         this.listen();
         this.listen2();
         //this.ping();
@@ -378,6 +396,7 @@ const oGrammalecteBackgroundPort = {
             let { sActionDone, result, oInfo, bEnd, bError } = oMessage;
             switch (sActionDone) {
                 case "init":
+                    //console.log("[Grammalecte] content-script: init");
                     this.bConnected = true;
                     oGrammalecte.sExtensionUrl = oMessage.sUrl;
                     oGrammalecte.listen();
@@ -466,6 +485,13 @@ const oGrammalecteBackgroundPort = {
                         oGrammalecte.showMessage("Erreur. Le cadre sur lequel vous avez cliqué n’a pas pu être identifié. Sélectionnez le texte à corriger et relancez le correcteur via le menu contextuel.");
                     }
                     break;
+                /*
+                    composeAction
+                    (Thunderbird only)
+                */
+                case "grammar_checker_compose_window":
+                    oGrammalecte.startGCPanel("__ThunderbirdComposeWindow__");
+                    break;
                 default:
                     console.log("[Grammalecte] Content-script. Unknown command: ", sActionDone);
             }
@@ -504,66 +530,71 @@ oGrammalecteBackgroundPort.start();
 
 /*
     Callable API for the webpage.
-
+    (Not for Thunderbird)
 */
-document.addEventListener("GrammalecteCall", function (xEvent) {
-    // GrammalecteCall events are dispatched by functions in the API script
-    // The script is loaded below.
-    try {
-        let oCommand = JSON.parse(xEvent.detail);
-        switch (oCommand.sCommand) {
-            case "openPanelForNode":
-                if (oCommand.sNodeId && document.getElementById(oCommand.sNodeId)) {
-                    oGrammalecte.startGCPanel(document.getElementById(oCommand.sNodeId));
-                }
-                break;
-            case "openPanelForText":
-                if (oCommand.sText) {
-                    if (oCommand.sText && oCommand.sNodeId && document.getElementById(oCommand.sNodeId)) {
-                        oGrammalecte.startGCPanel(oCommand.sText, document.getElementById(oCommand.sNodeId));
+if (!bThunderbird) {
+    document.addEventListener("GrammalecteCall", function (xEvent) {
+        // GrammalecteCall events are dispatched by functions in the API script
+        // The script is loaded below.
+        try {
+            let oCommand = JSON.parse(xEvent.detail);
+            switch (oCommand.sCommand) {
+                case "openPanelForNode":
+                    if (oCommand.sNodeId && document.getElementById(oCommand.sNodeId)) {
+                        oGrammalecte.startGCPanel(document.getElementById(oCommand.sNodeId));
                     }
-                    else {
-                        oGrammalecte.startGCPanel(oCommand.sText);
+                    break;
+                case "openPanelForText":
+                    if (oCommand.sText) {
+                        if (oCommand.sText && oCommand.sNodeId && document.getElementById(oCommand.sNodeId)) {
+                            oGrammalecte.startGCPanel(oCommand.sText, document.getElementById(oCommand.sNodeId));
+                        }
+                        else {
+                            oGrammalecte.startGCPanel(oCommand.sText);
+                        }
                     }
-                }
-                break;
-            case "parseNode":
-                if (oCommand.sNodeId && document.getElementById(oCommand.sNodeId)) {
-                    let xNode = document.getElementById(oCommand.sNodeId);
-                    if (xNode.tagName == "TEXTAREA"  ||  xNode.tagName == "INPUT") {
-                        oGrammalecteBackgroundPort.parseAndSpellcheck(xNode.value, oCommand.sNodeId);
+                    break;
+                case "parseNode":
+                    if (oCommand.sNodeId && document.getElementById(oCommand.sNodeId)) {
+                        let xNode = document.getElementById(oCommand.sNodeId);
+                        if (xNode.tagName == "TEXTAREA"  ||  xNode.tagName == "INPUT") {
+                            oGrammalecteBackgroundPort.parseAndSpellcheck(xNode.value, oCommand.sNodeId);
+                        }
+                        else if (xNode.tagName == "IFRAME") {
+                            oGrammalecteBackgroundPort.parseAndSpellcheck(xNode.contentWindow.document.body.innerText, oCommand.sNodeId);
+                        }
+                        else {
+                            oGrammalecteBackgroundPort.parseAndSpellcheck(xNode.innerText, oCommand.sNodeId);
+                        }
                     }
-                    else if (xNode.tagName == "IFRAME") {
-                        oGrammalecteBackgroundPort.parseAndSpellcheck(xNode.contentWindow.document.body.innerText, oCommand.sNodeId);
+                    break;
+                case "parseText":
+                    if (oCommand.sText && oCommand.sNodeId) {
+                        oGrammalecteBackgroundPort.parseAndSpellcheck(oCommand.sText, oCommand.sNodeId);
                     }
-                    else {
-                        oGrammalecteBackgroundPort.parseAndSpellcheck(xNode.innerText, oCommand.sNodeId);
+                    break;
+                case "getSpellSuggestions":
+                    if (oCommand.sWord && oCommand.sDestination) {
+                        oGrammalecteBackgroundPort.getSpellSuggestions(oCommand.sWord, oCommand.sDestination, oCommand.sErrorId);
                     }
-                }
-                break;
-            case "parseText":
-                if (oCommand.sText && oCommand.sNodeId) {
-                    oGrammalecteBackgroundPort.parseAndSpellcheck(oCommand.sText, oCommand.sNodeId);
-                }
-                break;
-            case "getSpellSuggestions":
-                if (oCommand.sWord && oCommand.sDestination) {
-                    oGrammalecteBackgroundPort.getSpellSuggestions(oCommand.sWord, oCommand.sDestination, oCommand.sErrorId);
-                }
-                break;
-            default:
-                console.log("[Grammalecte] Event: Unknown command", oCommand.sCommand);
+                    break;
+                default:
+                    console.log("[Grammalecte] Event: Unknown command", oCommand.sCommand);
+            }
         }
-    }
-    catch (e) {
-        showError(e);
-    }
-});
+        catch (e) {
+            showError(e);
+        }
+    });
 
-// The API script must be injected this way to be callable by the page
-let xScriptGrammalecteAPI = document.createElement("script");
-xScriptGrammalecteAPI.src = browser.extension.getURL("content_scripts/api.js");
-document.documentElement.appendChild(xScriptGrammalecteAPI);
+    // The API script must be injected this way to be callable by the page.
+    // Note: Firefox offers another way to give access to webpage, via “user scripts”
+    //       https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/userScripts
+    //       (Firefox only feature for now)
+    let xScriptGrammalecteAPI = document.createElement("script");
+    xScriptGrammalecteAPI.src = browser.runtime.getURL("content_scripts/api.js");
+    document.documentElement.appendChild(xScriptGrammalecteAPI);
+}
 
 
 /*

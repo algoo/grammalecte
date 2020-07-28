@@ -1971,8 +1971,8 @@ __da_mots_grammaticaaux__
     [le|ce|cet|mon|ton|son|quel|quelque|notre|votre|un|leur|ledit|dudit|chaque|des|les|quelques|quel|quelle|quels|quelles]  [son|ton]
         <<- =>> exclude(\2, ":D")
 
-    [la|ma|ta|sa|les|des|nos|vos|leur|leurs|chaque|quel|quelle|quels|quelles] personne
-        <<- =>> select(\2, ":N")
+    [une|le|la|les|des|chaque|quelque|quelques|cet|cette|ces|ma|ta|sa|mes|tes|ses|au|aux|notre|votre|nos|vos|leur|leurs|quel|quelle|quels|quelles] personne
+        <<- =>> select(\-1, ":N")
 
     [le|la|l’|les|du|chaque|ces|des|mes|tes|ses|nos|vos|leurs|quelques|quels|quelles] même
         <<- =>> select(\2, ":A")
@@ -2010,21 +2010,15 @@ __da_autre_chose_quelque_chose__
 
 
 __da_groupe_nominal__
+    à                [la|l’]         @:[NA]¬:Y
+    [sans|pour|par]  [la|l’|le|les]  @:[NA]¬:Y
+        <<- =>> exclude(\-1, ":V")
+
+    de  ?[la|l’]¿  @:¬:[YD]
+        <<- not value(<1, "|semblant|") =>> exclude(\-1, ":V")
+
     aucun  @:[NA].*:[me]
         <<- =>> exclude(\2, ":V")
-
-    avions
-        <<- not tag_before(\1, "_1p_") and not value(<1, "|n’|") and not value(>1, "|nous|") =>> select(\-1, ":N")
-
-    l’ avions
-        <<- morph(<1, ":Y") =>> select(\-1, ":N")
-
-    bac + ~^\d\d?$
-        <<- ~>> ␣
-        <<- =>> define(\1, ":N:e:i")
-
-    [de|d’]  @:¬:[YD]
-        <<- =>> exclude(\2, ":(?:[123][sp]|P)")
 
     d’ [un|une]  *WORD
         <<- =>> exclude(\3, ":V")
@@ -2032,16 +2026,8 @@ __da_groupe_nominal__
     l’ [un|une]  *WORD
         <<- not value(\3, "|plus|") =>> select(\3, ":[123][sp]")
 
-    l’ un comme l’ autre
-        <<- ~>> ␣
-        <<- =>> define(\1, ":LN:m:p")
-
-    l’ une comme l’ autre
-        <<- ~>> ␣
-        <<- =>> define(\1, ":LN:f:p")
-
     [des|chaque|quelque|quelques|cet|cette|ces|mon|ma|ta|mes|tes|ses|au|aux|notre|votre|nos|vos|leurs|aucun|aucune]  *WORD
-        <<- not morph(\-1, ":V0") =>> exclude(\2, ":V")
+        <<- not morph(\-1, ":V0") =>> exclude(\-1, ":V")
 
     sa  *WORD
         <<- not morph(\-1, ":V0") and not morph(\-1, ":3s") =>> exclude(\2, ":V")
@@ -2053,12 +2039,6 @@ __da_groupe_nominal__
     [un|une]  *WORD
         <<- not value(<1, "|l’|quelqu’|quelqu|") and not value(\2, "|a|fut|fût|est|fait|") and not morph(\2, ":P") =>> exclude(\2, ":V")
 
-    [une|le|la|les|des|chaque|quelque|quelques|cet|cette|ces|ma|ta|sa|mes|tes|ses|au|aux|notre|votre|nos|vos|leurs] personne
-        <<- =>> select(\-1, ":N")
-
-    de  [la|l’]  $:¬:Y
-        <<- not value(<1, "|semblant|") =>> exclude(\3, ":V")
-
     [/_VCint_|/_VCimp_]  [le|la|l’|leur|les]  $:¬:Y
         <<- =>> select(\2, ":D")
 
@@ -2069,13 +2049,7 @@ __da_groupe_nominal__
         <<- =>> select(\4, ":[NA]")
 
     en tant que  *WORD
-        <<- =>> exclude(\4, ":[123][sp]")
-
-    en peine
-        <<- not value(<1, "|ne|n’|j’|on|il|elle|iel|") =>> exclude(\2, ":V")
-
-    m’ [dame|sieur]
-        <<- ~>> ␣
+        <<- =>> exclude(\4, ":V")
 
     nombre  [de|d’|des]  [@:[NA]|<end>|,]
         <<- not morph(<1, ":D") >>>
@@ -2091,12 +2065,41 @@ __da_groupe_nominal__
     source [de|d’]
         <<- morph(<1, ">(?:être|(?:re|)devenir|rester|demeurer|sembler|para[iî]tre)/") =>> define(\1, ":LV")
 
+    très  *WORD
+        <<- =>> exclude(\2, ":[123][sp]")
+
+
+__da_groupe_nominal__cas_particuliers__
+    [au|aux] alentour
+        <<- =>> select(\2, ":N")
+
+    avions
+        <<- not tag_before(\1, "_1p_") and not value(<1, "|n’|") and not value(>1, "|nous|") =>> select(\-1, ":N")
+
+    l’ avions
+        <<- morph(<1, ":Y") =>> select(\-1, ":N")
+
+    bac + ~^\d\d?$
+        <<- ~>> ␣
+        <<- =>> define(\1, ":N:e:i")
+
+    l’ un comme l’ autre
+        <<- ~>> ␣
+        <<- =>> define(\1, ":LN:m:p")
+
+    l’ une comme l’ autre
+        <<- ~>> ␣
+        <<- =>> define(\1, ":LN:f:p")
+
+    en peine
+        <<- not value(<1, "|ne|n’|j’|on|il|elle|iel|") =>> exclude(\2, ":V")
+
+    m’ [dame|sieur]
+        <<- ~>> ␣
+
     tout feu ?,¿ tout >flamme
         <<- ~>> ␣
         <<- =>> define(\1, ":A:e:i")
-
-    très  *WORD
-        <<- =>> exclude(\2, ":[123][sp]")
 
 TEST: il s’agit d’{{un}} {{anagramme}}
 TEST: nul ne sait qui arriva à ce pauvre Paul surpris par la pluie.
@@ -2114,6 +2117,17 @@ TEST: Votre question fait référence à un fait divers déroutant
 __da_couleurs_invariables__
     *WORD [abricot|acajou|amarante|anthracite|aubergine|brique|caca|café|cannelle|caramel|carmin|carotte|cerise|châtaigne|chocolat|citron|corail|crème|fuchsia|groseille|havane|jonquille|marron|mastic|nacarat|ocre|olive|paille|parme|pastel|pervenche|pie|prune|sable|tabac|vermillon]
         <<- morph(\1, ":(D.*:p|B)") =>> exclude(\2, ":A:e:i")
+
+
+__da_noms_propres__
+    Concorde
+        <<- not morph(<1, ":D.*:f") =>> add_morph(\1, ">Concorde/:MP:m:i")
+
+    Mustang
+        <<- not morph(<1, ":D.*:m") =>> add_morph(\1, ">Mustang/:MP:f:i")
+
+TEST: le crash du Concorde
+TEST: elle a acheté une Mustang
 
 
 
@@ -2178,6 +2192,7 @@ __tag_sujets__
     vous-mêmes
     vous [seul|seule|seuls|seules]
     vous autres
+    ni vous
         <<- not morph(<1, ">ne/|:R") />> _2p_
 
 
@@ -2283,11 +2298,17 @@ __fusions_noms_communs__
         <<- ~>> ␣
         <<- =>> change_meta(\1, "WORD")
 
+    terra incognita
+        <<- ~>> ␣
+
     *NUM : *NUM
         <<- space_after(\1, 0, 0) and space_after(\1, 0, 0) ~>> ␣
 
     *NUM  ~^h[0-9][0-9]$
         <<- space_after(\1, 0, 0) ~>> ␣
+
+
+TEST: mais nous avancions en terra incognita
 
 
 __fusions_noms_communs_séparés_slah__
@@ -4049,6 +4070,42 @@ TEST: {{jeudi}}, 18 août 1563 : mort de La Boétie (calendrier julien)     ->>
 TEST: mercredi, 18 août 1563 : mort de La Boétie (calendrier julien)
 
 
+__date_nuits_soirées_matinées__
+    !! dans la [matinée|nuit|soirée] de dimanche à lundi ¡¡
+    !! dans la [matinée|nuit|soirée] de lundi à mardi ¡¡
+    !! dans la [matinée|nuit|soirée] de mardi à mercredi ¡¡
+    !! dans la [matinée|nuit|soirée] de mercredi à jeudi ¡¡
+    !! dans la [matinée|nuit|soirée] de jeudi à vendredi ¡¡
+    !! dans la [matinée|nuit|soirée] de vendredi à samedi ¡¡
+    !! dans la [matinée|nuit|soirée] de samedi à dimanche ¡¡
+    dans la [matinée|nuit|soirée] de [lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche] à [lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche]
+        <<- --4:0>> de dimanche à lundi|de lundi à mardi|de mardi à mercredi|de mercredi à jeudi|de jeudi à vendredi|de vendredi à samedi|de samedi à dimanche
+        && Cette \3 n’existe pas, les deux journées ne se succédant pas.
+
+TEST: dans la nuit {{de jeudi à mardi}}
+TEST: dans la nuit de dimanche à lundi
+TEST: dans la nuit de lundi à mardi
+TEST: dans la nuit de mardi à mercredi
+TEST: dans la nuit de mercredi à jeudi
+TEST: dans la nuit de jeudi à vendredi
+TEST: dans la nuit de vendredi à samedi
+TEST: dans la nuit de samedi à dimanche
+TEST: dans la soirée de dimanche à lundi
+TEST: dans la soirée de lundi à mardi
+TEST: dans la soirée de mardi à mercredi
+TEST: dans la soirée de mercredi à jeudi
+TEST: dans la soirée de jeudi à vendredi
+TEST: dans la soirée de vendredi à samedi
+TEST: dans la soirée de samedi à dimanche
+TEST: dans la matinée de dimanche à lundi
+TEST: dans la matinée de lundi à mardi
+TEST: dans la matinée de mardi à mercredi
+TEST: dans la matinée de mercredi à jeudi
+TEST: dans la matinée de jeudi à vendredi
+TEST: dans la matinée de vendredi à samedi
+TEST: dans la matinée de samedi à dimanche
+
+
 !!
 !!
 !!!! Traits d’union                                                                               !!
@@ -4292,6 +4349,10 @@ __tu_locutions__
     en sous main
         <<- /tu/ ->> en sous-main                               && Il manque un trait d’union.
 
+    entre temps
+        <<- /tu/ not (value(>1, "|et|") and morph(>2, ":N"))
+        ->> entre-temps                                         && Il manque un trait d’union.|https://fr.wiktionary.org/wiki/entre-temps
+
     grand chose
         <<- /tu/ ->> grand-chose                                && Il manque un trait d’union.
 
@@ -4334,11 +4395,13 @@ TEST: {{en contre bas}}
 TEST: {{en contre point}},
 TEST: être {{en porte à faux}}
 TEST: des tractations {{en sous main}}
+TEST: il s’était amélioré {{entre temps}}                                       ->> entre-temps
 TEST: Il ne connaît pas {{grand chose}} à tout ça.
 TEST: {{ici bas}}, n’attends rien de bon, à moins que…
 TEST: {{jusque là}}, tout va bien
 TEST: {{Là bas}}.                                                               ->> Là-bas
 TEST: elle viendra, {{n’est ce pas}} ?
+TEST: {{N’est ce pas}}                                                          ->> N’est-ce pas
 TEST: seulement par {{ouï dire}}.
 TEST: {{par derrière}} la maison
 TEST: Tout ce que nous faisons {{par ci, par là}}.
@@ -4500,7 +4563,8 @@ __tu_substantifs__
         <<- /tu/ morph(<1, ":D") ->> \1-à-porter                && Il manque les traits d’union.
 
     quelques [un|uns|une|unes]
-        <<- /tu/ ->> quelques-\2                                && Il manque un trait d’union.
+        <<- /tu/ \2.endswith("s") or \2.endswith("S") ->> quelques-\2       && Il manque un trait d’union.
+        <<- /tu/ __else__ ->> quelques-\2s                                  && Il manque un trait d’union.
 
     [plus|moins] [value|values]
         <<- /tu/ ->> \1-\2                                      && Il manque un trait d’union.|https://fr.wiktionary.org/wiki/plus-value
@@ -4618,6 +4682,7 @@ TEST: il loge dans un {{pied à terre}} misérable
 TEST: sur cette {{plate forme}}, rien ne fonctionne
 TEST: une {{presque île}}
 TEST: {{Quelques unes}} sont très habiles.
+TEST: {{quelques un}} seront blâmés, les autres pardonnés
 TEST: une {{plus value}}                                                        ->> plus-value
 TEST: combien de {{plu value}}
 TEST: Un énorme {{plus value}}.
@@ -4874,6 +4939,7 @@ __tu_pas_de_trait_d_union__
     d’ entre-vous
     d’ entre-eux
     d’ entre-elles
+    d’ entre-iels
         <<- /tu/ -2>> =\2.replace("-", " ")                                     && Pas de trait d’union.
 
 TEST: Il est {{en-dessous}} de tout.                                            ->> en dessous
@@ -6172,7 +6238,7 @@ __loc_notre_père_qui_es_au_cieux__
 
 ## Incohérences avec formes verbales 1sg et 2sg sans sujet
 
-__conj_xxxai__sans_sujet!3__
+__conj_1s_sans_sujet_xxxai!3__
     [ne|n’]  ?[le|la|l’|les|en|me|m’|te|t’|nous|vous|lui|leur|y]¿  ~ai$
         <<- /conj/ not tag_before(\1, "_1s_") and morph(\-1, ":1s", ":(?:E|G|W|M|J|3[sp])")
         --1>> =suggVerb(\-1, ":3s")                                                                 && Incohérence. Ceci est un verbe à la 1ʳᵉ personne du singulier. Sujet (“je” ou “moi qui”) introuvable.
@@ -6199,7 +6265,7 @@ TEST: {{dansai}} puis oubliait
 TEST: ce qui, dans le meilleur des cas, peut-être, oui, c’est vrai, vous {{donnerai}} l’avantage.
 
 
-__conj_xxxas_xxxes__sans_sujet!3__
+__conj_2s_sans_sujet_xxxas_xxxes!3__
     [ne|n’]  ?[le|la|l’|les|en|me|m’|te|t’|nous|vous|lui|leur|y]¿  ~[ae]s$
         <<- /conj/ not tag_before(\1, "_2s_") and morph(\-1, ":2s", ":(?:E|G|W|M|J|3[sp]|1p)")
         --1>> =suggVerb(\-1, ":3s")                                                                 && Incohérence. Ceci est un verbe à la 2ᵉ personne du singulier. Sujet (“tu” ou “toi qui”) introuvable.
@@ -6228,7 +6294,7 @@ TEST: n’est-ce pas, indubitablement, nous la {{contestes}}
 TEST: nous laisserons derrière nous les empires de la Terre.
 
 
-__conj_xxxxxs_sans_sujet!3__
+__conj_1s_2s_sans_sujet_xxxs!3__
     [ne|n’]  ?[le|la|l’|les|en|me|m’|te|t’|nous|vous|lui|leur|y]¿  ~[iudnrtpcï]s$
         <<- /conj/ not tag_before(\1, "_1s_") and not tag_before(\1, "_2s_") and morph(\-1, ":[12]s", ":(?:E|G|W|M|J|3[sp]|2p|1p)")
         --1>> =suggVerb(\-1, ":3s")                                                                 && Incohérence. Le sujet de cette forme verbale est introuvable.
@@ -6296,12 +6362,12 @@ TEST: Le total de cette opération, contrairement à ce qu’on pense, {{équiva
 
 
 ## Incohérences avec formes verbales 1pl et 2pl sans sujet
-__conj_xxxons_sans_sujet!3__
+__conj_1p_sans_sujet!3__
     ~ons$
         <<- /conj/ morph(\1, ":1p", ":[EGMNAJ]") and not tag_before(\1, "_1p_") and not (\1.istitle() and before0("\\w"))
         -1>> =suggVerb(\1, ":3p")     && Ceci est un verbe à la 1ʳᵉ personne du pluriel. Sujet (“nous” ou équivalent) introuvable.
 
-__conj_xxxez_sans_sujet!3__
+__conj_2p_sans_sujet!3__
     ~ez$
         <<- /conj/ morph(\1, ":2p", ":[EGMNAJ]") and not tag_before(\2, "_2p_") and not (\1.istitle() and before0("\\w"))
         -1>> =suggVerb(\1, ":3p")     && Ceci est un verbe à la 2ᵉ personne du pluriel. Sujet (“vous” ou équivalent) introuvable.
@@ -6315,6 +6381,7 @@ TEST: mes supérieurs et moi-même avons pris la décision de ne pas vendre
 TEST: Ni lui ni moi n’avions mangé
 TEST: Mon épouse et moi-même avons toujours dit
 TEST: que vous ou moi ignorions à peu près tout du boson de Higgs n’a pas du tout le même sens
+TEST: ni vous ni personne ne le retrouverez
 
 
 # Confusion futur / conditionnel
@@ -6445,7 +6512,7 @@ __conf_déterminant_mas_sing_verbe__
         -3>> =suggSimil(\3, ":[NA]:[me]:[si]", True)                                                && Incohérence avec “\2” : “\3” est un verbe.
 
     [un|une]  @:(?:Y|[123][sp])¬:[GNA]  ?$:W¿  @:A¬:[GM]
-        <<- /conf/ not value(<1, "|dont|l’|d’|sauf|excepté|") and not before("(?i)\\bun à +$")
+        <<- /conf/ not value(<1, "|dont|l’|d’|sauf|excepté|qu’|") and not before("(?i)\\bun à +$") and not morph(\2, ":V0")
         -2>> =suggSimil(\2, ":[NAQ]:[me]:[si]", True)                                               && Incohérence avec “\1” : “\2” est une forme verbale conjuguée.
 
 TEST: un {{maintient}} difficile.
@@ -6458,6 +6525,7 @@ TEST: chaque {{désire}} importe.
 TEST: quelqu’un arrive.
 TEST: Belle qui tient mon vit captif entre tes doigts.
 TEST: Quel serait l’homme capable d’une telle horreur ?
+TEST: Une était plus courte que l’autre.
 
 
 __conf_déterminant_plur_verbe__
@@ -6838,7 +6906,7 @@ TEST: Aussi {{désobligeante}} que furent ces réponses, il fallut trouver un te
 # a / à
 
 __conf_a_à_incohérences__
-    à [afin|alors|après|auprès|avant|avec|au-dedans|au-dehors|au-delà|au-dessous|au-dessus|au-devant|chez|dans|devant|dès|déjà|donc|durant|lorsque|lorsqu’|malgré|parce|parmi|pendant|pour|puisque|puisqu’|quoique|quoiqu’|que|qu’|sur|tandis]
+    à [afin|alors|après|auprès|avant|avec|au-dedans|au-dehors|au-delà|au-dessous|au-dessus|au-devant|chez|dans|devant|dès|déjà|donc|durant|envers|lorsque|lorsqu’|malgré|parce|parmi|pendant|pour|puisque|puisqu’|quoique|quoiqu’|que|qu’|sur|tandis|vis-à-vis]
         <<- /conf/ -1>> a                                           && Incohérence avec “\2”. Confusion probable : “à” est une préposition. Écrivez “a” pour la conjugaison de “avoir”.
 
     à [au|aux]
@@ -7098,21 +7166,21 @@ TEST: il viendra comme à l’{{accoutumé}} avec son petit air de faux-jeton   
 TEST: comme à l’accoutumée, elle ne fait pas grand-chose.
 
 
-__conf_à_l_attention_de_prn__
+__conf_attention_intention__
     à l’ intention de @:M[12]
     à l’ intention de [monsieur|Mr|madame|Mme|mademoiselle|Mlle|messieurs|mesdames|mesdemoiselles|sire]
     à l’ intention du {humain}
     à l’ intention de [l’|mon|ton|son|ma|ta|sa|notre|votre|leur] {humain}
     à l’ intention de [l’|mon|ton|son|ma|ta|sa|notre|votre|leur|la] {humaine}
         <<- /conf/ not morph(<1, ">(?:cadeau|offrande|présent)") -3>> attention
-        && Confusion probable. On a/attire/obtient l’attention de quelqu’un ou on porte à l’attention de quelqu’un.|https://fr.wiktionary.org/wiki/attention
+        && Confusion probable. On a/attire/obtient l’attention de quelqu’un, on porte à l’attention de quelqu’un.|https://fr.wiktionary.org/wiki/attention
 
     >porter à l’ intention [de|d’|,]
     >porter à [mon|ton|son|notre|votre|leur] intention
         <<- /conf/ -4>> attention
-        && Confusion probable. On a/attire/obtient l’attention de quelqu’un ou on porte à l’attention de quelqu’un.|https://fr.wiktionary.org/wiki/attention
+        && Confusion probable. On a/attire/obtient l’attention de quelqu’un, on porte à l’attention de quelqu’un.|https://fr.wiktionary.org/wiki/attention
 
-    [>attirer|>obtenir] [l’|mon|ton|son|notre|votre|leur] intention
+    [>attirer|>éveiller|>obtenir|>susciter] [l’|mon|ton|son|notre|votre|leur] intention
     >avoir [mon|ton|son|notre|votre|leur] intention
     >avoir l’ intention de @:M[12]
     >avoir l’ intention de [monsieur|Mr|madame|Mme|mademoiselle|Mlle|messieurs|mesdames|mesdemoiselles|sire|Dieu]
@@ -7121,7 +7189,7 @@ __conf_à_l_attention_de_prn__
     >avoir l’ intention de [l’|mon|ton|son|ma|ta|sa|notre|votre|leur] {humain}
     >avoir l’ intention de [l’|mon|ton|son|ma|ta|sa|notre|votre|leur] {humaine}
         <<- /conf/ -3>> attention
-        && Confusion probable. On a/attire/obtient l’attention de quelqu’un ou on porte à l’attention de quelqu’un.|https://fr.wiktionary.org/wiki/attention
+        && Confusion probable. On a/attire/obtient/suscite l’attention de quelqu’un.|https://fr.wiktionary.org/wiki/attention
 
     [>connaître|>connaitre] [l’|mon|ton|son|notre|votre|leur] attention
     [>connaître|>connaitre] [les|mes|tes|ses|nos|vos|leurs] attentions
@@ -7310,7 +7378,6 @@ __conf_à_a_locutions__
     a bon [compte|escient|droit]
     a bout [de|d’] [bras|souffle|>force]
     a bout [portant|touchant]
-    a bras le corps
     a bras ouverts
     a bride abattue
     a ?[si|très|trop]¿ brève échéance
@@ -7591,6 +7658,7 @@ __conf_a_à_substantifs__
     >fusil a >pompe
     >gaz a >effet de serre
     >histoire a dormir debout
+    >instrument a [cordes|percussion|vent]
     >homme a poigne
     >homme a tout faire
     >lampe a [>huile|>pétrole]
@@ -7782,6 +7850,15 @@ __conf_acquit_acquis__
 
 TEST: par {{acquis}} de conscience
 TEST: tout ce qu’on fait par acquit de conscience
+
+
+# aux alentours
+__conf_aux_alentours__
+    au alentours
+    [au|aux] alentour
+        <<- /conf/ ->> aux alentours                    && Locutions “aux alentours”.|https://fr.wiktionary.org/wiki/alentours
+
+TEST: {{au alentour}}                       ->> aux alentours
 
 
 # accès / axé
@@ -8423,11 +8500,14 @@ TEST: non {{comptant}} de s’en prendre à eux, il s’attaqua aussi à elles
 
 # corps / cor
 __conf_corps_cor__
-    [a|à] bras le >cor
-        <<- /conf/ ->> à bras le corps                                              && Confusion. Le cor est instrument de musique.
+    !! à bras-le-corps ¡¡
+    [à|a] [bras-le-corps|bras-le-cor]
+    [à|a] [bra|bras] [le|les] [>cor|corps|>core|corre]
+        <<- /conf/ ->> à bras-le-corps              && Locution “à bras-le-corps”.|https://fr.wiktionary.org/wiki/%C3%A0_bras-le-corps
 
-    à >cor [perdu+ses]
-        <<- /conf/ ->> à corps perdu                                                && Confusion. Le cor est instrument de musique.
+    !! à corps perdu ¡¡
+    à [>cor|core] [perdu+ses]
+        <<- /conf/ ->> à corps perdu                                                && Confusion. Locution “à corps perdu”.|https://fr.wiktionary.org/wiki/%C3%A0_corps_perdu
 
     >cor [a|à] >cor
         <<- /conf/ ->> corps à corps                                                && Confusion. Le cor est instrument de musique.
@@ -8453,6 +8533,7 @@ TEST: ils se sont battus {{cor à cor}}
 TEST: L’hostie n’est pas le {{cor}} du Christ.
 TEST: elle détestait son nouveau garde du {{cor}}
 TEST: Elle souffla puissamment dans le {{corps}} de chasse.
+TEST: prendre le problème à bras-le-corps
 
 
 # cou / coup / coût
@@ -8896,19 +8977,20 @@ TEST: ce dont on parle tous les jours
 # dû / du
 __ppas_dû_du__
     du  [à|a|au|aux]
-        <<- /ppas/ \2.islower() -1>> dû                         && Confusion. Ce qui est dû.
+        <<- /ppas/ \2.islower() -1>> dû                                                 && Confusion. Ce qui est dû.
 
     [mon|notre|votre]  du
-        <<- /ppas/ -2>> dû                                      && Confusion. Ce qui est dû.
+        <<- /ppas/ -2>> dû                                                              && Confusion. Ce qui est dû.
 
     [ton|son|leur]  du
-        <<- /ppas/ not morph(>1, ":[NA].*:[me]") -2>> dû        && Confusion. Ce qui est dû.
+        <<- /ppas/ not morph(<1, ":D") and morph(>1, ":|<end>", ":[NA].*:[me]") -2>> dû       && Confusion. Ce qui est dû.
 
 TEST: L’échec {{du}} à une erreur de calcul
 TEST: que ça vous plaise ou non, c’est notre {{du}}.
 TEST: Il veut qu’on lui rende son {{du}}.
 TEST: Tu as reçu ton {{du}} pour ton travail.
 TEST: Plusieurs murs ont été recouverts du « A » anarchiste
+TEST: Xénophon nous apprend que les Athéniens faisaient leurs exercices au son du Salpinx.
 
 
 # eh bien, hé bien / et bien
@@ -8966,15 +9048,6 @@ __conf_en_général__
 TEST: On n’en sait {{en générale}} pas assez.
 
 
-# en roue libre
-__conf_en_roue_libre__
-    en roux libre
-        <<- /conf/ ->> en roue libre                            && Locution “en roue libre”.|https://fr.wiktionary.org/wiki/en_roue_libre
-
-TEST: ces cons sont constamment {{en roux libre}}
-TEST: elle est en roue libre depuis le début.
-
-
 # emballé, c’est pesé
 __conf_emballé_c_est_pesé__
     >emballer [c|sais|sait] >peser
@@ -8989,6 +9062,20 @@ TEST: {{emballer c’est peser}}
 TEST: Tu peux emballer, c’est pesé.
 TEST: il faut emballer, c’est pesé
 TEST: c’est emballé, c’est pesé.
+
+
+# entrée / entrer
+__conf_entrée__
+    [l’|cet|mon|ton|son|notre|votre|leur|chaque|quel] entré
+        <<- /conf/ --1>> entrée                                         && Confusion. Écrivez “entrée” pour évoquer l’arrivée ou le passage par lequel on entre.
+
+    [les|des|des|ces|mes|tes|ses|nos|vos|leurs|quels|quelques|plusieurs] entrés
+        <<- /conf/ --1>> entrées                                        && Confusion. Écrivez “allers” pour évoquer un voyage. Écrivez “allées” pour évoquer une voie de passage.
+
+TEST: à l’{{entré}} en guerre                               ->> entrée
+TEST: Des {{entrés}}                                        ->> entrées
+TEST: à l’{{entré}} de la grotte                            ->> entrée
+TEST: les entrées sont toutes verrouillées
 
 
 # et / est
@@ -10011,8 +10098,12 @@ __conf_par_dessus__
         <<- /conf/ not morph(<1, ":D.*:[me]|>(?:grande|petite)/")
         -1>> par-dessus                                                     && Confusion probable. Un pardessus est un vêtement. Pour la préposition, écrivez “par-dessus”.
 
+    [pare-dessus|pares-dessus|part-dessus|parts-dessus]
+        <<- /conf/ ->> pardessus|par-dessus                                 && Confusion. Pour le manteau, écrivez “pardessus”. Pour la locution adverbiale, écrivez “par-dessus”.
+
 TEST: {{Pardessus}} les montagnes.
 TEST: Il passa {{pardessus}} les collines.
+TEST: un {{pare-dessus}}
 TEST: Mets ton pardessus ce matin.
 
 
@@ -10298,11 +10389,47 @@ TEST: dans la {{pomme}} de sa main
 TEST: c’est la {{paume}} de discorde
 
 
+# point / poing
+__conf_poing_point__
+    [>arme|>coup|>oiseau] de >point
+    [>taper|>fermer|>ouvrir|>blesser|>serrer|>desserrer] $:D >point
+        <<- /conf/ -3>> =\3.replace("t", "g").replace("T", "G")             && Confusion probable. Une main fermée s’écrit “poing”.|https://fr.wiktionary.org/wiki/poing
+
+    >point [américain|américains|>serrer|>desserrer|>lever|>casser|>lier]
+        <<- /conf/ morph(\2, ":A") and morph(<1, ":D")
+        -1>> =\1.replace("t", "g").replace("T", "G")                        && Confusion probable. Une main fermée s’écrit “poing”.|https://fr.wiktionary.org/wiki/poing
+
+    !! à point nommé ¡¡
+    [à|a] [point+s|>poing] [nommé|+ses]
+        <<- /conf/ ->> à point nommé                                        && Locution “à point nommé”.|https://fr.wiktionary.org/wiki/%C3%A0_point_nomm%C3%A9
+
+    !! à poings fermés ¡¡
+    [à|a] [>point|poing+s] [fermé+ses]
+        <<- /conf/ ->> à poings fermés                                      && Locution “à poings fermés”.|https://fr.wiktionary.org/wiki/dormir_%C3%A0_poings_ferm%C3%A9s
+
+TEST: une arme de {{point}}
+TEST: Elles ont tapé du {{point}} sur la table.
+TEST: les {{points}} serrés
+TEST: venir {{a point nommé}}                                               ->> à point nommé
+TEST: {{a points fermés}}                                                   ->> à poings fermés
+TEST: Tu contres son coup de poing.
+TEST: Il m’a donné un coup de poing.
+TEST: Les poings serrés.
+TEST: ça arriva à point nommé
+TEST: à poings fermés
+
+
 # porc / pore / port
 __conf_porc_port_pore__
+    ## pore
     [>porc|>port] de la peau
         <<- /conf/ -1>> pore|pores                                          && Confusion. Les pores de la peau .|https://fr.wiktionary.org/wiki/pore
 
+    [>transpirer|>exsuder] ?@:[WX]¿ par ?tous¿ les [ports|porcs]
+    [>transpirer|>exsuder] ?@:[WX]¿ [de|d’] [moi|toi|lui|elle|iel|nous|vous|eux|elles|iels] par ?tous¿ les [ports|porcs]
+        <<- /conf/ --1>> pores                                              && Confusion. Les pores de la peau.|https://fr.wiktionary.org/wiki/pore
+
+    ## porc
     [>pore|>port] [braisé+ses|caramélisé+ses|confit+s|cuit+s|farci+ses|grillé+ses|laqué+ses|mariné+ses|mijoté+ses|poêlé+ses]
     [>pore|>port] au [caramel|cognac|cidre|citron|chorizo|cumin|curry|four|fenouil|gingembre|lait|miel|roquefort|vin|vinaigre]
     [>pore|>port] aux [abricots|cèpes|champignons|carottes|épices|fèves|figues|fruits|girolles|haricots|herbes|lardons|légumes|lentilles|marrons|morilles|noisettes|nouilles|oignons|ognons|pâtes|poires|pommes|patates|pruneaux]
@@ -10321,6 +10448,7 @@ __conf_porc_port_pore__
     >élevage [de|d’] [>pore|>port]
         <<- /conf/ --1>> porc|porcs                                         && Confusion. Pour évoquer l’animal, écrivez “porc”.|https://fr.wiktionary.org/wiki/porc
 
+    ## port
     [>pore|>porc] [de|d’] [plaisance|pêche]
     [>pore|>porc] [>maritime|>spatial]
         <<- /conf/ -1>> port|ports                                          && Confusion. Pour évoquer un havre côtier où les bâteaux accostent, écrivez “port”.|https://fr.wiktionary.org/wiki/port
@@ -10350,6 +10478,7 @@ TEST: nous parvenons enfin à bon {{pore}}
 TEST: Accoste au {{porc}}
 TEST: le {{pore}} de La Rochelle
 TEST: Connecte le {{pore}} USB
+TEST: transpirer par tous les {{porcs}}
 TEST: je transporte des porcs de Calais à Londres.
 
 
@@ -10818,6 +10947,19 @@ TEST: Elle adore le {{ri}} au lait.
 TEST: Tous adorent le {{ri}} basmati.
 
 
+# roue / roux
+__conf_roue_roux__
+    en roux >libre
+        <<- /conf/ ->> en roue libre                            && Locution “en roue libre”.|https://fr.wiktionary.org/wiki/en_roue_libre
+
+    >bâton dans les roux
+        <<- /conf/ --1>> roues                                  && Confusion. Vous confondez l’objet rond avec la couleur.|https://fr.wiktionary.org/wiki/roue
+
+TEST: ces cons sont constamment {{en roux libre}}
+TEST: cesse de nous mettse des bâtons dans les {{roux}}
+TEST: elle est en roue libre depuis le début.
+
+
 # saint / sain / sein / seing
 __conf_saint_sain_sein_seing__
     [sain|sains|>sein]  $:M1
@@ -11025,7 +11167,7 @@ TEST: Méfiez-vous de cette {{soi disant}} sorcière.
 __conf_soi_soit_soie__
     [chez|sur|avec|pour|devant|derrière] [soit|sois]
     don de [soit|sois]
-    estime de [soit|sois|>soie]
+    [dépassement|estime] de [soit|sois|>soie]
     >repli sur [soit|sois|>soie]
         <<- /conf/ not (value(\-1, "|soit|") and after(" soit ")) --1>> soi                         && Confusion probable.|https://fr.wiktionary.org/wiki/soi
 
@@ -11309,6 +11451,16 @@ TEST: Elle l’a observé par un miroir sans {{teint}}.
 TEST: Elle a acheté un nouveau fond de {{tain}}.
 
 
+# tandis que
+__conf_tandis_que__
+    tendis [que|qu’]
+        <<- /conf/ not value(<1, "|je|tu|il|elle|iel|on|ne|n’|le|la|les|l’|me|m’|te|t’|se|s’|")
+        ->> tandis \2           && Confusion probable. Écrivez “tandis que” s’il s’agit bien de la locution conjonctive exprimant concomitance ou opposition.|https://fr.wiktionary.org/wiki/tandis_que
+
+TEST: mais {{tendis que}} le policier examinait nos papiers             ->> tandis que
+
+
+# taule / tôle
 __conf_taule_tôle1__
     [>taule] [de|d’|en] [>acier|>alu|>aluminium|>bardage|>cuivre|>étanchéité|>fer|>festonnage|inox|>laiton|>métal|>trapèze|>zinc|>éverite|>fibrociment|>fibro-ciment|>plastique|>polycarbonate|PVC]
         <<- /conf/ -1>> =\1.replace("au", "ô").replace("AU", "Ô")   && Confusion. La taule est la forme argotique pour évoquer la prison, le bordel ou toute forme d’habitation.
@@ -11412,17 +11564,20 @@ TEST: ce serait, toutes choses égales par ailleurs, la meilleure solution possi
 
 # très / trait
 __conf_très_trait__
-    [un|le|ce|mon|ton|son|notre|votre|leur]  [trait|traits|trais|traie|traies|traient]  @:A.*:[me]:[si]¬:G  @:N.*:[me]:[si]¬:(?:G|3[sp])
-        <<- /conf/ -2>> très            && Confusion possible. Si “\3” est bien l’adjectif de “\4” et que vous voulez que le “\4” est beaucoup “\3”, utilisez l’adverbe “très”.|https://fr.wiktionary.org/wiki/tr%C3%A8s
+    [un|le|ce|mon|ton|son|notre|votre|leur]  [trait|traits|trais|traie|traies|traient]  @:A.*:[me]:[si]¬:G  @:N.*:[me]:[si]¬:(?:G|3[sp]|A)
+        <<- /conf/ not (morph(\2, ">trait/") and morph(\3, ">(?:facial|vertical|horizontal|oblique|diagonal)/")) -2>> très
+        && Confusion possible. Si “\3” est bien l’adjectif de “\4” et que vous voulez que le “\4” est fort “\3”, utilisez l’adverbe “très”.|https://fr.wiktionary.org/wiki/tr%C3%A8s
 
-    [des|les|ces|mes|tes|ses|nos|vos|leurs|quelques|plusieurs]  [trait|traits|trais|traie|traies|traient]  @:A.*:[me]:[pi]¬:G  @:N.*:[me]:[pi]¬:(?:G|3[sp])
-        <<- /conf/ -2>> très            && Confusion possible. Si “\3” est bien l’adjectif de “\4” et que vous voulez que les “\4” sont beaucoup “\3”, utilisez l’adverbe “très”.|https://fr.wiktionary.org/wiki/tr%C3%A8s
+    [des|les|ces|mes|tes|ses|nos|vos|leurs|quelques|plusieurs]  [trait|traits|trais|traie|traies|traient]  @:A.*:[me]:[pi]¬:G  @:N.*:[me]:[pi]¬:(?:G|3[sp]|A)
+        <<- /conf/ not (morph(\2, ">trait/") and morph(\3, ">(?:facial|vertical|horizontal|oblique|diagonal)/")) -2>> très
+        && Confusion possible. Si “\3” est bien l’adjectif de “\4” et que vous voulez que les “\4” sont fort “\3”, utilisez l’adverbe “très”.|https://fr.wiktionary.org/wiki/tr%C3%A8s
 
 TEST: un {{trait}} petit homme
 TEST: les {{traits}} mauvais choix du patron nous ont conduits à la ruine.
 TEST: je ne les trais pas, mais il le faudrait.
 TEST: un trait mal dessiné
 TEST: je lui lançais un trait bien piquant
+TEST: La jeune femme en noir avait des traits faciaux froids et anguleux
 
 
 # un tant soit peu
@@ -11472,16 +11627,26 @@ __conf_ver_vers_verre_vert__
         <<- /conf/ -1>> verre|verres
         && Confusion probable. Verre = matière. Vert = couleur. Ver = animal invertébré rampant. Vers = suite de mots rythmés. Vers = préposition (« en direction de »).
 
-    >tirer ?[pas|jamais]¿ les [>verre|verts] du nez
-        <<- /conf/ --3>> vers
-        && Confusion. Verre = matière. Vert = couleur. L’animal s’écrit “ver”.
+    en route [>vert|ver|>verre]
+    >faire ?@:[WX]¿ route [>vert|ver|>verre]
+        <<- /conf/ --1>> vers
+        && Confusion. Pour dire “en direction de” écrivez “vers”.
+
+    !! >tirer ?@:[WX]¿  les vers du nez ¡¡
+    >tirer ?@:[WX]¿  les [>verre|verts|vers] du [nez|né]
+        <<- /conf/ --3:0>> vers du nez
+        && Confusion. Locution “tirer les vers du nez”.|https://fr.wiktionary.org/wiki/tirer_les_vers_du_nez
 
 TEST: ce {{vert}} quoi nous allons, c’est une catastrophe à l’échelle planétaire.
 TEST: en finir avec le {{vert}} qui était dans le fruit.
 TEST: un immonde {{vert}} de terre
 TEST: Un {{ver}} de bière fraîche.
-TEST: On va lui tirer les {{verts}} du nez
+TEST: On va lui tirer les {{verts du nez}}
+TEST: tirer les {{vers du né}}
 TEST: plafond de {{ver}}
+TEST: faire route {{verre}} Marseille
+TEST: en route {{ver}} la Russie
+TEST: on va lui tirer les vers du nez
 
 
 # voix / voie / vois / voit
@@ -12430,10 +12595,11 @@ TEST: Qui ne {{créer}} aucune valeur ajoutée
 
 !!
 !!
-!!!! Après celui, celle, ceux, celles                                                             !!
+!!!! Confusions avec participes passés                                                            !!
 !!
 !!
 
+# Après celui, celle, ceux, celles
 __conf_celui_celle_ceux_celles_verbe__
     celui  ~.e[rz]$
         <<- /conf/ morph(\-1, ":V") -2>> =suggVerbPpas(\-1, ":m:s")                                 && Confusion. Après “\1”, il faut un adjectif.
@@ -12468,6 +12634,24 @@ TEST: celle {{attaquait}}
 TEST: ceux {{sidérait}}
 TEST: celles {{déjantait}}
 TEST: celui d’Obéron était différent
+
+
+## une fois +det +nom +V1_infi
+__ppas_une_fois_det_nom_adj__
+    une fois  $:D  $:N  @:V1.*:Y¬*
+        <<- /conf/ --1>> =suggVerbPpas(\-1)                                         && Confusion probable. Si “\-1” est bien un adjectif pour “\-3 \-2”, alors n’utilisez pas un verbe à l’infinitif.
+
+TEST: une fois le petit {{accepter}} par l’école, nous pûmes nous reposer.
+
+
+## adj que adj sujet
+__conf_que_adj_suj__
+    que ,  @:V1.*:Y , $:Os¬:Ov
+        <<- /conf/ -3>> =suggVerbPpas(\3)                   && Confusion probable. Il s’agit ici d’un verbe à l’infinitif. Si vous voulez décrire un état de fait, il faut employer un participe passé.
+
+TEST: il était si fâché que, {{ulcérer}}, il dut s’asseoir.
+TEST: il était si fâché que parler lui fut impossible.
+
 
 
 !!
@@ -12820,6 +13004,9 @@ __purge_horaires_et_durée__
     [avant|après|dès|depuis] le crépuscule
         <<- ~>> *
 
+    dans la [matinée|nuit|soirée] de [lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche] à [lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche]
+        <<- ~>> *
+
     à la fin de [la|l’]             [après-midi|matinée|nuit|soirée]
     au [début|milieu] de [la|l’]    [après-midi|matinée|nuit|soirée]
     en [début|milieu|fin] [de|d’]   [après-midi|matinée|soirée]
@@ -13136,6 +13323,7 @@ __purge_locutions_temps__
     dans peu de temps
     dans très peu de temps
     dans un [premier|second|troisième|quatrième] temps
+    depuis ce temps-là
     depuis peu
     depuis ?[assez|si|très|trop]¿ peu de temps
     depuis la nuit des temps
@@ -13198,8 +13386,9 @@ __purge_locutions_temps__
         <<- ~>> *
 
 __purge_locutions_instant_moment__
-    à ce moment ?[exact|particulier|précis]¿
-    à cet instant ?[exact|particulier|précis]¿
+    à aucun moment
+    à ce [moment|moment-là] ?[exact|particulier|précis]¿
+    à cet [instant|instant-là] ?[exact|particulier|précis]¿
     à chaque [instant|moment] ?passé¿
     à un moment donné
     à un moment ou à un autre
@@ -13208,7 +13397,7 @@ __purge_locutions_instant_moment__
     dans ces moments-là
     d’ instant en instant
     d’ un [instant|moment] à l’ autre
-    en ce moment ?[particulier]¿
+    en ce [moment|moment-là] ?[particulier]¿
     en ces [temps-là|temps-ci]
     en cet instant ?[particulier|précis]¿
     le moment venu
@@ -13247,10 +13436,11 @@ __purge_locutions_temporelles_diverses__
     depuis lors
     depuis toujours
     depuis un bail
+    dès à présent
     dès [demain|hier] ?[soir|matin|après-midi]¿
     dès [maintenant|lors|aujourd’hui]
+    dès [mon|ton|son|notre|votre|leur] plus jeune âge
     dès que possible
-    dès à présent
     déjà
     désormais
     dorénavant
@@ -13543,7 +13733,7 @@ __purge_locutions__
     à air comprimé
     à angle droit
     à armes égales
-    à aucun [moment|prix]
+    à aucun prix
     à autre chose
     à ?[si|très|trop]¿ bas [bruit|cout|coût|prix]
     à bâtons rompus
@@ -13556,13 +13746,19 @@ __purge_locutions__
     à bout [de|d’] [bras|souffle|force|forces|nerf|nerfs]
     à bout [portant|touchant]
     à bras ouverts
-    à bras le corps
+    à bras-le-corps
     à bride abattue
     à but ?non¿ lucratif
     à cadence forcée
     à canon [court|long|scié]
     à cause [de|d’]  [ça|cela|ceci|moi|toi|lui|nous|vous|elle|elles|eux|iel|iels]
     à ce [compte-là|moment-là|titre]
+    à ce [que|qu’] je [peux|pouvais|pus|pourrai|pourrais] en [apercevoir|comprendre|juger|percevoir|voir]
+    à ce [que|qu’] tu [peux|pouvais|pus|pourras|pourrais] en [apercevoir|comprendre|juger|percevoir|voir]
+    à ce qu’ [il|elle|on|iel] [peut|pouvait|put|pourra|pourrait] en [apercevoir|comprendre|juger|percevoir|voir]
+    à ce [que|qu’] nous [pouvons|pouvions|pûmes|pourrons|pourrions] en [apercevoir|comprendre|juger|percevoir|voir]
+    à ce [que|qu’] vous [pouvez|pouviez|pûtes|pourrez|pourriez] en [apercevoir|comprendre|juger|percevoir|voir]
+    à ce qu’ [ils|elles|iels] [pouvent|pouvaient|purent|pourront|pourraient] en [apercevoir|comprendre|juger|percevoir|voir]
     à certains égards
     à cet égard
     à ciel ouvert
@@ -13694,6 +13890,7 @@ __purge_locutions__
     à plus forte raison
     à plus d’ un titre
     à poil [court|dur|long|rêche]
+    à poings fermés
     à point nommé
     à portée [de|d’] [main|tir|voix]
     à première vue
@@ -13758,7 +13955,6 @@ __purge_locutions__
     advienne que pourra
     ah
     ailleurs
-    alentour
     alors
     après [moi|toi|soi|lui|eux]
     après coup
@@ -13947,6 +14143,8 @@ __purge_locutions__
     [de|d’] A à Z
     [de|d’] bas en haut
     [de|d’] bas étage
+    [de|d’] basse extraction
+    [de|d’] belle prestance
     [de|d’] bouche en bouche
     [de|d’] bric et [de|d’] broc
     [de|d’] but en blanc
@@ -14059,6 +14257,7 @@ __purge_locutions__
     du même [acabit|coup|ordre|tonneau]
     du moins ?,¿ pas
     du [nord|sud] au [nord|sud]
+    du tac au tac
     du tout au tout
     eh bien
     en [aparté|apparence|arrière|avance|avant|catimini|cachette|ceci|cela|clair|commun|conséquence|continu|contrebas|contrepartie|dedans|définitive|détail|direct|douce|effet|émoi|filigrane|général|goguette|hâte|loucedé|majorité|moyenne|outre|pâmoison|parallèle|partie|particulier|permanence|personne|pratique|prime|privé|principe|priorité|public|retour|revanche|rien|rogne|route|secret|silence|somme|suspens|tapinois|théorie|trompe-l’œil|vain|vérité]
@@ -14117,6 +14316,8 @@ __purge_locutions__
     en l’ absence [de|d’] preuve suffisante du contraire
     en l’ absence [de|d’] preuves suffisantes
     en l’ absence [de|d’] preuves suffisantes du contraire
+    en l’ état actuel
+    en l’ état actuel des choses
     en l’ occurrence
     en lieu sûr
     en ligne [de|d’] [compte|mire]
@@ -14391,6 +14592,7 @@ __purge_locutions__
     sans aucun doute
     sans autre forme [de|d’] procès
     sans commune mesure
+    sans contredit
     sans coup férir
     sans crier gare
     sans difficulté ?[apparente|aucune|financière|majeure|particulière]¿
@@ -14635,6 +14837,9 @@ __gestion_mots_grammaticaux__
 
     ainsi
         <<- not value(>1, "|que|qu’|") ~>> *
+
+    alentour
+        <<- not morph(<1, ":D") ~>> *
 
     au moins  @:[DB]
         <<- ~1:2>> *
@@ -15098,11 +15303,12 @@ __substantifs_multi_mots__
     >âge d’ or
     >agence d’ interim
     >agence [de|d’] >voyage
-    >agent de liaison
+    >agent [de|d’] [liaison|police]
     >agité du bocal
     >aide [de|d’] camp
     >aire d’ atterrissage
     >animal [de|d’] compagnie
+    >appartement à louer
     >appât du gain ?[facile|rapide]¿
     >appel au secours
     >appel à l’ aide ?humanitaire¿
@@ -15143,7 +15349,6 @@ __substantifs_multi_mots__
     >bombe à [eau|fission|fusion|fragmentation|hydrogène|neutrons|retardement]
     >bombe à rayonnement renforcé
     >bonnet [de|d’] nuit
-    >bon à rien
     [bonne+s|>bonniche] à tout faire
     >boucle d’ >oreille
     >bout [de|d’] gras
@@ -15154,7 +15359,7 @@ __substantifs_multi_mots__
     >bureau [de|d’] [tabac|vote]
     >business as usual
     >cabinet [de|d’] [toilette|travail]
-    >camp [de|d’] [concentration|internement|rééducation|travail|vacances]
+    >camp [de|d’] [concentration|été|hiver|internement|rééducation|travail|vacances]
     >canne à [pêche|sucre]
     >canon à eau
     >caisse à >outil
@@ -15186,6 +15391,7 @@ __substantifs_multi_mots__
     >chasse d’ eau
     >chasseur [de|d’] primes
     >château d’ eau
+    >chauffeur [de|d’] bus
     >chef [de|d’] [cabinet|file]
     >chef d’ [état-major|entreprise]
     >chef d’ orchestre ?[moderne|symphonique]¿
@@ -15237,12 +15443,14 @@ __substantifs_multi_mots__
     >coureur [de|d’] >jupon
     >courroie [de|d’] transmission
     >course contre la montre
-    >crayon à [lèvres|sourcils]
     >cour d’ assises
     [>coût|>cout] [de|d’] revient
     >couteau à cran d’ arrêt
+    >crayon à [lèvres|sourcils]
+    >crêpage de >chignon
     >crime [de|d’] guerre
     >crise de >nerf
+    >crotte [de|d’] nez
     >cuillère à [café|soupe]
     >cure [de|d’] [désintoxication|désintox]
     >déclaration sur l’ honneur
@@ -15251,6 +15459,7 @@ __substantifs_multi_mots__
     >demande d’ asile
     >demandeur d’ [asile|emploi]
     >descente aux [enfers|flambeaux]
+    >dindon [de|d’] la farce
     dieu tout-puissant
     [>dîner|>diner] aux chandelles
     [>dîner|>diner] [de|d’] gala
@@ -15263,7 +15472,7 @@ __substantifs_multi_mots__
     >eau [de|d’] noix [de|d’] coco
     >écart [de|d’] conduite
     >économie [de|d’] >bout [de|d’] >chandelle
-    >économie [de|d’] guerre
+    >économie [de|d’] [échelle|guerre]
     >écran [de|d’] fumée
     >éditeur [de|d’] presse
     >effet [de|d’] bord
@@ -15292,10 +15501,11 @@ __substantifs_multi_mots__
     >expérience [utilisateur|utilisateurs]
     >face [A|B]
     >faiblesse [de|d’] caractère
+    >faisceau [de|d’] présomptions
     faits et gestes
     farces et attrapes
     >fard à [joues|paupières]
-    >femme [de|d’] [affaires|chambre|confiance|exception|État|Église|honneur|lettres|loi|ménage|pouvoir]
+    >femme [de|d’] [affaires|chambre|confiance|exception|État|Église|honneur|lettres|loi|ménage|paix|pouvoir]
     >femme d’ âge mûr
     >femme à poigne
     >femme à tout faire
@@ -15310,7 +15520,7 @@ __substantifs_multi_mots__
     >feux [de|d’] la rampe
     >feuille [de|d’] route
     >fibre [de|d’] verre
-    >fiche de [paie|paye]
+    >fiche [de|d’] [paie|paye]
     >fiche S
     >file d’ attente
     >fille à [papa|maman|>soldat]
@@ -15322,6 +15532,7 @@ __substantifs_multi_mots__
     >flocon [de|d’] neige ?électronique¿
     >foire d’ >empoigne
     fonds d’ investissement
+    fonds [de|d’] pension
     >fontaine à eau
     >force d’ assaut
     >force [de|d’] caractère
@@ -15329,11 +15540,13 @@ __substantifs_multi_mots__
     >fosse aux lions
     >fou à lier
     [>fourgon|>fourgonnette] [de|d’] location
+    frais de scolarité
     >frayeur [de|d’] tous les diables
     >frein à >tambour
     >frousse [de|d’] tous les diables
     >fuite en avant
     >fusil à [lunette|plomb|pompe]
+    >gala [de|d’] charité
     >garde à vue
     >garde du corps
     gaz à >effet [de|d’] serre
@@ -15352,7 +15565,7 @@ __substantifs_multi_mots__
     heures [de|d’] pointe
     >histoire à dormir debout
     >histoire avec un [grand|petit] h
-    >homme [de|d’] [affaires|armes|confiance|exception|État|Église|honneur|lettres|loi|main|paille|pouvoir]
+    >homme [de|d’] [affaires|armes|confiance|exception|État|Église|honneur|lettres|loi|main|paille|paix|pouvoir]
     >homme d’ âge mûr
     >homme à poigne
     >homme à tout faire
@@ -15363,6 +15576,7 @@ __substantifs_multi_mots__
     >ingénieur du son
     >inspection [de|d’] routine
     >instinct [de|d’] survie
+    >instrument à [cordes|percussion|vent]
     >interface [utilisateur+s]
     >intermittent du spectacle
     >invité d’ honneur
@@ -15391,6 +15605,7 @@ __substantifs_multi_mots__
     >livre [de|d’] [poche|chevet]
     >livret A
     >livret d’ épargne ?[bancaire|populaire|salariale]¿
+    >local à louer
     >loi d’ airain
     >longueur d’ avance
     >lune [de|d’] miel
@@ -15458,6 +15673,7 @@ __substantifs_multi_mots__
     >parc d’ attractions
     >parc [de|d’] stationnement
     >parole en l’ air
+    >parole d’ honneur
     >partie [de|d’] jambes en l’ air
     >passage à tabac
     >passation [de|d’] pouvoir
@@ -15500,6 +15716,7 @@ __substantifs_multi_mots__
     prix [de|d’] revient
     puits [de|d’] [carbone|forage|lumière|pétrole|science]
     >puissance [de|d’] feu
+    >punaise [de|d’] lit
     QG [de|d’] campagne
     quelqu’un d’ autre
     >question [de|d’] vie ou [de|d’] mort
@@ -15539,10 +15756,12 @@ __substantifs_multi_mots__
     >salle [de|d’] [attente|>bain|bal|conférence|lecture|séjour|vente]
     >salon [de|d’] coiffure
     sas [de|d’] [confinement|décompression|décontamination|désinfection|livraison|protection|secours|sécurité]
+    >scène [de|d’] crime
     >sclérose en plaques
     >seconde d’ arc
     >sel [de|d’] [aluminium|ammonium|mer]
     >serpent à sonnette
+    >service clientèle
     >service d’ ordre
     >seuil [de|d’] tolérance
     >seuil [de|d’] tolérance à la douleur
@@ -15595,6 +15814,7 @@ __substantifs_multi_mots__
     >travail d’ intérêt général
     >travailleur au noir
     >tribunal d’ assises
+    >trombone à coulisse
     >trou à >rat
     >trouble à l’ ordre public
     >t-shirt sans >manche
@@ -15609,7 +15829,7 @@ __substantifs_multi_mots__
     >vague à l’ âme
     >vecteur [>accélération|>position|>rotation|>vitesse]
     >véhicule [de|d’] location
-    >vente à domicile
+    >vente à [domicile|emporter]
     >vente aux enchères
     >vérification [de|d’] routine
     vernis à ongles
@@ -15632,6 +15852,7 @@ __substantifs_multi_mots__
     >blanc comme neige
     >blanc comme ?[de|d’]¿ la craie
     >blanc comme un linge
+    >bon à rien
     >brut [de|d’] décoffrage
     >clair comme [de|d’] l’ eau [de|d’] [boudin|roche|source]
     >clair comme du cristal
@@ -15650,6 +15871,7 @@ __substantifs_multi_mots__
     >droit comme un i
     >fort en gueule
     >fou [de|d’] rage ?[contenue|retenue]¿
+    >frais comme un gardon
     >élu à la majarité absolue
     gauche caviar
     >haut comme [trois|3] pommes
@@ -15673,6 +15895,7 @@ __substantifs_multi_mots__
     >sourd comme un pot
     >sujet à [caution|débat|interprétation]
     >sujet à interprétations diverses
+    [>sur|>sûr] de [mon|ton|son|notre|votre|leur] bon droit
     >têtu comme une [bourrique|mule]
     >têtu comme un [âne|bourriquot|mulet]
     [tiré+ses] à [quatre|4] épingles
@@ -15687,6 +15910,10 @@ __substantifs_multi_mots__
 
     [>bébé|fils|>fille|>enfant|>neveu|>nièce|>frère|>sœur] [de|d’] $:B:e:p [mois|ans]
     [>grand-père|>grand-mère|>père|>mère|>papa|>maman|>oncle|>tante|>frère|>sœur|beau-frère|belle-sœur|>nièce|>neveu|>cousin] [de|d’] $:B:e:p ans
+        <<- ~2:0>> *
+
+    [>homme|>femme|>garçon|>garçonnet|>fille|>fillette] d’ un mètre [deux|trois|quatre|cinq|six|sept|huit|neuf|dix|onze|douze|treize|quatorze|quinze|seize|dix-sept|dix-huit|dix-neuf|vingt|vingt-et-un|vingt-deux|vingt-trois|vingt-quatre|vingt-cinq|vingt-six|vingt-sept|vingt-huit|vingt-neuf|trente|trente-et-un|trente-deux|trente-trois|trente-quatre|trente-cinq|trente-six|trente-sept|trente-huit|trente-neuf|quarante|quarante-et-un|quarante-deux|quarante-trois|quarante-quatre|quarante-cinq|quarante-six|quarante-sept|quarante-huit|quarante-neuf|cinquante|cinquante-et-un|cinquante-deux|cinquante-trois|cinquante-quatre|cinquante-cinq|cinquante-six|cinquante-sept|cinquante-huit|cinquante-neuf|soixante|soixante-et-un|soixante-deux|soixante-trois|soixante-quatre|soixante-cinq|soixante-six|soixante-sept|soixante-huit|soixante-neuf|soixante-dix|soixante-et-onze|soixante-douze|soixante-treize|soixante-quatorze|soixante-quinze|soixante-seize|soixante-dix-sept|soixante-dix-huit|soixante-dix-neuf|quatre-vingt-un|quatre-vingt-deux|quatre-vingt-trois|quatre-vingt-quatre|quatre-vingt-cinq|quatre-vingt-six|quatre-vingt-sept|quatre-vingt-huit|quatre-vingt-neufquatre-vingt-dix|quatre-vingt-onze|quatre-vingt-douze|quatre-vingt-treize|quatre-vingt-quatorze|quatre-vingt-quinze|quatre-vingt-seize|quatre-vingt-dix-sept|quatre-vingt-dix-huit|quatre-vingt-dix-neuf]
+    [>homme|>femme|>garçon|>garçonnet|>fille|>fillette] [de|d’] deux mètres [deux|trois|quatre|cinq|six|sept|huit|neuf|dix|onze|douze|treize|quatorze|quinze|seize|dix-sept|dix-huit|dix-neuf|vingt|vingt-et-un|vingt-deux|vingt-trois|vingt-quatre|vingt-cinq|vingt-six|vingt-sept|vingt-huit|vingt-neuf|trente|trente-et-un|trente-deux|trente-trois|trente-quatre|trente-cinq|trente-six|trente-sept|trente-huit|trente-neuf|quarante|quarante-et-un|quarante-deux|quarante-trois|quarante-quatre|quarante-cinq|quarante-six|quarante-sept|quarante-huit|quarante-neuf|cinquante|cinquante-et-un|cinquante-deux|cinquante-trois|cinquante-quatre|cinquante-cinq|cinquante-six|cinquante-sept|cinquante-huit|cinquante-neuf|soixante|soixante-et-un|soixante-deux|soixante-trois|soixante-quatre|soixante-cinq|soixante-six|soixante-sept|soixante-huit|soixante-neuf|soixante-dix|soixante-et-onze|soixante-douze|soixante-treize|soixante-quatorze|soixante-quinze|soixante-seize|soixante-dix-sept|soixante-dix-huit|soixante-dix-neuf|quatre-vingt-un|quatre-vingt-deux|quatre-vingt-trois|quatre-vingt-quatre|quatre-vingt-cinq|quatre-vingt-six|quatre-vingt-sept|quatre-vingt-huit|quatre-vingt-neufquatre-vingt-dix|quatre-vingt-onze|quatre-vingt-douze|quatre-vingt-treize|quatre-vingt-quatorze|quatre-vingt-quinze|quatre-vingt-seize|quatre-vingt-dix-sept|quatre-vingt-dix-huit|quatre-vingt-dix-neuf]
         <<- ~2:0>> *
 
     >calibre . *NUM ?[acp|auto|brenneke|browning|british|colt|court|H&K|magnum|mauser|otan|remington|parabellum|russian|S&W|sig|soviet|special|wcf|wsm|winchester]¿
@@ -16074,6 +16301,9 @@ __purge_après_verbe__
     @:[123]  ?pas¿  ?[fort|très|super]¿  [bien|mal]
         <<- ~2:0>> *
 
+    $:V mieux [<end>|,|)|$:D]
+        <<- ~2>> *
+
     [>pouvoir|>savoir|>vouloir] mieux que personne ?$:W¿ @:[YG]
     >avoir                      mieux que personne ?$:W¿ @:[QYG]
     >être                       mieux que personne ?$:W¿ @:[QAYG]
@@ -16185,6 +16415,11 @@ __purge_adverbes__
 @@@@
 @@@@
 
+__da_le_montre__
+    le  montre  $:D
+        <<- morph(<1, ":C") =>> select(\2, ":V")
+
+
 ## Seconde passe (il faut réorganiser tout le cycle de simplification)
 
 __purge_ponctuations__
@@ -16266,6 +16501,15 @@ __purge_locutions_potentielles__
 
     [<start>|,|(] ben voyons
         <<- ~2:3>> *
+
+    bien sous tout rapport
+    bien sous tous rapports
+        <<- morph(<1, ":N", ":D") ~>> *
+
+    que , ce [jour|matin|soir|mois|trimestre|semestre|siècle|millénaire]                                                                    , [je|tu|il|on|elle|iel|nous|vous|ils|elles|iels]
+    que , cette [seconde|décennie|matinée|minute|heure|journée|nuit|semaine|soirée]                                                         , [je|tu|il|on|elle|iel|nous|vous|ils|elles|iels]
+    que , ces [heures|matins|matinées|soirées|nuits|jours|journées|semaines|mois|trimestres|semestres|années|décennies|siècles|millénaires] , [je|tu|il|on|elle|iel|nous|vous|ils|elles|iels]
+        <<- ~3:4>> *
 
     chaque [seconde|minute|heure|journée|semaine|année|décennie]  @¬:(?:A.*:[fe]:[si]|Oo|[123][sp])
     chaque [seconde|minute|heure|journée|semaine|année|décennie]  [<end>|,|)]
@@ -16402,6 +16646,9 @@ __purge_locutions_potentielles__
     le plus clair [de|d’] [mon|ton|son|notre|votre|leur] temps @:¬:A.*:[me]:[si]|>d[e’]/
     le plus clair [de|d’] [mon|ton|son|notre|votre|leur] temps [<end>|,|)]
         <<- ~1:6>> *
+
+    [avec|pour|contre|sous|sur] plus [de|d’] $:N [que|qu’] jamais
+        <<- ~>> *
 
     par précaution  @:¬:A.*:[fe]:[si]
     par précaution  [<end>|,|)]
@@ -16599,7 +16846,8 @@ __da_locutions_verbales__
     >élire domicile
     >entendre raison
     >étouffer dans l’ œuf
-    >faire [allusion|assaut|attention|barrage|chaud|confiance|connaissance|cours|compliqué|copain-copain|date|débat|défaut|demi-tour|écran|envie|erreur|état|exception|figure|foi|fortune|froid|front|grève|halte|honte|illusion|mention|mouche|nation|naufrage|office|part|peur|polémique|plaisir|preuve|rage|recette|rempart|scandale|sens|sensation|signe|surface|usage|volte-face]
+    >faire acte [de|d’] [contrition|présence]
+    >faire [allusion|assaut|attention|barrage|chaud|confiance|connaissance|cours|compliqué|copain-copain|date|débat|défaut|demi-tour|écho|écran|envie|erreur|état|exception|figure|foi|fortune|froid|front|grève|halte|honte|illusion|mention|mouche|nation|naufrage|office|part|peur|polémique|plaisir|preuve|rage|recette|rempart|route|scandale|sens|sensation|signe|surface|usage|volte-face]
     >faire amende honorable
     >faire bande à part
     >faire bon accueil
@@ -16670,7 +16918,7 @@ __da_locutions_verbales__
     >prendre ?[ça|cela|ceci]¿ au [dépourvu|sérieux]
     >prendre ?[ça|cela|ceci]¿ au pied [de|d’] la lettre
     >prendre bonne note
-    >prendre [acte|congé|conscience|contact|ombrage|note|part|peur|position|possession|racine|soin|vie]
+    >prendre [acte|chaud|congé|conscience|contact|froid|ombrage|note|part|peur|position|possession|racine|soin|vie]
     >prendre d’ assaut
     >prendre [de|d’] [court|vitesse]
     >prendre ?[ça|cela|ceci]¿ en [charge|main]
@@ -16686,6 +16934,7 @@ __da_locutions_verbales__
     >refaire surface
     >remettre en cause
     >rendre [compte|gorge|hommage|service|visite]
+    >répandre comme une [traînée|trainée] [de|d’] poudre
     >reprendre haleine
     >rester lettre morte
     >rester lettres mortes
@@ -16715,12 +16964,24 @@ __da_locutions_verbales__
         <<- =>> define(\2, ":LV")
 
 
+__passer_temps_adj__
+    >passer ?toute¿ [la|cette|ma|ta|sa] [journée|semaine]                       @:A¬:A.*:[fe]:[si]
+    >passer ?toute¿ [l’|cette|mon|ton|son] [heure|année]                        @:A¬:A.*:[fe]:[si]
+    >passer ?toutes¿ [ces|ses|nos|vos|leurs] [heures|journées|semaines|années]  @:A¬:A.*:[fe]:p
+        <<- ~2:-2>> *
+
+TEST: il avait passé toutes ces années enterré dans son appartement
+TEST: Il passe toutes ses journées couché.
+TEST: Les visiteurs passent donc leurs journées agglutinés…
+TEST: il avait passé toute l’heure avachi sur sa chaise.
+
+
 __da_participe_passé__
     >avoir  $:Q
-        <<- not value(\1, "|avoirs|") and not value(<1, "|de|d’|un|") =>> rewrite(\2, ":A", "")
+        <<- not value(\1, "|avoir|avoirs|") and not morph(<1, ":D") =>> rewrite(\2, ":A", "")
 
     >être   $:Q
-        <<- not value(\1, "|êtres|") and not value(<1, "|de|d’|un|l’|") =>> rewrite(\2, ":A", "")
+        <<- not value(\1, "|être|êtres|") and not morph(<1, ":D") =>> rewrite(\2, ":A", "")
 
 
 __purge_vite__
@@ -16933,6 +17194,14 @@ TEST: Faire cours avec un bâillon m’indique assez bien l’importance qu’on
 TEST: le rejet de l’État-providence est plus élevé dans les régions où les immigrants se trouvent en plus grand nombre
 TEST: les délices nouvelles
 TEST: il lui faut composer avec un électorat bête à manger du foin
+TEST: l’homme d’un mètre soixante-dix appelé “général”
+TEST: tout mon être tendu vers la victoire
+TEST: Pierre et elle n’étaient plus mari et femme
+TEST: La formule que, ce jour, vous avez trouvée
+TEST: La galette que, cette nuit-là, nous avons mangée.
+TEST: Si vous devez partir ou rester
+TEST: Si Rosanna est venue ici, elle y est venue fatiguée par la vie
+TEST: ceux de modeste condition n’ont pas semblable privilège
 
 
 @@@@
@@ -17088,7 +17357,7 @@ TEST: n’ont-elles plus réellement qu’{{a}} travaillé la texture du produit
     >avoir du mal a
     >dire [adieu|merde] a
     >donner du grain à moudre a
-    >faire [barrage|barrière|confiance] a
+    >faire [barrage|barrière|confiance|écho] a
     >faire faux bond a
     >prêter serment a
     >rendre hommage a
@@ -17794,7 +18063,11 @@ __conf_corps_cor2__
     >faire >cor
         <<- /conf/ -2>> corps                               && Confusion probable. Le cor est un instrument à vent.|https://fr.wiktionary.org/wiki/faire_corps
 
+    >plaider [>cor|>cœur] [présent+s]
+        <<- /conf/ -2:0>> corps présent                     && Confusion. Locution “plaider corps présent” (c’est-à-dire en présence du client).
+
 TEST: Faisons {{cor}} avec lui !
+TEST: ils plaideront {{cor présent}}
 
 
 # côté / coté
@@ -18158,6 +18431,22 @@ TEST: Le bel été indien que nous avons cette année.
 TEST: Quel a été le déclencheur de cet ouvrage ?
 
 
+__conf_faisceau_vaisseau__
+    >vaisseau [de|d’] >présomption
+    >vé [>sot|>sceau|>saut] [de|d’] [>présomption|>précaution]
+    >vé [>sot|>sceau|>saut] [de|d’] [>présomption|>précaution]
+    >vé [>sot|>sceau|>saut] [de|d’] [>prêt|près|>pré] [>caution|>potion]
+    [>faisceau|>vaisseau] [de|d’] [>prêt|près|>pré] [>caution|>potion]
+        <<- /conf/ ->> faisceau de présomptions             && Confusion probable. Un faisceau de présomptions, c’est-à-dire un ensemble de présomptions concordantes.|https://fr.wiktionary.org/wiki/faisceau
+
+    >faisceau [de|d’] présomption
+        <<- /sgpl/ --1>> présomptions                       && Il y a plusieurs présomptions dans un faisceau (un ensemble de présomptions concordantes).
+
+TEST: un {{vaisseau de présomption}}                    ->> faisceau de présomptions
+TEST: un faisceau de {{présomption}}                    ->> présomptions
+TEST: un faisceau de présomptions
+
+
 __conf_ferrer_faire__
     nous            ?[ne|n’]¿  ?[nous|vous|les|le|la|l’]¿  ferrons      $:Y
         <<- /conf/ not morph(<1, ":R") --2>> ferons                                                 && Confusion probable. Vous confondez le verbe “ferrer” avec le verbe “faire”.
@@ -18271,6 +18560,7 @@ __conf_foi_fois_foie__
     [ma|ta|sa|notre|votre|leur] fois
     [>homme|>femme] [de|d’] peu [de|d’] [>foie|fois]
     >acte [de|d’] [>foie|fois]
+    >profession [de|d’] [>foie|fois]
         <<- /conf/ --1>> foi                                                && Confusion probable. Pour évoquer la ferveur (religieuse), écrivez “foi”.|https://fr.wiktionary.org/wiki/foi
 
     sans [fois|>foie] ?,¿ ni >loi
@@ -18484,7 +18774,7 @@ __conf_jeûne_jeune__
     >jeune [alimentaire|eucharistique|rituel|sacramentel]
         <<- /conf/ -1>> =\1.replace("u", "û").replace("U", "Û")         && Confusion. Pour les privations alimentaires, écrivez “jeûne”.|https://fr.wiktionary.org/wiki/je%C3%BBne
 
-    >jeûne [>adolescent|>adulte|>âge|>épousé|>époux|>femme|>fille|gars|>garçon|gens|>homme|>marié|>mari|>enfant|>bébé|>chien|>chiot|>chat|>célibataire|>étudiant|>lycéen|>élève|>écolier|>diplômé|>prodige|>couple|>papa|>maman|>père|>mère|>con|>génération|>médecin|>travailleur]
+    >jeûne [>age|>âge|>adolescent|>adulte|>âge|>épousé|>époux|>femme|>fille|gars|>garçon|gens|>homme|>marié|>mari|>enfant|>bébé|>chien|>chiot|>chat|>célibataire|>étudiant|>lycéen|>élève|>écolier|>diplômé|>prodige|>couple|>papa|>maman|>père|>mère|>con|>génération|>médecin|>travailleur]
         <<- /conf/ -1>> =\1.replace("û", "u").replace("Û", "U")         && Confusion. Le jeûne est une privation alimentaire.|https://fr.wiktionary.org/wiki/jeune
 
 TEST: Elle est restée {{jeûne}}.
@@ -19022,24 +19312,6 @@ TEST: « Oui, sans doute », mais peut-être pas pour tout le monde
 TEST: La réalisation de composants (injection plastique…) peut être limitée.
 
 
-# point / poing
-__conf_poing_point__
-    [>arme|>coup|>oiseau] de >point
-    [>taper|>fermer|>ouvrir|>blesser|>serrer|>desserrer] $:D >point
-        <<- /conf/ -3>> =\3.replace("t", "g").replace("T", "G")             && Confusion probable. Une main fermée s’écrit “poing”.|https://fr.wiktionary.org/wiki/poing
-
-    >point [américain|américains|>serrer|>desserrer|>lever|>casser|>lier]
-        <<- /conf/ morph(\2, ":A") and morph(<1, ":D")
-        -1>> =\1.replace("t", "g").replace("T", "G")                        && Confusion probable. Une main fermée s’écrit “poing”.|https://fr.wiktionary.org/wiki/poing
-
-TEST: une arme de {{point}}
-TEST: Elles ont tapé du {{point}} sur la table.
-TEST: les {{points}} serrés
-TEST: Tu contres son coup de poing.
-TEST: Il m’a donné un coup de poing.
-TEST: Les poings serrés.
-
-
 # prendre son mal en patience
 __conf_prendre_son_mal_en_patience__
     >prendre [mon|ton|son|notre|votre|leur|leurs] >mâle en [>patience|patiente|patientes]
@@ -19518,10 +19790,21 @@ TEST: ce champignon {{venimeux}}.
 ## l’
 
 __gn_l_1m__
-    l’  @:[NA].*:p¬:(?:[123][sp]|[si])
-        <<- /gn/ -2>> =suggSing(\2)                                                                 && Accord de nombre erroné : “\2” devrait être au singulier.
+    ,  l’  *WORD
+        <<- /gn/ morph(\3, ":[NA].*:p", "*") -3>> =suggSing(\3)                             && Accord de nombre erroné : après « l’ », « \3 » devrait être au singulier.
 
+    *WORD  l’  *WORD
+        <<- /gn/ morph(\3, ":[NA].*:p", "*")
+            or ( morph(\3, ":[NA].*:p", ":[si]") and morph(\1, ":[RCY]", ">(?:e[tn]|ou)/") and not (morph(\1, ":Rv") and morph(\3, ":Y")) )
+        -3>> =suggSing(\3)                                                                  && Accord de nombre erroné : après « l’ », « \3 » devrait être au singulier.
+
+    <start>  l’  *WORD
+        <<- /gn/ morph(\3, ":[NA].*:p", ":[siGW]") -3>> =suggSing(\3)                       && Accord de nombre erroné : après « l’ », « \3 » devrait être au singulier.
+
+TEST: le gouvernement, l’{{états}} tout entier
 TEST: toute l’importance de l’{{accords}} musical.
+TEST: L’{{arrivées}} était prévue demain.
+TEST: ce que laisse penser l’{{entretiens}} que j’avais fait.
 
 
 __gn_l_2m__
@@ -19559,11 +19842,11 @@ __gn_le_1m__
     *WORD  le  *WORD
         <<- /gn/ morph(\2, ":D") >>>
         <<- /gn/ morph(\3, ":[NA].*:f", ":(?:e|m|P|G|W|[123][sp]|Y)")
-            or ( morph(\3, ":[NA].*:f", ":[me]") and morph(\1, ":R", ">(?:e[tn]|ou)/") and not (morph(\1, ":Rv") and morph(\3, ":Y")) )
+            or ( morph(\3, ":[NA].*:f", ":[me]") and morph(\1, ":[RCY]", ">(?:e[tn]|ou)/") and not (morph(\1, ":Rv") and morph(\3, ":Y")) )
         -2>> =suggLesLa(\3)                                                                         && Accord de genre erroné : « \3 » est féminin.
         <<- /gn/ __also__ and hasMasForm(\3) -3>> =suggMasSing(\3, True)                            && Accord de genre erroné : « \2 » est un déterminant masculin.
         <<- /gn/ __else__ and morph(\3, ":[NA].*:p", "*")
-            or ( morph(\3, ":[NA].*:p", ":[si]") and morph(\1, ":[RC]", ">(?:e[tn]|ou)/") and not (morph(\1, ":Rv") and morph(\3, ":Y")) )
+            or ( morph(\3, ":[NA].*:p", ":[si]") and morph(\1, ":[RCY]", ">(?:e[tn]|ou)/") and not (morph(\1, ":Rv") and morph(\3, ":Y")) )
         -3>> =suggMasSing(\3)                                                                       && Accord de nombre erroné : « \3 » devrait être au singulier.
         <<- /gn/ __also__ -2>> les                                                                  && Accord de nombre erroné : « \3 » est au pluriel.
 
@@ -19620,11 +19903,11 @@ __gn_la_1m__
     *WORD  la  *WORD
         <<- /gn/ morph(\2, ":D") >>>
         <<- /gn/ morph(\3, ":[NA].*:m", ":(?:e|f|P|G|W|M|[1-3][sp]|Y)")
-            or ( morph(\3, ":[NA].*:m", ":[Mfe]") and morph(\1, ":[RC]", ">(?:e[tn]|ou)/") and not (morph(\1, ":(?:Rv|C)") and morph(\3, ":Y")) )
+            or ( morph(\3, ":[NA].*:m", ":[Mfe]") and morph(\1, ":[RCY]", ">(?:e[tn]|ou)/") and not (morph(\1, ":(?:Rv|C)") and morph(\3, ":Y")) )
         -2>> le                                                                             && Accord de genre erroné : « \3 » est masculin.
         <<- /gn/ __also__ and hasFemForm(\3) -3>> =suggFemSing(\3, True)                    && Accord de genre erroné : « \2 » est un déterminant féminin.
         <<- /gn/ __else__ and morph(\3, ":[NA].*:p", "*")
-            or ( morph(\3, ":[NA].*:p", ":[Msi]") and morph(\1, ":[RC]", ">(?:e[tn]|ou)/") and not (morph(\1, ":Rv") and morph(\3, ":Y")) )
+            or ( morph(\3, ":[NA].*:p", ":[Msi]") and morph(\1, ":[RCY]", ">(?:e[tn]|ou)/") and not (morph(\1, ":Rv") and morph(\3, ":Y")) )
         -3>> =suggFemSing(\3)                                                               && Accord de nombre erroné : « \3 » devrait être au singulier.
 
     <start>  la  *WORD
@@ -19679,7 +19962,7 @@ __gn_leur_1m__
 
     *WORD  leur  *WORD
         <<- /gn/ morph(\3, ":[NA].*:p", "*")
-            or ( morph(\3, ":[NA].*:p", ":[si]") and morph(\1, ":[RC]", ">(?:e[tn]|ou)/") and not (morph(\1, ":Rv") and morph(\3, ":Y")) )
+            or ( morph(\3, ":[NA].*:p", ":[si]") and morph(\1, ":[RCY]", ">(?:e[tn]|ou)/") and not (morph(\1, ":Rv") and morph(\3, ":Y")) )
         -2>> leurs                                                                          && Accord de nombre erroné avec « \3 ».
         <<- /gn/ __also__ -3>> =suggSing(\3)                                                && Accord de nombre erroné : « \3 » devrait être au singulier.
 
@@ -19725,7 +20008,7 @@ TEST: Que ferons-nous de {{leur}} gros {{grains}}
 
 
 __gn_le_la_leur_3m__
-    [le|la|leur]  *WORD  *WORD  *WORD
+    [le|la|leur|l’]  *WORD  *WORD  *WORD
         <<- /gn/ not value(<1, "|et|ou|") and morph(\1, ":D") and morph(\2, ":[NA].*:[si]", ":(?:[123][sp]|G)") and morph(\3, ":[NA].*:[si]", ":(?:[123][sp]|G|P)") and morph(\4, ":[NA].*:p", "*") and \4.islower()
         -4>> =suggSing(\4)                                                                  && Accord de nombre erroné avec « \1 \2 \3 » : « \4 » devrait être au singulier.
 
@@ -20104,11 +20387,12 @@ TEST: Quelque chose tombé dans le puits a souillé l’eau.
 
 __gn_det_sing_3m__
     [ledit|ladite|un|une|ce|cet|cette|mon|ton|son|ma|ta|sa|notre|votre|au|quel|quelle|dudit]  *WORD  *WORD  *WORD
-        <<- /gn/ not value(<1, "|et|ou|") and morph(\2, ":[NA].*:[si]") and morph(\3, ":[NA].*:[si]", ":(?:[123][sp]|G|P)") and morph(\4, ":[NA].*:p", "*") and \4.islower()
+        <<- /gn/ not value(<1, "|et|ou|") and morph(\2, ":[NA].*:[si]") and morph(\3, ":[NA].*:[si]", ":(?:[123][sp]|G|P|B)") and morph(\4, ":[NA].*:p", "*") and \4.islower()
         -4>> =suggSing(\4)                                                                  && Accord de nombre erroné avec « \1 \2 \3 » : « \4 » devrait être au singulier.
 
 TEST: un gros connard {{pathétiques}}
 TEST: servi pas un style et une exigence historique remarquables
+TEST: ils eurent besoins d’au minimum cent ans pour s’en remettre
 
 
 ## Pluriels
@@ -20264,7 +20548,7 @@ TEST: ils disent finalement tous les deux la même chose
 
 __gn_des_2m__
     des  *WORD  *WORD
-        <<- /gn/ (morph(<1, ":(?:[VRBX]|Cs|LV)|>comme/|<start>|>,", "*") or morph(\3, ":N", ":[AQ]")) and not \3.startswith("seul") >>>
+        <<- /gn/ (morph(<1, ":(?:[VRBX]|Cs|LV)|>comme/|<start>|>,", "*") or morph(\3, ":N", ":[AQ]")) and not morph(\3, ">(?:seul|minimum|maximum)/") >>>
         <<- /gn/ ( (morph(\2, ":[NA].*:m", ":[fe]") and morph(\3, ":[NA].*:f", "*")) or (morph(\2, ":[NA].*:f", ":[me]") and morph(\3, ":[NA].*:m", "*")) ) and not apposition(\2, \3)
         -3>> =switchGender(\3, True)                                                                && Accord de genre erroné avec « \2 ».
         <<- /gn/ __also__ and hasFemForm(\2) -2>> =switchGender(\2)                                 && Accord de genre erroné avec « \3 ».
@@ -21690,11 +21974,13 @@ TEST: elles sont vites.
 # voir clair
 __sgpl_voir_clair__
     >voir >clair
-        <<- /sgpl/ \2 != "clair" and \2 != "Claire" -2>> clair      && Dans la locution “voir clair”, “clair” est un adverbe, donc invariable. (Mais peut-être confondez-vous “voire” et “voir” ?)
+        <<- /sgpl/ \2 != "clair" and \2 != "Claire" and morph(\1, ":(?:[123][sp]|P|Y)")
+        -2>> clair      && Dans la locution “voir clair”, “clair” est un adverbe, donc invariable. (Mais peut-être confondez-vous “voire” et “voir” ?)
 
 TEST: Ils y voient {{clairs}}.
 TEST: Il vit Claire au théâtre.
 TEST: J’y vois clair, mec.
+TEST: rendant leur vue peu claire
 
 
 # vu / vue
@@ -21862,6 +22148,7 @@ TEST: {{puisque}} la fête {{finie}}, je vais partir.
 TEST: {{lorsque}} l’horloge {{sonnée}}, nous nous levions à la hâte
 TEST: {{quand}} les croissants {{arrivés}}, on se jetait dessus
 TEST: {{lorsque}} certains idiots {{oubliés}}, on riait aux éclats
+TEST: {{lorsque}} ton code {{grossi}}, il faut le factoriser
 TEST: quand le jour venu, il fallut se battre, nous étions prêts.
 
 
@@ -21896,6 +22183,17 @@ TEST: La puissance publique s’en est-elle rendu compte ?
 TEST: Elle s’est rendu compte qu’il s’était moqué d’elle une fois de plus.
 
 
+## désolé pour
+__ppas_désoler__
+    [<start>|,|(|>être|>devenir|>paraître|>rester|>sembler|>demeurer|>redevenir] désoler [<end>|,|)]
+    [<start>|,|(|>être|>devenir|>paraître|>rester|>sembler|>demeurer|>redevenir] désoler pour @:(?:[DM]|Oo)
+        <<- /ppas/ -2>> désolé|désolée                                                              && Confusion. Pour indiquer qu’on est désolé, il faut un participe passé.
+
+TEST: {{Désoler}} pour la soupe froide.
+TEST: {{désoler}} pour Patrick, mais il l’a mérité.
+TEST: elle restait {{désoler}} pour la pauvre Claire
+
+
 
 !!
 !!
@@ -21921,7 +22219,7 @@ __infi_à_verbe__
     à  ?[ne|n’]¿  [me|m’|te|t’|se|s’|nous|vous]  [le|la|l’|les|en|y]        ~..(?:ée?s?|ez|ai[st]?)$
     à  ?[ne|n’]¿  [le|la|l’|les]                 [lui|leur|en|y]            ~..(?:ée?s?|ez|ai[st]?)$
     à  ?[ne|n’]¿  [lui|leur]                     en                         ~..(?:ée?s?|ez|ai[st]?)$
-        <<- /infi/ --1>> =suggVerbInfi(\-1)                                             && Après le pronom “à”, le verbe devrait être à l’infinitif.
+        <<- /infi/ --1>> =suggVerbInfi(\-1)                                                         && Après le pronom “à”, le verbe devrait être à l’infinitif.
 
 TEST: on ne gagne rien {{à les}} {{poussés}} dans leurs derniers retranchements
 TEST: à en {{parlé}} sans cesse
@@ -22143,13 +22441,22 @@ __infi_qqch_de__
     >avoir ?toute¿ hâte                         [de|d’]  ?[le|l’|la|leur|les|nous|vous|lui]¿  ~..ée?s?$
         <<- /infi/ analyse(\-1, ":Q", ":M") --1>> =suggVerbInfi(\-1)                                && Après “avoir hâte de”, le verbe devrait être à l’infinitif.
 
+    >avoir ?tout¿ lieu                          [de|d’]  ?[le|l’|la|leur|les|nous|vous|lui]¿  ~..ée?s?$
+        <<- /infi/ analyse(\-1, ":Q", ":M") --1>> =suggVerbInfi(\-1)                                && Après “avoir lieu de”, le verbe devrait être à l’infinitif.
+
     >avoir ?tout¿ loisir                        [de|d’]  ?[le|l’|la|leur|les|nous|vous|lui]¿  ~..ée?s?$
         <<- /infi/ analyse(\-1, ":Q", ":M") --1>> =suggVerbInfi(\-1)                                && Après “avoir loisir de”, le verbe devrait être à l’infinitif.
 
-    >avoir [besoin|peur|raison]                 [de|d’]  ?[le|les|nous|vous|lui]¿  ~..ée?s?$
+    >avoir besoin                               [de|d’]  [le|les|nous|vous|lui]    ~..ée?s?$
+        <<- /infi/ analyse(\-1, ":Q", ":M") --1>> =suggVerbInfi(\-1)                                && Après “avoir besoin de”, le verbe devrait être à l’infinitif.
+
+    >avoir besoin                               [de|d’]  ?[l’|la|leur]¿            ~..ée?s?$
+        <<- /infi/ analyse(\-1, ":Q", ":[MN]") --1>> =suggVerbInfi(\-1)                             && Après “avoir besoin de”, le verbe devrait être à l’infinitif.
+
+    >avoir [peur|raison]                        [de|d’]  ?[le|les|nous|vous|lui]¿  ~..ée?s?$
         <<- /infi/ analyse(\-1, ":Q", ":M") --1>> =suggVerbInfi(\-1)                                && Après “avoir \2 de”, le verbe devrait être à l’infinitif.
 
-    >avoir [besoin|peur|raison]                 [de|d’]  [l’|la|leur]              ~..ée?s?$
+    >avoir [peur|raison]                        [de|d’]  [l’|la|leur]              ~..ée?s?$
         <<- /infi/ analyse(\-1, ":Q", ":[MN]") --1>> =suggVerbInfi(\-1)                             && Après “avoir \2 de”, le verbe devrait être à l’infinitif.
 
     point [ne|n’] >être besoin                  [de|d’]  ?[le|les|nous|vous|lui]¿  ~..ée?s?$
@@ -22216,6 +22523,9 @@ __infi_qqch_de__
     non >content                                [de|d’]  [l’|la|leur]              ~..ée?s?$
         <<- /infi/ analyse(\-1, ":Q", ":[MN]") --1>> =suggVerbInfi(\-1)                             && Après “non content de”, le verbe devrait être à l’infinitif.
 
+    >prendre garde                              [de|d’]  ?[le|l’|la|leur|les|nous|vous|lui]¿  ~..ée?s?$
+        <<- /infi/ analyse(\-1, ":Q", ":M") --1>> =suggVerbInfi(\-1)                                && Après “prendre garde de”, le verbe devrait être à l’infinitif.
+
     sous peine                                  [de|d’]  ?[le|l’|la|leur|les|nous|vous|lui]¿  ~..ée?s?$
         <<- /infi/ analyse(\-1, ":Q", ":M") --1>> =suggVerbInfi(\-1)                                && Après “sous peine de”, le verbe devrait être à l’infinitif.
 
@@ -22230,6 +22540,8 @@ TEST: Nous étions en train de {{trouvé}} une solution à ces soucis récurrent
 TEST: il a l’air de {{pensée}} qu’on est des crétins                                                ->> penser
 TEST: tu avais raison de {{pensée}} ça                                                              ->> penser
 TEST: point n’était besoin de {{données}} sans cesse des nouvelles                                  ->> donner
+TEST: avoir besoin de nous {{donné}} du temps                                                       ->> donner
+TEST: avoir besoin de la {{trouvée}} vite                                                           ->> trouver
 TEST: point n’était besoin de leur {{avancé}} de l’argent.                                          ->> avancer
 TEST: nous eûmes la chance de la {{trouvée}} facilement                                             ->> trouver
 TEST: avoir raison de la {{considérée}} ainsi                                                       ->> considérer
@@ -22237,6 +22549,7 @@ TEST: vous avez le droit de lui {{craché}} à la gueule                        
 TEST: ils ont vite fait de nous {{poussée}} à bout                                                  ->> pousser
 TEST: elle est en train de {{mangée}}                                                               ->> manger
 TEST: nous nous faisons fort de {{pensée}} tous les jours                                           ->> penser
+TEST: il y a tout lieu de {{donnée}} l’alerte                                                       ->> donner
 TEST: nous avions tout loisir de nous {{consacré}} à cela                                           ->> consacrer
 TEST: elle n’avait de cesse de la {{poussée}} dans ses derniers retranchements                      ->> pousser
 TEST: je déteste sa manière de la {{rabaissée}} en permanence.                                      ->> rabaisser
@@ -22256,6 +22569,8 @@ TEST: non content de {{damnés}} pour l’éternité                            
 TEST: non contente de l’{{ignorée}}, elle en était fière.                                           ->> ignorer
 TEST: de crainte de {{poussée}} cette fille dans ses derniers retranchements                        ->> pousser
 TEST: d’crainte d’l’{{touché}}, m’sieur…                                                            ->> toucher
+TEST: il faut bien prendre garde de la {{foulée}} au pied                                           ->> fouler
+TEST: il avait besoin d’alliés.
 
 
 #### Infinitif après divers
@@ -22651,7 +22966,7 @@ __infi_verbes__
         -2>> =suggVerbInfi(\2)                                                                      && S’il s’agit d’une action à accomplir, le verbe devrait être à l’infinitif.
 
     [>aller|>envoyer|>venir|>revenir|>partir]  ~..(?:ée?s?|ez)$
-        <<- /infi/ morph(\1, ":", ":[GN]") and morph(\-1, ":V", ":M|>(?:accompagner|armer|armurer|casquer|déguiser)/") and not value(>1, "|par|")
+        <<- /infi/ morph(\1, ":", ":[GN]") and morph(\-1, ":V", ":M|>(?:accompagner|armer|armurer|casquer|débrailler|déguiser|épuiser)/") and not value(>1, "|par|")
         --1>> =suggVerbInfi(\2)                                                                     && S’il s’agit d’une action à accomplir, le verbe devrait être à l’infinitif.
 
 TEST: elle préférait {{mangée}} seule.                                                  ->> manger
@@ -22677,6 +22992,9 @@ TEST: D’ailleurs j’irai armé.
 TEST: J’irai armé de mon épée.
 TEST: Si possible, venez accompagné.
 TEST: Elle vint accompagnée de son père.
+TEST: Ils étaient venus débraillés comme leurs aînés les vaincus.
+TEST: Il était venu poussé par la curiosité.
+
 
 
 __infi_avoir_beau__
@@ -23099,28 +23417,28 @@ __purge_pronoms__
         <<- ~3:6>> *
 
     [<start>|,|l’] [un|une] des *WORD <end>
-    [<start>|,|l’] [un|une] des *WORD ?,¿ [ne|n’|me|m’|te|t’|se|s’|nous|vous|y|c’|ça|ç’|je|j’|tu|il|elle|on|ils|elles|iel|iels|le|la|l’|les|mon|ma|ta|sa|notre|votre|leur|mes|tes|ses|nos|vos|leurs|ce|cet|cette|ces|quel|quels|quelle|quelles]
+    [<start>|,|l’] [un|une] des *WORD ?,¿ [ne|n’|me|m’|te|t’|se|s’|nous|vous|y|c’|ça|ç’|je|j’|tu|il|elle|on|ils|elles|iel|iels|le|la|l’|les|mon|ma|ta|sa|notre|votre|leur|mes|tes|ses|nos|vos|leurs|ce|cet|cette|ces|quel|quels|quelle|quelles|est]
     [<start>|,|l’] [un|une] des *WORD @:[VR]¬:[NAP]
     [<start>|,|l’] [un|une] des *WORD , @¬:[NA]
         <<- ~3:4>> *
         <<- /2>> _un_des_
 
     [<start>|,|l’] [un|une] des *WORD @:[NA].*:[pi]¬:(?:G|[123][sp]) <end>
-    [<start>|,|l’] [un|une] des *WORD @:[NA].*:[pi]¬:(?:G|[123][sp]) ?,¿ [ne|n’|me|m’|te|t’|se|s’|nous|vous|y|c’|ça|ç’|je|j’|tu|il|elle|on|ils|elles|iel|iels|le|la|l’|les|mon|ma|ta|sa|notre|votre|leur|mes|tes|ses|nos|vos|leurs|ce|cet|cette|ces|quel|quels|quelle|quelles]
+    [<start>|,|l’] [un|une] des *WORD @:[NA].*:[pi]¬:(?:G|[123][sp]) ?,¿ [ne|n’|me|m’|te|t’|se|s’|nous|vous|y|c’|ça|ç’|je|j’|tu|il|elle|on|ils|elles|iel|iels|le|la|l’|les|mon|ma|ta|sa|notre|votre|leur|mes|tes|ses|nos|vos|leurs|ce|cet|cette|ces|quel|quels|quelle|quelles|est]
     [<start>|,|l’] [un|une] des *WORD @:[NA].*:[pi]¬:(?:G|[123][sp]) @:[VR]¬:[NAP]
     [<start>|,|l’] [un|une] des *WORD @:[NA].*:[pi]¬:(?:G|[123][sp]) , @¬:[NA]
         <<- ~3:5>> *
         <<- /2>> _un_des_
 
     [<start>|,|l’] [un|une] de [ces|mes|tes|ses|nos|vos|leurs] *WORD <end>
-    [<start>|,|l’] [un|une] de [ces|mes|tes|ses|nos|vos|leurs] *WORD ?,¿ [ne|n’|me|m’|te|t’|se|s’|nous|vous|y|c’|ça|ç’|je|j’|tu|il|elle|on|ils|elles|iel|iels|le|la|l’|les|mon|ma|ta|sa|notre|votre|leur|mes|tes|ses|nos|vos|leurs|ce|cet|cette|ces|quel|quels|quelle|quelles]
+    [<start>|,|l’] [un|une] de [ces|mes|tes|ses|nos|vos|leurs] *WORD ?,¿ [ne|n’|me|m’|te|t’|se|s’|nous|vous|y|c’|ça|ç’|je|j’|tu|il|elle|on|ils|elles|iel|iels|le|la|l’|les|mon|ma|ta|sa|notre|votre|leur|mes|tes|ses|nos|vos|leurs|ce|cet|cette|ces|quel|quels|quelle|quelles|est]
     [<start>|,|l’] [un|une] de [ces|mes|tes|ses|nos|vos|leurs] *WORD @:[VR]¬:[NAP]
     [<start>|,|l’] [un|une] de [ces|mes|tes|ses|nos|vos|leurs] *WORD , @¬:[NA]
         <<- ~3:5>> *
         <<- /2>> _un_des_
 
     [<start>|,|l’] [un|une] de [ces|mes|tes|ses|nos|vos|leurs] *WORD @:[NA].*:p¬:(?:G|[123][sp]) <end>
-    [<start>|,|l’] [un|une] de [ces|mes|tes|ses|nos|vos|leurs] *WORD @:[NA].*:p¬:(?:G|[123][sp]) ?,¿ [ne|n’|me|m’|te|t’|se|s’|nous|vous|y|c’|ça|ç’|je|j’|tu|il|elle|on|ils|elles|iel|iels|le|la|l’|les|mon|ma|ta|sa|notre|votre|leur|mes|tes|ses|nos|vos|leurs|ce|cet|cette|ces|quel|quels|quelle|quelles]
+    [<start>|,|l’] [un|une] de [ces|mes|tes|ses|nos|vos|leurs] *WORD @:[NA].*:p¬:(?:G|[123][sp]) ?,¿ [ne|n’|me|m’|te|t’|se|s’|nous|vous|y|c’|ça|ç’|je|j’|tu|il|elle|on|ils|elles|iel|iels|le|la|l’|les|mon|ma|ta|sa|notre|votre|leur|mes|tes|ses|nos|vos|leurs|ce|cet|cette|ces|quel|quels|quelle|quelles|est]
     [<start>|,|l’] [un|une] de [ces|mes|tes|ses|nos|vos|leurs] *WORD @:[NA].*:p¬:(?:G|[123][sp]) @:[VR]¬:[NAP]
     [<start>|,|l’] [un|une] de [ces|mes|tes|ses|nos|vos|leurs] *WORD @:[NA].*:p¬:(?:G|[123][sp]) , @¬:[NA]
         <<- ~3:6>> *
@@ -23195,25 +23513,25 @@ __purge_syntagmes_nominaux__
         <<- __else__ ~3>> *
 
     [de|d’]  @:[NA].*:s¬:[YG]  <end>
-    [de|d’]  @:[NA].*:s¬:[YG]  ?,¿ [ne|n’|me|m’|te|t’|se|s’|nous|vous|y|c’|ça|ç’|je|j’|tu|il|elle|on|ils|elles|iel|iels|le|la|l’|les|mon|ma|ta|sa|notre|votre|leur|mes|tes|ses|nos|vos|leurs|ce|cet|cette|ces|quel|quels|quelle|quelles]
+    [de|d’]  @:[NA].*:s¬:[YG]  ?,¿ [ne|n’|me|m’|te|t’|se|s’|nous|vous|y|c’|ça|ç’|je|j’|tu|il|elle|on|ils|elles|iel|iels|le|la|l’|les|mon|ma|ta|sa|notre|votre|leur|mes|tes|ses|nos|vos|leurs|ce|cet|cette|ces|quel|quels|quelle|quelles|est]
     [de|d’]  @:[NA].*:s¬:[YG]  @:[VR]¬:[NAP]
     [de|d’]  @:[NA].*:s¬:[YG]  , @¬:[NA]
         <<- not value(\2, "|autres|") ~1:2>> *
 
     [de|d’]  @:[NA].*:s¬:[YG]  @:[NA].*:s¬:(?:G|[123][sp]|O)   <end>
-    [de|d’]  @:[NA].*:s¬:[YG]  @:[NA].*:s¬:(?:G|[123][sp]|O)   ?,¿ [ne|n’|me|m’|te|t’|se|s’|nous|vous|y|c’|ça|ç’|je|j’|tu|il|elle|on|ils|elles|iel|iels|le|la|l’|les|mon|ma|ta|sa|notre|votre|leur|mes|tes|ses|nos|vos|leurs|ce|cet|cette|ces|quel|quels|quelle|quelles]
+    [de|d’]  @:[NA].*:s¬:[YG]  @:[NA].*:s¬:(?:G|[123][sp]|O)   ?,¿ [ne|n’|me|m’|te|t’|se|s’|nous|vous|y|c’|ça|ç’|je|j’|tu|il|elle|on|ils|elles|iel|iels|le|la|l’|les|mon|ma|ta|sa|notre|votre|leur|mes|tes|ses|nos|vos|leurs|ce|cet|cette|ces|quel|quels|quelle|quelles|est]
     [de|d’]  @:[NA].*:s¬:[YG]  @:[NA].*:s¬:(?:G|[123][sp]|O)   @:[VR]¬:[NAP]
     [de|d’]  @:[NA].*:s¬:[YG]  @:[NA].*:s¬:(?:G|[123][sp]|O)   , @¬:[NA]
         <<- ~1:3>> *
 
     [de|d’]  [un|une|ce|cet|cette|ces|mon|ton|son|ma|ta|sa|mes|tes|ses|notre|votre|nos|vos|leurs]  @:[NA]  <end>
-    [de|d’]  [un|une|ce|cet|cette|ces|mon|ton|son|ma|ta|sa|mes|tes|ses|notre|votre|nos|vos|leurs]  @:[NA]  ?,¿ [ne|n’|me|m’|te|t’|se|s’|nous|vous|y|c’|ça|ç’|je|j’|tu|il|elle|on|ils|elles|iel|iels|le|la|l’|les|mon|ma|ta|sa|notre|votre|leur|mes|tes|ses|nos|vos|leurs|ce|cet|cette|ces|quel|quels|quelle|quelles]
+    [de|d’]  [un|une|ce|cet|cette|ces|mon|ton|son|ma|ta|sa|mes|tes|ses|notre|votre|nos|vos|leurs]  @:[NA]  ?,¿ [ne|n’|me|m’|te|t’|se|s’|nous|vous|y|c’|ça|ç’|je|j’|tu|il|elle|on|ils|elles|iel|iels|le|la|l’|les|mon|ma|ta|sa|notre|votre|leur|mes|tes|ses|nos|vos|leurs|ce|cet|cette|ces|quel|quels|quelle|quelles|est]
     [de|d’]  [un|une|ce|cet|cette|ces|mon|ton|son|ma|ta|sa|mes|tes|ses|notre|votre|nos|vos|leurs]  @:[NA]  @:[VR]¬:[NAP]
     [de|d’]  [un|une|ce|cet|cette|ces|mon|ton|son|ma|ta|sa|mes|tes|ses|notre|votre|nos|vos|leurs]  @:[NA]  , @¬:[NA]
         <<- ~1:3>> *
 
     de  [la|l’|leur]  @:[NA]¬:Y  <end>
-    de  [la|l’|leur]  @:[NA]¬:Y  ?,¿ [ne|n’|me|m’|te|t’|se|s’|nous|vous|y|c’|ça|ç’|je|j’|tu|il|elle|on|ils|elles|iel|iels|le|la|l’|les|mon|ma|ta|sa|notre|votre|leur|mes|tes|ses|nos|vos|leurs|ce|cet|cette|ces|quel|quels|quelle|quelles]
+    de  [la|l’|leur]  @:[NA]¬:Y  ?,¿ [ne|n’|me|m’|te|t’|se|s’|nous|vous|y|c’|ça|ç’|je|j’|tu|il|elle|on|ils|elles|iel|iels|le|la|l’|les|mon|ma|ta|sa|notre|votre|leur|mes|tes|ses|nos|vos|leurs|ce|cet|cette|ces|quel|quels|quelle|quelles|est]
     de  [la|l’|leur]  @:[NA]¬:Y  @:[VR]¬:[NAP]
     de  [la|l’|leur]  @:[NA]¬:Y  , @¬:[NA]
         <<- ~1:3>> *
@@ -23659,12 +23977,7 @@ TEST: elles se sont prises en main.
 TEST: elles s’étaient aimées ce matin.
 
 
-__ppas_désoler__
-    [<start>|,|(] désoler [<end>|,|)]
-    [<start>|,|(] désoler pour $:D
-        <<- /ppas/ -2>> désolé|désolée          && Confusion. Pour indiquer qu’on est désolé, il faut un participe passé.
 
-TEST: {{Désoler}} pour la soupe froide.
 
 
 
@@ -23739,8 +24052,8 @@ __ppas_je_tu_verbe_état__
     [je|j’|tu] ?[ne|n’]¿ ?[en|y]¿   /_LVED_verbe_de_verbeétat_  [de|d’] ?[ne|n’]¿ ?[en|y]¿  /_LVEF_verbe_de_verbeétat_  @:[NAQ].*:p¬:[GWYsi]
         <<- /ppas/ not (tag(<1, "_ceque_") and morph(\-1, ":3s")) --1>> =suggSing(\-1)                                  && Accord avec le sujet “\1” : “\-1” devrait être au singulier.
 
-    [je|j’] ?[ne|n’]¿ [me|m’]  ?[en|y]¿ >faire                                                                                                 @:[NA].*:p¬:[GWYQsi]
-    tu      ?[ne|n’]¿ [te|t’]  ?[en|y]¿ >faire                                                                                                 @:[NA].*:p¬:[GWYQsi]
+    [je|j’] ?[ne|n’]¿ [me|m’]  ?[en|y]¿ >faire                                                                          @:[NA].*:p¬:[GWYQsi]
+    tu      ?[ne|n’]¿ [te|t’]  ?[en|y]¿ >faire                                                                          @:[NA].*:p¬:[GWYQsi]
     [je|j’] ?[ne|n’]¿ m’ ?[en|y]¿   >efforcer  [de|d’] ?[ne|n’]¿ ?[en|y]¿  [être|sembler|devenir|rester|demeurer|redevenir|paraître|paraitre]  @:[NAQ].*:p¬:[GWYsi]
     tu      ?[ne|n’]¿ t’ ?[en|y]¿   >efforcer  [de|d’] ?[ne|n’]¿ ?[en|y]¿  [être|sembler|devenir|rester|demeurer|redevenir|paraître|paraitre]  @:[NAQ].*:p¬:[GWYsi]
         <<- /ppas/ not (tag(<1, "_ceque_") and morph(\-1, ":3s")) --1>> =suggSing(\-1)                                  && Accord avec le sujet “\1” : “\-1” devrait être au singulier.
@@ -23970,6 +24283,12 @@ TEST: l’un se fit {{rares}}                                                   
 TEST: un ne s’en fit pas moins {{arrogante}}                                        ->> arrogant
 TEST: l’un ne s’en fit pas moins {{arrogante}}                                      ->> arrogant
 TEST: un s’efforçait d’paraître {{instruits}} des dernières nouvelles               ->> instruit
+TEST: un des petits était {{fatiguée}}                                              ->> fatigué
+TEST: un des chiens n’était pas {{endormie}}                                        ->> endormi
+TEST: un des nôtres n’y avait pas été bien {{accueillie}}                           ->> accueilli
+TEST: un de ces amis avait été {{attaquée}}                                         ->> attaqué
+TEST: un de nos amis se faisait {{belle}}                                           ->> beau
+TEST: un de ses frères ne s’efforçait pas de paraître {{courtoise}}                 ->> courtois
 TEST: C’est donc seules que les deux femmes sont amenées à comparaître
 TEST: C’eût été pure imagination.
 TEST: Je n’arrêtais pas de me répéter que tout cela était peut-être pure imagination
@@ -24080,6 +24399,14 @@ TEST: une se fera {{classiques}}                                                
 TEST: l’une se fit {{beaux}} pour l’occasion                                        ->> belle
 TEST: l’une ne s’efforçait jamais de paraître {{habiles}}                           ->> habile
 TEST: l’une ne s’y ferait pas moins {{grand}}                                       ->> grande
+TEST: Une des fleurs est {{fané}}.                                                  ->> fanée
+TEST: une des fleurs ne semblait pas être {{éclos}}                                 ->> éclose
+TEST: une des fleurs n’en avait été {{arrosé}}                                      ->> arrosée
+TEST: Une de ces fleurs est {{fané}}                                                ->> fanée
+TEST: Une de nos fleurs n’est pas {{fané}}                                          ->> fanée
+TEST: Une de leurs fleurs n’y semble pas {{arrosé}}                                 ->> arrosée
+TEST: une des mères se fait {{beau}}                                                ->> belle
+TEST: une de mes amies s’y efforçait de paraître {{désintéressé}}                   ->> désintéressée
 
 
 __ppas_iel_verbe_état__
@@ -25147,31 +25474,33 @@ TEST: ayant été elles-mêmes {{ignorés}} par leur hiérarchie         ->> ign
 !!
 
 __ppas_je_me_verbe__
-    [je|j’]  ?[ne|n’]¿  [me|m’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>voir|>vouloir]  @:[NA].*:p¬:(?:[GWYsi]|V0)
+    [je|j’]  ?[ne|n’]¿  [me|m’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>tenir|>voir|>vouloir]  @:[NA].*:p¬:(?:[GWYsi]|V0)
         <<- /ppas/ --1>> =suggSing(\-1)                                 && Accord avec le sujet “\1” : “\-1” devrait être au singulier.
 
 TEST: je me savais {{implacables}} avec eux
 TEST: je ne m’avouais pas {{vaincus}}
+TEST: je me tenais {{informées}} des derniers évènements
 
 
 __ppas_tu_te_verbe__
-    tu  ?[ne|n’]¿  [te|t’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>voir|>vouloir]  @:[NA].*:p¬:(?:[GWYsi]|V0)
+    tu  ?[ne|n’]¿  [te|t’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>tenir|>voir|>vouloir]  @:[NA].*:p¬:(?:[GWYsi]|V0)
         <<- /ppas/ --1>> =suggSing(\-1)                                 && Accord avec le sujet “tu” : “\-1” devrait être au singulier.
 
 TEST: quand tu te montres {{infaillibles}}
+TEST: tu te tiens {{prêts}}
 
 
 __ppas_3sg_mas_se_verbe__
-    [il|quiconque]  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>voir|>vouloir]  @:[NA].*:[pf]¬:(?:G|W|V0|[me]:[si])
+    [il|quiconque]  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>tenir|>voir|>vouloir]  @:[NA].*:[pf]¬:(?:G|W|V0|[me]:[si])
         <<- /ppas/ --1>> =suggMasSing(\-1)                              && Accord avec le sujet “\1” : “\-1” devrait être au masculin singulier.
 
-    [lui|ça|ceci|cela|celui-ci|celui-là]  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>voir|>vouloir]  @:[NA].*:[pf]¬:(?:G|W|V0|[me]:[si])
+    [lui|ça|ceci|cela|celui-ci|celui-là]  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>tenir|>voir|>vouloir]  @:[NA].*:[pf]¬:(?:G|W|V0|[me]:[si])
         <<- /ppas/ not morph(<1, ":[RV]") --1>> =suggMasSing(\-1)       && Accord avec le sujet “\1” : “\-1” devrait être au masculin singulier.
 
-    [lui|ça|ceci|cela|ce|c’|ç’|celui|celui-ci|celui-là]  qui  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>voir|>vouloir]  @:[NA].*:[pf]¬:(?:G|W|V0|[me]:[si])
+    [lui|ça|ceci|cela|ce|c’|ç’|celui|celui-ci|celui-là]  qui  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>tenir|>voir|>vouloir]  @:[NA].*:[pf]¬:(?:G|W|V0|[me]:[si])
         <<- /ppas/ morph(\-2, ":[123]s") --1>> =suggMasSing(\-1)        && Accord avec le sujet “\1” : “\-1” devrait être au masculin singulier.
 
-    lequel  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>voir|>vouloir]  @:[NA].*:[pf]¬:(?:G|W|V0|[me]:[si])
+    lequel  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>tenir|>voir|>vouloir]  @:[NA].*:[pf]¬:(?:G|W|V0|[me]:[si])
         <<- /ppas/ not morph(<1, ":R") --1>> =suggMasSing(\-1)          && Accord avec le sujet “\1” : “\-1” devrait être au masculin singulier.
 
 TEST: il se révéla totalement {{incapables}} d’y parvenir.
@@ -25181,13 +25510,13 @@ TEST: lequel se veut {{imbattables}} ?
 
 
 __ppas_3sg_fem_se_verbe__
-    [elle|celle-ci|celle-là]  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>voir|>vouloir]  @:[NA].*:[pm]¬:(?:G|W|V0|[fe]:[si])
+    [elle|celle-ci|celle-là]  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>tenir|>voir|>vouloir]  @:[NA].*:[pm]¬:(?:G|W|V0|[fe]:[si])
         <<- /ppas/ not morph(<1, ":[RV]") --1>> =suggFemSing(\-1)       && Accord avec le sujet “\1” : “\-1” devrait être au féminin singulier.
 
-    [elle|celle|celle-ci|celle-là]  qui  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>voir|>vouloir]  @:[NA].*:[pm]¬:(?:G|W|V0|[fe]:[si])
+    [elle|celle|celle-ci|celle-là]  qui  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>tenir|>voir|>vouloir]  @:[NA].*:[pm]¬:(?:G|W|V0|[fe]:[si])
         <<- /ppas/ morph(\-2, ":[123]s") --1>> =suggFemSing(\-1)        && Accord avec le sujet “\1” : “\-1” devrait être au féminin singulier.
 
-    laquelle  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>voir|>vouloir]  @:[NA].*:[pm]¬:(?:G|W|V0|[fe]:[si])
+    laquelle  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>tenir|>voir|>vouloir]  @:[NA].*:[pm]¬:(?:G|W|V0|[fe]:[si])
         <<- /ppas/ not morph(<1, ":R") --1>> =suggFemSing(\-1)          && Accord avec le sujet “\1” : “\-1” devrait être au féminin singulier.
 
 TEST: Elle se sait plus {{fortes}} qu’eux tous.
@@ -25198,23 +25527,23 @@ TEST: elle se sent vide.
 
 
 __ppas_1pl_nous_verbe__
-    nous  ?[ne|n’]¿  nous  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>voir|>vouloir]  @:[NA].*:s¬:(?:[GWpi]|V0)
+    nous  ?[ne|n’]¿  nous  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>tenir|>voir|>vouloir]  @:[NA].*:s¬:(?:[GWpi]|V0)
         <<- /ppas/ morph(\-2, ":1p") --1>> =suggPlur(\-1)               && Accord avec le sujet “nous” : “\-1” devrait être au pluriel.
 
 TEST: nous nous pensions {{invincible}} jusqu’au jour où tout a basculé.
 
 
 __ppas_3pl_mas_se_verbe__
-    ils  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>voir|>vouloir]  @:[NA].*:[sf]¬:(?:G|W|V0|[me]:[pi])
+    ils  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>tenir|>voir|>vouloir]  @:[NA].*:[sf]¬:(?:G|W|V0|[me]:[pi])
         <<- /ppas/ --1>> =suggMasPlur(\-1)                              && Accord avec le sujet “\1” : “\-1” devrait être au masculin singulier.
 
-    [ceux-ci|ceux-là]  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>voir|>vouloir]  @:[NA].*:[sf]¬:(?:G|W|V0|[me]:[pi])
+    [ceux-ci|ceux-là]  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>tenir|>voir|>vouloir]  @:[NA].*:[sf]¬:(?:G|W|V0|[me]:[pi])
         <<- /ppas/ not morph(<1, ":[RV]") --1>> =suggMasPlur(\-1)       && Accord avec le sujet “\1” : “\-1” devrait être au masculin singulier.
 
-    [eux|ceux|ceux-ci|ceux-là]  qui  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>voir|>vouloir]  @:[NA].*:[sf]¬:(?:G|W|V0|[me]:[pi])
+    [eux|ceux|ceux-ci|ceux-là]  qui  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>tenir|>voir|>vouloir]  @:[NA].*:[sf]¬:(?:G|W|V0|[me]:[pi])
         <<- /ppas/ morph(\-2, ":3p") --1>> =suggMasPlur(\-1)            && Accord avec le sujet “\1” : “\-1” devrait être au masculin singulier.
 
-    lesquels  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>voir|>vouloir]  @:[NA].*:[sf]¬:(?:G|W|V0|[me]:[pi])
+    lesquels  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>tenir|>voir|>vouloir]  @:[NA].*:[sf]¬:(?:G|W|V0|[me]:[pi])
         <<- /ppas/ not morph(<1, ":R") --1>> =suggMasPlur(\-1)          && Accord avec le sujet “\1” : “\-1” devrait être au masculin singulier.
 
 TEST: ils se montrent {{exigeantes}}
@@ -25224,13 +25553,13 @@ TEST: lesquels se pensent encore {{anonyme}}
 
 
 __ppas_3pl_fem_se_verbe__
-    [elles|celles-ci|celles-là]  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>voir|>vouloir]  @:[NA].*:[sm]¬:(?:G|W|V0|[fe]:[pi])
+    [elles|celles-ci|celles-là]  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>tenir|>voir|>vouloir]  @:[NA].*:[sm]¬:(?:G|W|V0|[fe]:[pi])
         <<- /ppas/ not morph(<1, ":[RV]") --1>> =suggFemPlur(\-1)       && Accord avec le sujet “\1” : “\-1” devrait être au féminin singulier.
 
-    [elles|celles|celles-ci|celles-là]  qui  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>voir|>vouloir]  @:[NA].*:[sm]¬:(?:G|W|V0|[fe]:[pi])
+    [elles|celles|celles-ci|celles-là]  qui  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>tenir|>voir|>vouloir]  @:[NA].*:[sm]¬:(?:G|W|V0|[fe]:[pi])
         <<- /ppas/ morph(\-2, ":3p") --1>> =suggFemPlur(\-1)            && Accord avec le sujet “\1” : “\-1” devrait être au féminin singulier.
 
-    lesquelles  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>voir|>vouloir]  @:[NA].*:[sm]¬:(?:G|W|V0|[fe]:[pi])
+    lesquelles  ?[ne|n’]¿  [se|s’]  ?[en|y]¿  [>avouer|>montrer|>penser|>révéler|>savoir|>sentir|>tenir|>voir|>vouloir]  @:[NA].*:[sm]¬:(?:G|W|V0|[fe]:[pi])
         <<- /ppas/ not morph(<1, ":R") --1>> =suggFemPlur(\-1)          && Accord avec le sujet “\1” : “\-1” devrait être au féminin singulier.
 
 TEST: elles se sentent {{perdu}}                                                    ->> perdues
@@ -25239,20 +25568,20 @@ TEST: Lesquelles s’y montraient {{dure}}.                                     
 
 
 __ppas_part_présent_infinitif__
-    [me|m’|te|t’|l’]  ?[en|y]¿  [avouant|montrant|pensant|révélant|sachant|sentant|voyant|voulant]  @:[NA].*:p¬:(?:[GWYsi]|V0)
-    [me|m’|te|t’|l’]  ?[en|y]¿  [avouer|montrer|penser|révéler|savoir|sentir|voir|vouloir]          @:[NA].*:p¬:(?:[GWYsi]|V0)
+    [me|m’|te|t’|l’]  ?[en|y]¿  [avouant|montrant|pensant|révélant|sachant|sentant|tenant|voyant|voulant]  @:[NA].*:p¬:(?:[GWYsi]|V0)
+    [me|m’|te|t’|l’]  ?[en|y]¿  [avouer|montrer|penser|révéler|savoir|sentir|tenir|voir|vouloir]           @:[NA].*:p¬:(?:[GWYsi]|V0)
         <<- /ppas/ --1>> =suggSing(\-1)                                 && Accord avec le pronom objet “\1” : “\-1” devrait être au singulier.
 
-    le                          [avouant|montrant|pensant|révélant|sachant|sentant|voyant|voulant]  @:[NA].*:[fp]¬:(?:[GWY]|V0|m:[si])
-    le                          [avouer|montrer|penser|révéler|savoir|sentir|voir|vouloir]          @:[NA].*:[fp]¬:(?:[GWY]|V0|m:[si])
+    le                          [avouant|montrant|pensant|révélant|sachant|sentant|tenant|voyant|voulant]  @:[NA].*:[fp]¬:(?:[GWY]|V0|m:[si])
+    le                          [avouer|montrer|penser|révéler|savoir|sentir|tenir|voir|vouloir]           @:[NA].*:[fp]¬:(?:[GWY]|V0|m:[si])
         <<- /ppas/ --1>> =suggMasSing(\-1)                              && Accord avec le pronom objet “\1” : “\-1” devrait être au masculin singulier.
 
-    la                          [avouant|montrant|pensant|révélant|sachant|sentant|voyant|voulant]  @:[NA].*:[mp]¬:(?:[GWY]|V0|f:[si])
-    la                          [avouer|montrer|penser|révéler|savoir|sentir|voir|vouloir]          @:[NA].*:[mp]¬:(?:[GWY]|V0|f:[si])
+    la                          [avouant|montrant|pensant|révélant|sachant|sentant|tenant|voyant|voulant]  @:[NA].*:[mp]¬:(?:[GWY]|V0|f:[si])
+    la                          [avouer|montrer|penser|révéler|savoir|sentir|tenir|voir|vouloir]           @:[NA].*:[mp]¬:(?:[GWY]|V0|f:[si])
         <<- /ppas/ --1>> =suggFemSing(\-1)                              && Accord avec le pronom objet “\1” : “\-1” devrait être au féminin singulier.
 
-    les                         [avouant|montrant|pensant|révélant|sachant|sentant|voyant|voulant]  @:[NA].*:s¬:(?:[GWY]|V0|[pi])
-    les                         [avouer|montrer|penser|révéler|savoir|sentir|voir|vouloir]          @:[NA].*:s¬:(?:[GWY]|V0|[pi])
+    les                         [avouant|montrant|pensant|révélant|sachant|sentant|tenant|voyant|voulant]  @:[NA].*:s¬:(?:[GWY]|V0|[pi])
+    les                         [avouer|montrer|penser|révéler|savoir|sentir|tenir|voir|vouloir]           @:[NA].*:s¬:(?:[GWY]|V0|[pi])
         <<- /ppas/ --1>> =suggPlur(\-1)                                 && Accord avec le pronom objet “\1” : “\-1” devrait être au pluriel.
 
 TEST: me sachant {{libres}}, elle renonça.                                          ->> libre
@@ -25260,6 +25589,7 @@ TEST: te voyant {{dégagées}} de toute occupation, il crut bon de t’importune
 TEST: le sentant {{incomprise}}                                                     ->> incompris
 TEST: la voir {{persécuté}} ainsi me fit mal au cœur                                ->> persécutée
 TEST: les montrer {{inflexible}} nous aidera à les convaincre.                      ->> inflexibles
+TEST: la tenant {{prêt}} à bondir                                                   ->> prête
 
 
 __ppas_le_verbe_pensée__
@@ -26748,7 +27078,8 @@ TEST: un homme humble et doux, quel être le deviendrait en de telles circonstan
 
 __vmode_l_eût_suj_voulu_que__
     l’ [eut-il|eut-elle|eut-on] [désiré|envisagé|exigé|demandé|imaginé|rêvé|souhaité|voulu] [que|qu’]
-        <<- /vmode/ -2>> =\2.replace("ut", "ût").replace("UT", "ÛT")    && Mode verbal. Dans cette locution (comme “l’eût-il voulu que…”), utilisez le subjonctif, car il s’agit d’une spéculation sur ce qui est “\-2”.
+        <<- /vmode/ -2>> =\2.replace("ut", "ût").replace("UT", "ÛT")
+        && Mode verbal. Dans cette locution (comme “l’eût-il voulu que…”), utilisez le subjonctif, car il s’agit d’une spéculation sur ce qui est “\-2”.
 
 TEST: l’{{eut-il}} voulu que ça n’aurait rien changé            ->> eût-il
 
@@ -27702,7 +28033,7 @@ TEST: Une société a vendu un terrain à bâtir à un acquéreur, lequel entrep
 
 __conj_personne__
     personne  @:V¬:(?:3s|P|G|[QA].*:f:s)
-        <<- /conj/ morph(<1, ":C|<start>|>,", ":(?:P|Q|[123][sp]|R)")
+        <<- /conj/ morph(<1, ":C|<start>|>,", ":(?:P|Q|[123][sp]|R)|>ni/")
         --1>> =suggVerb(\-1, ":3s")                                     && Conjugaison erronée. Accord avec “\1”. Le verbe devrait être à la 3ᵉ personne du singulier.
 
     personne  qui  @:V¬:(?:3s|P|G)
@@ -28292,9 +28623,13 @@ __conj_des_nom__
     [<start>|,|(]  des  @:[NA].*:[pi]  qui  @:V¬:(?:3p|P|G)
         <<- /conj/ -5>> =suggVerb(\5, ":3p")                                                        && Conjugaison erronée. Accord avec “\2 \3 \4…”. Le verbe devrait être à la 3ᵉ personne du pluriel.
 
+    *WORD  des  @:[NA].*:[pi]  qui  @:V¬:(?:3p|P|G)
+        <<- /conj/ morph(\1, ":[VR]", ":[NA]") --1>> =suggVerb(\-1, ":3p")                          && Conjugaison erronée. Accord avec “\2 \3 \4…”. Le verbe devrait être à la 3ᵉ personne du pluriel.
+
 TEST: Des hommes {{arrive}}.
 TEST: Des femmes ne {{demande}} rien.
 TEST: des femmes qui {{conduise}} la marche du monde.
+TEST: j’en ai marre de faire des choses qui ne m’{{amuse}} pas.
 TEST: des démocrates geindre à propos de l’absence pourtant parlante de délégation
 TEST: On vit très vite, en quelques jours, les gens installer des jeux d’argent sur les trottoirs, des femmes se prostituer, des commerces illicites…
 
@@ -28747,8 +29082,24 @@ __vmode_verbe_que_subjonctif__
         <<- /vmode/ not tag(\1, "_upron_") and not tag(\1, "neg") and morph(\1, ":V", ":N")
         --1>> =suggVerbMode(\-1, ":S", \-2)                                                         && Après “\1 que”, ce verbe devrait être au subjonctif.
 
-    [il|ça|cela]  [peut|pouvait]  [que|qu’]  @:(?:Os|M)  @:I¬:[GYS]
+    [il|ça|cela]  [peut|pourrait|pouvait]  [que|qu’]  @:(?:Os|M)  @:I¬:[GYS]
         <<- /vmode/ tag(\2, "_upron_") --1>> =suggVerbMode(\-1, ":S", \-2)                          && Après “\1 se peut que”, le verbe devrait être au subjonctif.
+
+    il          [arrive|arriva|arrivait]            [que|qu’]   @:(?:Os|M)  @:I¬:(?:[GSK]|If|V0)
+    il          [est|était] arrivé                  [que|qu’]   @:(?:Os|M)  @:I¬:(?:[GSK]|If|V0)
+        <<- /vmode/ --1>> =suggVerbMode(\-1, ":S", \-2)
+        && Après “il arrive que”, le verbe se met au subjonctif s’il s’agit d’une éventualité (mais la construction à l’indicatif est aussi possible s’il y a certitude).
+
+    il          [est|était] possible                [que|qu’]   @:(?:Os|M)  @:I¬:[GYS]
+    si          tant        est                     [que|qu’]   @:(?:Os|M)  @:I¬:[GYS]
+        <<- /vmode/ --1>> =suggVerbMode(\-1, ":S", \-2)                                             && Après “\1 \2 \3 que”, ce verbe devrait être au subjonctif.
+
+    peu         [est|était] fallu                   [que|qu’]   @:(?:Os|M)  @:I¬:[GYS]
+        <<- /vmode/ tag(\2, "_upron_") --1>> =suggVerbMode(\-1, ":S", \-2)                          && Après “peu s’en est fallu que”, ce verbe devrait être au subjonctif.
+
+    >valoir mieux                                   [que|qu’]   @:(?:Os|M)  @:I¬:[GYS]
+    mieux >valoir                                   [que|qu’]   @:(?:Os|M)  @:I¬:[GYS]
+        <<- /vmode/  --1>> =suggVerbMode(\-1, ":S", \-2)                                            && Après “mieux valoir que”, ce verbe devrait être au subjonctif.
 
 TEST: Il suffit qu’il {{court}} plus
 TEST: j’attends que tu {{viens}}.
@@ -28762,9 +29113,14 @@ TEST: je m’étonne qu’il {{est}} aussi fragile
 TEST: elle a envie qu’il {{est}} intelligent.
 TEST: il importera que nous {{devenons}} prêts.
 TEST: prends garde que vous {{revenez}} en un seul morceau.
+TEST: ça ira, si tant est que Paul {{comprend}} ce qui se passe.
 TEST: faites attention à ce qu’elle ne {{devient}} pas timorée.
 TEST: je tiens à ce que vous {{devenez}} grands.
 TEST: Veille à ce qu’il y {{est}} des gâteaux.
+TEST: il arrive qu’il {{vient}}, mais rarement
+TEST: Vaudrait mieux qu’elle {{meurt}}
+TEST: il aurait mieux valu qu’elle {{meurt}}
+TEST: il est possible qu’il {{est}} parti
 TEST: Je ne doute pas qu’ils réussiront leur mission.
 TEST: Je me doutais bien qu’Apple pourrait marcher
 TEST: Je me doutais bien qu’elle me détestait
@@ -28781,6 +29137,11 @@ TEST: pas grand-chose à proposer à part faire attention à ce qu’on fait.
 TEST: La crainte que nous nourrissons à l’égard d’une société libre tient à notre méconnaissance des vertus de l’action individuelle
 TEST: Je sais qu’il nous faut l’aide de mon ami.
 TEST: cela tient sans doute à ce qu’ils n’ont pas acquis une connaissance suffisante de la doctrine
+TEST: J’irai si tant est que je puisse.
+TEST: J’irai si tant est que je le puisse.
+TEST: il eût fallu que je vous fisse la grâce de m’expliquer
+TEST: quand bien même elle eût été différente, je doute que…
+TEST: il eût été impossible de s’en sortir avec un tel handicap
 
 
 __vmode_qqch_que_subjonctif__
@@ -28824,20 +29185,8 @@ __vmode_qqch_que_subjonctif__
     [<start>|,|(]  encore                           [que|qu’]   @:(?:Os|M)  @:I¬:(?:[GSK]|If)
         <<- /vmode/ -5>> =suggVerbMode(\5, ":S", \4)                                                && Après « \2 que », le verbe s’emploie au subjonctif.
 
-    il          arrive                              [que|qu’]   @:(?:Os|M)  @:I¬:(?:[GSK]|If|V0)
-        <<- /vmode/ --1>> =suggVerbMode(\-1, ":S", \-2)                                             && Après “il arrive que”, le verbe se met au subjonctif s’il s’agit d’une éventualité (mais la construction à l’indicatif est aussi possible s’il y a certitude).
-
-    il          est         possible                [que|qu’]   @:(?:Os|M)  @:I¬:[GYS]
     jusqu’      à           ce                      [que|qu’]   @:(?:Os|M)  @:I¬:[GYS]
-    si          tant        est                     [que|qu’]   @:(?:Os|M)  @:I¬:[GYS]
         <<- /vmode/ --1>> =suggVerbMode(\-1, ":S", \-2)                                             && Après “\1 \2 \3 que”, ce verbe devrait être au subjonctif.
-
-    peu         [est|était] fallu                   [que|qu’]   @:(?:Os|M)  @:I¬:[GYS]
-        <<- /vmode/ tag(\2, "_upron_") --1>> =suggVerbMode(\-1, ":S", \-2)                          && Après “peu s’en est fallu que”, ce verbe devrait être au subjonctif.
-
-    >valoir mieux                                   [que|qu’]   @:(?:Os|M)  @:I¬:[GYS]
-    mieux >valoir                                   [que|qu’]   @:(?:Os|M)  @:I¬:[GYS]
-        <<- /vmode/  --1>> =suggVerbMode(\-1, ":S", \-2)                                            && Après “mieux valoir que”, ce verbe devrait être au subjonctif.
 
 TEST: Quoiqu’il {{est}} parti il y a longtemps, on pense encore beaucoup à lui.
 TEST: quoi qu’il en {{conclut}}
@@ -28853,19 +29202,16 @@ TEST: pour peu qu’il {{prend}} son devoir sérieux…
 TEST: Fais en sorte qu’elle {{court}} à sa perte
 TEST: Nous œuvrons silencieusement de crainte qu’il nous {{entend}}.
 TEST: En admettant qu’il {{devient}} juste.
-TEST: ça ira, si tant est que Paul {{comprend}} ce qui se passe.
 TEST: à condition qu’elle l’{{est}} jamais été
 TEST: non qu’il {{prend}} son temps
 TEST: si tant est que nous {{prenons}} notre temps
 TEST: moyennant qu’elle {{vient}} demain
 TEST: en attendant qu’il {{devient}} plus raisonnable
-TEST: il arrive qu’il {{vient}}, mais rarement
 TEST: {{où}} qu’il {{est}}, on le trouvera
 TEST: Il ne le savait pas, bien qu’il en {{avait}} entendu parler.
 TEST: Bien que je {{prends}} mon mal en patience.
 TEST: encore qu’il {{sait}} s’y prendre
-TEST: Vaudrait mieux qu’elle {{meurt}}
-TEST: il aurait mieux valu qu’elle {{meurt}}
+TEST: jusqu’à ce qu’elle {{vient}} avec nous
 TEST: C’est un joli bien. Bien qu’il a hérité de son oncle, notez bien.
 TEST: Bien qu’il avait donné à ses enfants.
 TEST: si bien que je me suis toujours demandée si cela ne m’avait pas un peu bousillé les yeux
@@ -28890,8 +29236,6 @@ TEST: Je travaille de façon qu’il puisse vivre.
 TEST: En admettant qu’il soit allé
 TEST: Demander jusqu’à ce qu’il réponde.
 TEST: Demander jusqu’à ce qu’il me réponde.
-TEST: J’irai si tant est que je puisse.
-TEST: J’irai si tant est que je le puisse.
 TEST: Quoique je dise.
 TEST: Quoique je te dise.
 TEST: Ça signifie qu’il est parti ou qu’il est mort.
@@ -29165,6 +29509,11 @@ TEST: Du côté de ceux sans qui le cinéma se réduirait à pas grand-chose
 TEST: Il commence à monter sur scène au Club Méditerranée
 TEST: Je n’en avais cure.
 TEST: À toute chose malheur est bon.
+TEST: Les 5 outils sont fixés sur le porte-outils.
+TEST: Pourquoi s’était-elle laissé emporter ?
+TEST: elle s’était laissé emporter
+TEST: avec force regards méfiants
+TEST: il faut que les sommes ainsi débloquées soient employées au mieux
 
 
 

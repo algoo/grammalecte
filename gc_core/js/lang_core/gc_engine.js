@@ -12,20 +12,13 @@ ${map}
 
 
 if (typeof(process) !== 'undefined') {
+    // NodeJS
     var gc_engine_func = require("./gc_engine_func.js");
     var gc_options = require("./gc_options.js");
     var gc_rules = require("./gc_rules.js");
     var gc_rules_graph = require("./gc_rules_graph.js");
     var cregex = require("./cregex.js");
     var text = require("../text.js");
-}
-else if (typeof(require) !== 'undefined') {
-    var gc_engine_func = require("resource://grammalecte/${lang}/gc_engine_func.js");
-    var gc_options = require("resource://grammalecte/${lang}/gc_options.js");
-    var gc_rules = require("resource://grammalecte/${lang}/gc_rules.js");
-    var gc_rules_graph = require("resource://grammalecte/${lang}/gc_rules_graph.js");
-    var cregex = require("resource://grammalecte/${lang}/cregex.js");
-    var text = require("resource://grammalecte/text.js");
 }
 
 
@@ -798,7 +791,7 @@ class TextParser {
             lSugg = this._expand(sSugg, nTokenOffset, nLastToken).split("|");
         }
         if (bCaseSvty && lSugg.length > 0 && this.lToken[iFirstToken]["sValue"].slice(0,1).gl_isUpperCase()) {
-            lSugg = (this.lToken[iFirstToken]["sValue"].gl_isUpperCase()) ? lSugg.map((s) => s.toUpperCase()) : capitalizeArray(lSugg);
+            lSugg = (this.sSentence.slice(nStart, nEnd).gl_isUpperCase()) ? lSugg.map((s) => s.toUpperCase()) : capitalizeArray(lSugg);
         }
         // Message
         let sMessage = (sMsg.startsWith("=")) ? gc_engine_func[sMsg.slice(1)](this.lToken, nTokenOffset, nLastToken) : this._expand(sMsg, nTokenOffset, nLastToken);
