@@ -446,9 +446,10 @@ class Dictionnaire:
             nTot = 0
             for k in d:
                 nTot += d[k]
-            hDst.write("\n\nOccurrences des lettres dans le corpus :\n")
-            for sKey, nVal in sorted(d.items(), key = lambda x: (x[1], x[0]), reverse=True):
-                hDst.write("   {} : {:>16,.0f}  /  {:.8f} %\n".format(sKey, nVal, nVal*100/nTot))
+            if nTot:
+                hDst.write("\n\nOccurrences des lettres dans le corpus :\n")
+                for sKey, nVal in sorted(d.items(), key = lambda x: (x[1], x[0]), reverse=True):
+                    hDst.write("   {} : {:>16,.0f}  /  {:.8f} %\n".format(sKey, nVal, nVal*100/nTot))
 
             # Mots par nombre de lettres
             echo("   Nombre de lettres dans les mots...")
@@ -1038,7 +1039,7 @@ class Entree:
                                     oFlexM.setOccurAndBlock(nNewOccur)
 
     def calcFreq (self, nTot):
-        self.fFreq = (self.nOccur * 100) / nTot
+        self.fFreq = (self.nOccur * 100) / nTot  if nTot  else 0
         self.oldFq = self.fq
         self.fq = getIfq(self.fFreq)
 
@@ -1072,7 +1073,7 @@ class Flexion:
         self.nOccur = math.ceil((self.nOccur / (self.nMulti+1)) / self.nDup)
 
     def calcFreq (self, nTot):
-        self.fFreq = (self.nOccur * 100) / nTot
+        self.fFreq = (self.nOccur * 100) / nTot  if nTot  else 0
         self.cFq = getIfq(self.fFreq)
 
     def calcMetagraphe (self):
