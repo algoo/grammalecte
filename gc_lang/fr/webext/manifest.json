@@ -1,21 +1,21 @@
 {
   "manifest_version": 2,
-  "name": "Grammalecte [fr]",
-  "short_name": "Grammalecte [fr]",
+  "name": "Grammalecte by algoo [fr]",
+  "short_name": "Grammalecte by algoo [fr]",
   "version": "${version}",
 
   "applications": {
     "gecko": {
-      "id": "French-GC@grammalecte.net",
+      "id": "grammalecte@algoo.fr",
       "strict_min_version": "67.0"
     }
   },
 
   "minimum_chrome_version": "73",
 
-  "author": "Olivier R.",
-  "homepage_url": "https://grammalecte.net/",
-  "description": "Correcteur grammatical, orthographique et typographique pour le français.",
+  "author": "Algoo",
+  "homepage_url": "https://github.com/algoo/grammalecte",
+  "description": "Correcteur grammatical, orthographique et typographique pour le français. Version packagée par Algoo en attendant l’intégration des modifications dans le projet upstream.",
 
   "default_locale": "fr",
 
