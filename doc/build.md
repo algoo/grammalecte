@@ -2,6 +2,14 @@
 
 # How to build Grammalecte
 
+## Before build ##
+
+Extract the zip files in gc_lang/fr/dictionnaire/lexique/corpus_data:
+```bash
+cd gc_lang/fr/dictionnaire/lexique/corpus_data
+unzip -o '*.zip'
+```
+
 ## Required ##
 
 For building:
