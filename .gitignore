@@ -1,0 +1,10 @@
+env/
+__pycache__/
+_build/
+grammalecte/
+grammalecte-js/
+_dictionaries/
+stats_frwiki.txt
+stats_frwikisource.txt
+stats_litterature.txt
+stats_google_ngram_1.txt
