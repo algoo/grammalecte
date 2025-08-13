@@ -87,7 +87,7 @@ def getWindowSize ():
 def getAbsolutePathOf (sPath=""):
     xDefaultContext = uno.getComponentContext().ServiceManager.DefaultContext
     xPackageInfoProvider = xDefaultContext.getValueByName("/singletons/com.sun.star.deployment.PackageInformationProvider")
-    sFullPath = xPackageInfoProvider.getPackageLocation("French.linguistic.resources.from.Dicollecte.by.OlivierR")
+    sFullPath = xPackageInfoProvider.getPackageLocation("${oxt_identifier}")
     if sPath and not sPath.startswith("/"):
         sPath = "/" + sPath
     sFullPath = sFullPath[8:] + sPath

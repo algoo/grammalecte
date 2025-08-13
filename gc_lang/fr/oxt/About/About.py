@@ -42,7 +42,7 @@ class AboutGrammalecte (unohelper.Base, XActionListener):
             # dialog
             self.xDialog = self.xSvMgr.createInstanceWithContext('com.sun.star.awt.UnoControlDialogModel', self.ctx)
             self.xDialog.Width = 160
-            self.xDialog.Height = 320
+            self.xDialog.Height = 390
             self.xDialog.Title = ui.get('windowtitle')
             xWindowSize = helpers.getWindowSize()
             self.xDialog.PositionX = int((xWindowSize.Width / 2) - (self.xDialog.Width / 2))
@@ -69,7 +69,7 @@ class AboutGrammalecte (unohelper.Base, XActionListener):
             # logo
             xDefaultContext = self.ctx.ServiceManager.DefaultContext
             xPackageInfoProvider = xDefaultContext.getValueByName("/singletons/com.sun.star.deployment.PackageInformationProvider")
-            sExtPath = xPackageInfoProvider.getPackageLocation("French.linguistic.resources.from.Dicollecte.by.OlivierR")
+            sExtPath = xPackageInfoProvider.getPackageLocation("${oxt_identifier}")
             self._addWidget('imgMainLogo', 'ImageControl', 5, 5, 150, 80, ImageURL = sExtPath+"/img/logo120_text.png", Border = 0, ScaleMode = 1)
 
             # Infos
@@ -95,7 +95,10 @@ class AboutGrammalecte (unohelper.Base, XActionListener):
             self._addWidget('lblURL2', 'FixedHyperlink', 10, 235, nLblWidth, 10, Label = ui.get('sponsor2'), \
                             Align = 1, URL="https://www.algoo.fr/?from=grammalecte-lo", FontDescriptor = xFD3, TextColor = nURLcolor)
             self._addWidget('imgSponsor2', 'ImageControl', 5, 245, 150, 50, ImageURL = sExtPath+"/img/Algoo_logo.png", Border = 0, ScaleMode = 1)
-            self._addWidget('lblURL3', 'FixedHyperlink', 10, 300, nLblWidth, 10, Label = ui.get('link'), \
+            self._addWidget('lblURLGrenoble', 'FixedHyperlink', 10, 300, nLblWidth, 10, Label = ui.get('sponsor3'), \
+                            Align = 1, URL="https://www.grenoble.fr/?from=grammalecte-lo", FontDescriptor = xFD3, TextColor = nURLcolor)
+            self._addWidget('imgSponsor3', 'ImageControl', 5, 310, 150, 50, ImageURL = sExtPath+"/img/Grenoble_logo.png", Border = 0, ScaleMode = 1)
+            self._addWidget('lblURL3', 'FixedHyperlink', 10, 365, nLblWidth, 10, Label = ui.get('link'), \
                             Align = 1, URL="https://grammalecte.net/#thanks", FontDescriptor = xFD1, TextColor = nURLcolor)
 
             # container
