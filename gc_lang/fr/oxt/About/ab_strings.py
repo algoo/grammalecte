@@ -31,6 +31,7 @@ dStrings = {
         "message": "Avec le soutien de",
         "sponsor": "La Mouette…",
         "sponsor2": "Algoo…",
+        "sponsor3": "Ville de Grenoble…",
         "link": "… et de nombreux contributeurs.",
 
         "close": "~OK"
@@ -48,6 +49,7 @@ dStrings = {
         "message": "With the support of",
         "sponsor": "La Mouette…",
         "sponsor2": "Algoo…",
+        "sponsor3": "City of Grenoble…",
         "link": "… and many contributors.",
 
         "close": "~OK"
