@@ -18353,10 +18353,10 @@ __neg_ne_manquant__
         <<- /neg/ not (value(\1, "|que|qu’|") and value(\-1, "|jamais|")) and not (value(\-1, "|pas|") and value(>1, "|mal|")) and not (value(\-1, "|plus|") and (value(>1, "|que|qu’|de|d’|des|du|à|au|aux|") or (value(>2, "|que|qu’|") and not value(>1, "|ce|")) or value(>3, "|que|qu’|") or morph(>1, ":[AB]") or (morph(>1, ":W") and not value(>1, "|là|ici|là-bas|là-haut|ailleurs|dehors|dedans|")) or (value(\-3, "|en|") and not morph(\-2, ">pouvoir/")) or (value(\1, "|que|qu’|") and (value(>1, "|<end>|") or meta(>1, "PUNC")))))
         -3>> ne \3                                                                                  && Ne ‹verbe› \5 : il manque l’adverbe de négation “ne”.
 
-    [<start>|,|(|/_start_]  [je|j’]              [en|y]                                                  @:1s¬:Ov  [pas|plus|rien|jamais|guère|point]
+    [<start>|,|(|/_start_]  je                   [en|y]                                                  @:1s¬:Ov  [pas|plus|rien|jamais|guère|point]
     [<start>|,|(|/_start_]  tu                   [en|y]                                                  @:2s¬:Ov  [pas|plus|rien|jamais|guère|point]
     [<start>|,|(|/_start_]  [il|elle|on|iel]     [en|y]                                                  @:3s¬:Ov  [pas|plus|rien|jamais|guère|point]
-    [<start>|,|(|/_start_]  [ce|ça|ceci|cela|c’] [en|y]                                                  @:3s¬:Ov  [pas|plus|rien|jamais|guère|point]
+    [<start>|,|(|/_start_]  [ce|ça|ceci|cela]    [en|y]                                                  @:3s¬:Ov  [pas|plus|rien|jamais|guère|point]
     [<start>|,|(|/_start_]  nous                 [en|y]                                                  @:1p¬:Ov  [pas|plus|rien|jamais|guère|point]
     [<start>|,|(|/_start_]  vous                 [en|y]                                                  @:2p¬:Ov  [pas|plus|rien|jamais|guère|point]
     [<start>|,|(|/_start_]  [ils|elles|iels]     [en|y]                                                  @:3p¬:Ov  [pas|plus|rien|jamais|guère|point]
@@ -18387,7 +18387,7 @@ __neg_ne_manquant__
         <<- /neg/ not (value(\1, "|que|qu’|") and value(\-1, "|jamais|")) and not (value(\-1, "|pas|") and value(>1, "|mal|")) and not (value(\-1, "|plus|") and (value(>1, "|que|qu’|de|d’|des|du|à|au|aux|") or (value(>2, "|que|qu’|") and not value(>1, "|ce|")) or value(>3, "|que|qu’|") or morph(>1, ":[AB]") or (morph(>1, ":W") and not value(>1, "|là|ici|là-bas|là-haut|ailleurs|dehors|dedans|")) or (value(\-3, "|en|") and not morph(\-2, ">pouvoir/")) or (value(\1, "|que|qu’|") and (value(>1, "|<end>|") or meta(>1, "PUNC")))))
         -3>> ne \3                                                                                  && Ne ‹verbe› \6 : il manque l’adverbe de négation “ne”.
 
-    [<start>|,|(|/_start_]  [je|j’]              @:1s¬:Ov    [pas|plus|rien|jamais|guère|point]
+    [<start>|,|(|/_start_]  je                   @:1s¬:Ov    [pas|plus|rien|jamais|guère|point]
     [<start>|,|(|/_start_]  tu                   @:2s¬:Ov    [pas|plus|rien|jamais|guère|point]
     [<start>|,|(|/_start_]  [il|elle|on|iel]     @:3s¬:Ov    [pas|plus|rien|jamais|guère|point]
     [<start>|,|(|/_start_]  [ce|ça|ceci|cela]    @:3s¬:Ov    [pas|plus|rien|jamais|guère|point]
@@ -18398,9 +18398,21 @@ __neg_ne_manquant__
         <<- /neg/ (re.search("(?i)^[aâeéêiîoôuœæ]", \3) or (re.search("(?i)^h", \3) and not morph(\3, ";é"))) -3>> n’\3                                           && Ne ‹verbe› \4 : il manque l’adverbe de négation “ne”.
         <<- /neg/ __else__ -3>> ne \3                                                               && Ne ‹verbe› \4 : il manque l’adverbe de négation “ne”.
 
+    [<start>|,|(|/_start_]  j’                   @:1s¬:Ov    [pas|plus|rien|jamais|guère|point]
+        <<- /neg/ not (value(\1, "|que|qu’|") and value(\-1, "|jamais|")) and not (value(\-1, "|pas|") and value(>1, "|mal|")) and not (value(\-1, "|plus|") and (value(>1, "|que|qu’|de|d’|des|du|à|au|aux|") or (value(>2, "|que|qu’|") and not value(>1, "|ce|")) or value(>3, "|que|qu’|") or morph(>1, ":[AB]") or (morph(>1, ":W") and not value(>1, "|là|ici|là-bas|là-haut|ailleurs|dehors|dedans|")) or (value(\-3, "|en|") and not morph(\-2, ">pouvoir/")) or (value(\1, "|que|qu’|") and (value(>1, "|<end>|") or meta(>1, "PUNC"))))) >>>
+        <<- /neg/ (re.search("(?i)^[aâeéêiîoôuœæ]", \3) or (re.search("(?i)^h", \3) and not morph(\3, ";é"))) -2:3>> je n’\3                                      && Ne ‹verbe› \4 : il manque l’adverbe de négation “ne”.
+        <<- /neg/ __else__ -2:3>> je ne \3                                                          && Ne ‹verbe› \4 : il manque l’adverbe de négation “ne”.
+
     [<start>|,|(|/_start_]  c’                   @:3s¬:Ov    [pas|plus|rien|jamais|guère|point]
-        <<- /neg/ not (value(\1, "|que|qu’|") and value(\-1, "|jamais|")) and not (value(\-1, "|pas|") and value(>1, "|mal|")) and not (value(\-1, "|plus|") and (value(>1, "|que|qu’|de|d’|des|du|à|au|aux|") or (value(>2, "|que|qu’|") and not value(>1, "|ce|")) or value(>3, "|que|qu’|") or morph(>1, ":[AB]") or (morph(>1, ":W") and not value(>1, "|là|ici|là-bas|là-haut|ailleurs|dehors|dedans|")) or (value(\-3, "|en|") and not morph(\-2, ">pouvoir/")) or (value(\1, "|que|qu’|") and (value(>1, "|<end>|") or meta(>1, "PUNC"))))) and morph(\3, ">[aâeéêiîoôuœæ]")
-        -2>> ce n’                                                                                  && Ne ‹verbe› \4 : il manque l’adverbe de négation “ne”.
+        <<- /neg/ not (value(\1, "|que|qu’|") and value(\-1, "|jamais|")) and not (value(\-1, "|pas|") and value(>1, "|mal|")) and not (value(\-1, "|plus|") and (value(>1, "|que|qu’|de|d’|des|du|à|au|aux|") or (value(>2, "|que|qu’|") and not value(>1, "|ce|")) or value(>3, "|que|qu’|") or morph(>1, ":[AB]") or (morph(>1, ":W") and not value(>1, "|là|ici|là-bas|là-haut|ailleurs|dehors|dedans|")) or (value(\-3, "|en|") and not morph(\-2, ">pouvoir/")) or (value(\1, "|que|qu’|") and (value(>1, "|<end>|") or meta(>1, "PUNC"))))) and morph(\3, ">[aâeéêiîoôuœæ]") >>>
+        <<- /neg/ (re.search("(?i)^[aâeéêiîoôuœæ]", \3) or (re.search("(?i)^h", \3) and not morph(\3, ";é"))) -2:3>> ce n’\3                                      && Ne ‹verbe› \4 : il manque l’adverbe de négation “ne”.
+        <<- /neg/ __else__ -2:3>> ce ne \3                                                          && Ne ‹verbe› \4 : il manque l’adverbe de négation “ne”.
+
+    [<start>|,|(|/_start_]  j’                   [en|y]      @:1s¬:Ov    [pas|plus|rien|jamais|guère|point]
+    [<start>|,|(|/_start_]  c’                   [en|y]      @:3s¬:Ov    [pas|plus|rien|jamais|guère|point]
+        <<- /neg/ not (value(\1, "|que|qu’|") and value(\-1, "|jamais|")) and not (value(\-1, "|pas|") and value(>1, "|mal|")) and not (value(\-1, "|plus|") and (value(>1, "|que|qu’|de|d’|des|du|à|au|aux|") or (value(>2, "|que|qu’|") and not value(>1, "|ce|")) or value(>3, "|que|qu’|") or morph(>1, ":[AB]") or (morph(>1, ":W") and not value(>1, "|là|ici|là-bas|là-haut|ailleurs|dehors|dedans|")) or (value(\-3, "|en|") and not morph(\-2, ">pouvoir/")) or (value(\1, "|que|qu’|") and (value(>1, "|<end>|") or meta(>1, "PUNC"))))) >>>
+        <<- /neg/ value(\2, "|j’|") -2:3>> je n’\3                                                  && Ne ‹verbe› \5 : il manque l’adverbe de négation “ne”.
+        <<- /neg/ __else__ -2:3>> ce n’\3                                                           && Ne ‹verbe› \5 : il manque l’adverbe de négation “ne”.
 
     [<start>|,|(|/_start_]  [je|tu|il|elle|on|iel|nous|vous|ils|elles|iels]  >avoir  qu’  à
         <<- /neg/ -3>> n’\3                                                                         && Locution “n’avoir qu’à” : il manque l’adverbe de négation.
@@ -18423,8 +18435,8 @@ TEST: __neg__ il {{le}} lui donne pas souvent.          ->> ne le
 TEST: __neg__ il {{a}} qu’à venir demain                ->> n’a
 TEST: __neg__ ceci {{est}} guère pertinent              ->> n’est
 TEST: __neg__ cela {{me}} chagrine pas                  ->> ne me
-TEST: __neg__ {{c’}}est jamais ta faute                 ->> ce n’
-TEST: __neg__ {{c’}}est pas si mal                      ->> ce n’
+TEST: __neg__ {{c’est}} jamais ta faute                 ->> ce n’est
+TEST: __neg__ {{c’est}} pas si mal                      ->> ce n’est
 TEST: __neg__ c’est pas mal
 TEST: __neg__ ça devient pas mal
 TEST: __neg__ nous avançons pas mal
@@ -18460,9 +18472,24 @@ TEST: __neg__ Son livre pas cher se vend bien.
 TEST: __neg__ il ne {{m }}avait jamais fait défaut              ->> m’
 TEST: __neg__ n arrive pas à sa cheville
 TEST: __neg__ On {{y}} comprend plus rien.                      ->> n’y
-TEST: __neg__ J’{{en}} peux plus.                               ->> n’en
+TEST: __neg__ {{J’en}} peux plus.                               ->> Je n’en
 TEST: __neg__ Je {{sais}} plus ce que je dis.                   ->> ne sais
 TEST: __neg__ Je crois qu’il {{est}} plus là.                   ->> n’est
+TEST: __neg__ {{C’est}} pas bon.                        ->> Ce n’est
+TEST: __neg__ {{C’EST}} PAS BON.                        ->> CE N’EST
+TEST: __neg__ {{C’sera}} pas facile.                    ->> Ce ne sera
+TEST: __neg__ {{C’en}} est pas fini.                    ->> Ce n’en
+TEST: __neg__ {{J’ai}} pas faim.                        ->> Je n’ai
+TEST: __neg__ {{J’AI}} PAS FAIM.                        ->> JE N’AI
+TEST: __neg__ Ça, {{j’ai}} pas compris.                 ->> je n’ai
+TEST: __neg__ {{J’habite}} plus ici.                    ->> Je n’habite
+TEST: __neg__ {{J’suis}} pas content.                   ->> Je ne suis
+TEST: __neg__ {{J’en}} ai pas.                          ->> Je n’en
+TEST: __neg__ {{J’y}} vais jamais.                      ->> Je n’y
+TEST: __neg__ Je n’ai pas faim.
+TEST: __neg__ J’ai pas mal de travail.
+TEST: __neg__ J’en ai plus que toi.
+TEST: __neg__ J’y vais plus tard.
 
 
 !!
